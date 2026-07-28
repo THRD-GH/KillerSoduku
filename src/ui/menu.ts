@@ -55,6 +55,7 @@ function poolSize(ctx: AppContext, level: Level, source: Source): number {
   return source === 'fixed' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
 }
 
+/** One level as three columns: the difficulty, then each of its two pools. */
 function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
   const row = el(
     'div',
@@ -62,12 +63,11 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     el(
       'div',
       { class: 'level-head' },
-      stars(level, 15),
+      stars(level, 10),
       el('span', { class: 'name' }, LEVEL_NAMES[level]),
     ),
   );
 
-  const choices = el('div', { class: 'sources' });
   for (const source of ['fixed', 'random'] as Source[]) {
     const size = poolSize(ctx, level, source);
     const left = size === 0 ? 0 : unplayedNumbers(ctx.history, level, source, size).length;
@@ -82,8 +82,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
         { class: 'source-meta' },
         size === 0
           ? 'not installed'
-          : `${left} of ${size} left` +
-              (stat.averageMs === null ? '' : ` · avg ${formatTime(stat.averageMs)}`),
+          : `${left} left${stat.averageMs === null ? '' : ` · ${formatTime(stat.averageMs)}`}`,
       ),
     );
     if (size > 0) {
@@ -104,10 +103,10 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     pick.textContent = '#';
     if (size > 0) pick.addEventListener('click', () => openPicker(ctx, level, source));
 
-    choices.append(el('div', { class: 'source-row' }, button, pick));
+    // Each pool is its own grid column, so it goes straight onto the row.
+    row.append(el('div', { class: 'source-row' }, button, pick));
   }
 
-  row.append(choices);
   return row;
 }
 
