@@ -255,7 +255,7 @@ export class PlayScreen {
   }
 
   private doHint(): void {
-    const target = this.game.hint(this.ctx.settings);
+    const target = this.game.hint();
     if (target === null) {
       toast('Nothing left to fill');
       return;

@@ -75,9 +75,13 @@ export class Game {
   }
 
   /**
-   * Placing an answer rules that digit out for every cell sharing its row,
+   * Forcing an answer rules that digit out for every cell sharing its row,
    * column or box, so strike it from their pencil marks. Folded into the
    * current move: one undo puts the candidates back along with the answer.
+   *
+   * Only the deliberate gestures do this — long-click and double-click. A
+   * plain tap is far too easy to make by accident to be wiping candidates
+   * across the grid.
    */
   private cleanPeers(index: number, digit: number, settings: Settings): number {
     if (!settings.autoRemoveCandidates) return 0;
@@ -130,7 +134,8 @@ export class Game {
     if (!settings.allowSingleCandidates && popcount(this.pencils[index]) === 1) {
       this.values[index] = maskToDigit(this.pencils[index]);
       this.pencils[index] = 0;
-      this.cleanPeers(index, this.values[index], settings);
+      // Deliberately no peer cleanup here: a tap is easy to make by accident,
+      // and it should never strip candidates elsewhere in the grid.
     }
   }
 
@@ -162,7 +167,7 @@ export class Game {
   }
 
   /** [Hint] — fill one correct digit, preferring the selected cell. */
-  hint(settings: Settings): number | null {
+  hint(): number | null {
     const wrong: number[] = [];
     const empty: number[] = [];
     for (let i = 0; i < CELLS; i++) {
@@ -177,7 +182,6 @@ export class Game {
     this.record([target]);
     this.values[target] = this.puzzle.solution[target];
     this.pencils[target] = 0;
-    this.cleanPeers(target, this.values[target], settings);
     return target;
   }
 

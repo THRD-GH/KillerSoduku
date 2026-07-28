@@ -25,7 +25,7 @@ export interface Settings {
   highlightCage: boolean;
   /** Tint other cells holding the same digit as the selected one. */
   highlightSameDigit: boolean;
-  /** Placing an answer strikes that digit from its row, column and box marks. */
+  /** Forcing an answer strikes that digit from its row, column and box marks. */
   autoRemoveCandidates: boolean;
   hintNeedsLongClick: boolean;
   undoNeedsLongClick: boolean;
