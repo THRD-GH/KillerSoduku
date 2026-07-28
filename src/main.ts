@@ -3,6 +3,7 @@ import type { Level, PuzzleId, Source } from './core/types.ts';
 import { formatPuzzleId } from './core/types.ts';
 import { getPuzzle, prefetch } from './game/generate.ts';
 import { packCounts } from './game/packs.ts';
+import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
 import { Game } from './game/state.ts';
 import {
   RANDOM_POOL_SIZE,
@@ -49,7 +50,9 @@ class App implements AppContext {
   }
 
   applyTheme(): void {
-    document.documentElement.dataset.theme = this.settings.nightColors ? 'night' : 'day';
+    const night = this.settings.nightColors;
+    document.documentElement.dataset.theme = night ? 'night' : 'day';
+    setThemeColour(night ? '#0a0d10' : '#dfe4e9');
   }
 
   refreshBoard(): void {
@@ -157,3 +160,5 @@ class App implements AppContext {
 
 const host = document.querySelector<HTMLElement>('#app');
 if (host) new App(host);
+
+registerServiceWorker();

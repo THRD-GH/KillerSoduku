@@ -30,8 +30,17 @@ export async function packCounts(): Promise<Record<number, number> | null> {
 async function levelPack(level: Level): Promise<string[]> {
   const cached = loaded.get(level);
   if (cached) return cached;
-  const res = await fetch(`${packBase()}level-${level}.json`);
-  if (!res.ok) throw new Error(`pack for level ${level} is missing`);
+
+  // Packs are cached by the service worker the first time a level is opened,
+  // so offline the honest answer is "not downloaded yet", not "fetch failed".
+  let res: Response;
+  try {
+    res = await fetch(`${packBase()}level-${level}.json`);
+  } catch {
+    throw new Error(`Level ${level}'s fixed puzzles aren't downloaded — open this level once online`);
+  }
+  if (!res.ok) throw new Error(`Level ${level}'s fixed puzzles are unavailable`);
+
   const puzzles = (await res.json()) as string[];
   loaded.set(level, puzzles);
   return puzzles;

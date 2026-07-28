@@ -5,6 +5,17 @@ control scheme, same six-star level ladder, same numbered-puzzle history.
 
 Vite + TypeScript, no runtime dependencies. `npm run dev`, `npm run build`.
 
+## Installing
+
+It is a PWA: installable from the browser, and it runs offline. The service
+worker precaches the app shell (~87 kB) and caches each level's fixed puzzle
+pack the first time you open that level, so the 1.2 MB of packs is not part of
+the install. Random mode generates locally and works offline from the start.
+
+`npm run build` regenerates `dist/sw.js` from the actual build output, so the
+precache list always matches the hashed filenames. `npm run icons` redraws the
+app icons.
+
 ## Rules
 
 Normal sudoku, plus: the digits in a dashed cage add up to the small number in
