@@ -1,0 +1,9 @@
+node_modules/
+dist/
+
+# Imported from another app's puzzle packs for local play — see
+# tools/import-packs.ts. Not ours to redistribute.
+public/packs/
+*.local
+.DS_Store
+.vite/
