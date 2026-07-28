@@ -129,9 +129,14 @@ export class Game {
       this.values[index] = 0;
     }
 
+    // Whether this tap took a digit out of the cell rather than putting one in.
+    const removing = (this.pencils[index] & b) !== 0;
     this.pencils[index] ^= b;
 
-    if (!settings.allowSingleCandidates && popcount(this.pencils[index]) === 1) {
+    // Crossing off candidates until one survives has answered the cell, so it
+    // resolves to an entry however the cell was being used. Adding a lone digit
+    // is different — that is what "allow single candidates" governs.
+    if (popcount(this.pencils[index]) === 1 && (removing || !settings.allowSingleCandidates)) {
       this.values[index] = maskToDigit(this.pencils[index]);
       this.pencils[index] = 0;
       // Deliberately no peer cleanup here: a tap is easy to make by accident,

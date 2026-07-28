@@ -14,7 +14,8 @@ const TOGGLES: Toggle[] = [
   {
     key: 'allowSingleCandidates',
     title: 'Allow single candidates',
-    detail: 'On, every tap is a pencil mark and only a long-click writes an answer.',
+    detail:
+      'On, a lone digit you tap in stays a pencil mark. Crossing candidates off until one is left still answers the cell either way.',
   },
   {
     key: 'autoRemoveCandidates',
