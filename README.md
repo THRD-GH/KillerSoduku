@@ -49,17 +49,23 @@ Every level offers two pools, with separate history and separate numbering:
 
 Played puzzles drop out of their pool until released from Stats.
 
-### Importing the fixed packs
+### The fixed packs
+
+`public/packs/` is committed, so the site works as-is with no import step, and
+Vite copies it into `dist/` on build.
+
+Those files hold another app's puzzle content, extracted from a copy of it we
+own. **This repository is private, and that is the condition under which
+including them is reasonable.** Do not make the repository public, and do not
+deploy the site publicly, without removing them first — re-add `public/packs/`
+to `.gitignore` and the app degrades gracefully, disabling Fixed mode and
+offering Random only.
+
+To rebuild them from the app's assets (the APK is a zip):
 
 ```bash
 node tools/import-packs.ts <dir-with-nks-files>
 ```
-
-The reference app stores its puzzles as plaintext `.nks` files in its assets
-(the APK is a zip). The importer writes `public/packs/`, which is **gitignored**:
-it is another app's content, extracted from a copy you own, for local play. If
-the packs are absent the app still runs — the Fixed option simply disables
-itself. Keep them out of anything you publish.
 
 Which level a puzzle belongs to is *not* the filename. The packs are sharded
 across six files whose difficulty is flat — mean solver score 2.40, 2.70, 2.42,
@@ -171,6 +177,7 @@ KillSud by BotenSoft, from its own in-app help text. No code, artwork or fonts
 from that app are used here — the stars are drawn in SVG and the combination
 table is computed rather than shipped.
 
-Its puzzle packs are a different matter. Fixed mode plays them, but they are
-imported locally from your own copy of the app and are gitignored, never
-committed or redistributed. Random mode depends on none of it.
+Its puzzle packs are a different matter. Fixed mode plays them, and they are
+committed here so the site runs without a build step — which is defensible only
+because this repository is private. Random mode depends on none of it, so
+dropping `public/packs/` leaves a fully working game.
