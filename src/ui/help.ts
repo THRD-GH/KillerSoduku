@@ -88,9 +88,9 @@ export function openHelp(): void {
       for (const line of lines) ul.append(el('li', {}, line));
       panel.append(ul);
     }
-    const done = el('button', { class: 'btn wide' }, 'Close');
+    const done = el('button', { class: 'btn primary' }, 'Close');
     done.addEventListener('click', close);
-    panel.append(el('div', { class: 'actions', style: 'margin-top: 14px' }, done));
+    panel.append(el('div', { class: 'panel-footer' }, done));
     return panel;
   });
 }

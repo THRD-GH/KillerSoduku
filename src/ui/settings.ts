@@ -14,36 +14,24 @@ const TOGGLES: Toggle[] = [
   {
     key: 'allowSingleCandidates',
     title: 'Allow single candidates',
-    detail:
-      'Off: the first digit you tap into an empty cell becomes the answer. ' +
-      'On: every tap is a pencil mark, and only a long-click writes an answer.',
+    detail: 'On, every tap is a pencil mark and only a long-click writes an answer.',
   },
   {
     key: 'lazyMode',
     title: 'Lazy mode',
-    detail:
-      'Pre-fill candidates for any cage with only one possible combination. ' +
-      'Applies when a puzzle is started or restarted.',
+    detail: 'Pre-fill cages that have only one possible combination.',
   },
-  {
-    key: 'nightColors',
-    title: 'Night colours',
-    detail: 'Dark board and panels. Takes effect immediately.',
-  },
+  { key: 'nightColors', title: 'Night colours', detail: 'Dark board and panels.' },
   {
     key: 'highlightPeers',
     title: 'Highlight row, column and box',
-    detail: 'Tints every cell the selected one shares a row, column or box with.',
+    detail: 'Tints the selected cell’s row, column and box.',
   },
-  {
-    key: 'highlightCage',
-    title: 'Highlight the cage',
-    detail: 'Tints the rest of the selected cell’s cage.',
-  },
+  { key: 'highlightCage', title: 'Highlight the cage', detail: 'Tints the rest of the cage.' },
   {
     key: 'highlightSameDigit',
     title: 'Highlight matching digits',
-    detail: 'Tints other cells already holding the selected cell’s digit.',
+    detail: 'Tints cells holding the same digit.',
   },
   {
     key: 'clearNeedsLongClick',
@@ -55,7 +43,7 @@ const TOGGLES: Toggle[] = [
   {
     key: 'showTimer',
     title: 'Show the timer',
-    detail: 'The clock keeps running either way. Tapping the timer box also toggles this.',
+    detail: 'The clock keeps running either way.',
   },
 ];
 
@@ -87,7 +75,7 @@ export function openSettings(ctx: AppContext): void {
       list.append(row);
     }
 
-    const done = el('button', { class: 'btn wide' }, 'Done');
+    const done = el('button', { class: 'btn primary' }, 'Done');
     done.addEventListener('click', close);
 
     return el(
@@ -95,7 +83,7 @@ export function openSettings(ctx: AppContext): void {
       { class: 'panel' },
       el('h2', {}, 'Settings'),
       list,
-      el('div', { class: 'actions', style: 'margin-top: 12px' }, done),
+      el('div', { class: 'panel-footer' }, done),
     );
   });
 }

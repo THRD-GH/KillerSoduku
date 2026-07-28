@@ -1,7 +1,7 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
-import { unplayedNumbers } from '../game/storage.ts';
-import { el } from './dom.ts';
+import { levelStats, unplayedNumbers } from '../game/storage.ts';
+import { clear, el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
@@ -25,7 +25,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'div',
       { class: 'hero' },
       el('h1', {}, 'Choose ', el('span', {}, 'Level')),
-      el('p', {}, 'Tap a pool to play · # to choose a puzzle number'),
+      el('p', {}, 'Pick a level, then a pool · # to choose a puzzle number'),
     ),
   );
 
@@ -35,9 +35,31 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
     screen.append(el('div', { class: 'actions' }, btn));
   }
 
-  const list = el('div', { class: 'levels' });
-  for (const level of LEVELS) list.append(buildLevelRow(ctx, level));
-  screen.append(list);
+  // A single row of six levels, with the chosen one's pools shown beneath.
+  const strip = el('div', { class: 'level-strip' });
+  const detail = el('div', { class: 'level-detail' });
+  let selected: Level = LEVELS[0];
+
+  const draw = (): void => {
+    clear(strip);
+    for (const level of LEVELS) {
+      const button = el(
+        'button',
+        { class: `level-pick${level === selected ? ' on' : ''}`, 'aria-pressed': level === selected },
+        el('span', { class: 'level-num' }, String(level)),
+      );
+      button.addEventListener('click', () => {
+        selected = level;
+        draw();
+      });
+      strip.append(button);
+    }
+    clear(detail);
+    detail.append(buildLevelPanel(ctx, selected));
+  };
+
+  draw();
+  screen.append(strip, detail);
 
   screen.append(
     el(
@@ -55,14 +77,14 @@ function poolSize(ctx: AppContext, level: Level, source: Source): number {
   return source === 'fixed' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
 }
 
-function buildLevelRow(ctx: AppContext, level: Level): HTMLElement {
+function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
   const row = el(
     'div',
     { class: 'level' },
     el(
       'div',
       { class: 'level-head' },
-      stars(level, 11),
+      stars(level, 15),
       el('span', { class: 'name' }, LEVEL_NAMES[level]),
     ),
   );
@@ -72,11 +94,19 @@ function buildLevelRow(ctx: AppContext, level: Level): HTMLElement {
     const size = poolSize(ctx, level, source);
     const left = size === 0 ? 0 : unplayedNumbers(ctx.history, level, source, size).length;
 
+    const stat = levelStats(ctx.history, level, source, size);
     const button = el(
       'button',
       { class: `source ${source}`, disabled: size === 0 },
       el('span', { class: 'source-name' }, source === 'fixed' ? 'Fixed' : 'Random'),
-      el('span', { class: 'source-meta' }, size === 0 ? 'none' : `${left} left`),
+      el(
+        'span',
+        { class: 'source-meta' },
+        size === 0
+          ? 'not installed'
+          : `${left} of ${size} left` +
+              (stat.averageMs === null ? '' : ` · avg ${formatTime(stat.averageMs)}`),
+      ),
     );
     if (size > 0) {
       bindTap(button, {
@@ -137,7 +167,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
         `${numbers.length} of ${size} available${numbers.length > 400 ? ', showing the first 400' : ''}`,
       ),
       grid,
-      el('div', { class: 'actions', style: 'margin-top: 10px' }, cancel),
+      el('div', { class: 'panel-footer' }, cancel),
     );
   });
 }
