@@ -17,6 +17,7 @@ const SECTIONS: [string, string[]][] = [
       'Tap the keypad to put a digit in that cell. Two or more digits in a cell are candidates (pencil marks).',
       'Tap a candidate again to take it out.',
       'Long-click or double-click a keypad digit to force it in as the answer, clearing any candidates.',
+      'Placing an answer also strikes that digit from the pencil marks of its row, column and box. One undo takes back the answer and those candidates together. Turn it off with “Tidy candidates automatically”.',
       'Long-click or double-click CLEAR to empty a cell.',
       'The selected cell’s cage total and candidates are echoed in the title bar.',
     ],

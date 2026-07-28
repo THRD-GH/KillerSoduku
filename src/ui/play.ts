@@ -228,7 +228,8 @@ export class PlayScreen {
       toast('Choose a cell first');
       return;
     }
-    this.game.forceDigit(this.game.selected, digit);
+    const tidied = this.game.forceDigit(this.game.selected, digit, this.ctx.settings);
+    if (tidied > 0) toast(`Removed ${digit} from ${tidied} cell${tidied === 1 ? '' : 's'}`);
     this.afterMove();
   }
 
@@ -254,7 +255,7 @@ export class PlayScreen {
   }
 
   private doHint(): void {
-    const target = this.game.hint();
+    const target = this.game.hint(this.ctx.settings);
     if (target === null) {
       toast('Nothing left to fill');
       return;

@@ -1,4 +1,4 @@
-import { CELLS, bit, maskToDigit, popcount } from '../core/grid.ts';
+import { CELLS, PEERS, bit, maskToDigit, popcount } from '../core/grid.ts';
 import { buildConstraints, propagatedCandidates } from '../core/solver.ts';
 import { combosFor } from '../core/combos.ts';
 import type { Cage, Puzzle, PuzzleId } from '../core/types.ts';
@@ -63,6 +63,32 @@ export class Game {
     for (const i of indices) this.errors.delete(i);
   }
 
+  /** Fold more cells into the move already in progress, so undo stays atomic. */
+  private recordAlso(indices: number[]): void {
+    const move = this.history[this.history.length - 1];
+    if (!move) return;
+    for (const index of indices) {
+      if (move.some((d) => d.index === index)) continue;
+      move.push({ index, value: this.values[index], pencil: this.pencils[index] });
+      this.errors.delete(index);
+    }
+  }
+
+  /**
+   * Placing an answer rules that digit out for every cell sharing its row,
+   * column or box, so strike it from their pencil marks. Folded into the
+   * current move: one undo puts the candidates back along with the answer.
+   */
+  private cleanPeers(index: number, digit: number, settings: Settings): number {
+    if (!settings.autoRemoveCandidates) return 0;
+    const b = bit(digit);
+    const targets = PEERS[index].filter((p) => this.values[p] === 0 && (this.pencils[p] & b) !== 0);
+    if (targets.length === 0) return 0;
+    this.recordAlso(targets);
+    for (const p of targets) this.pencils[p] &= ~b;
+    return targets.length;
+  }
+
   canUndo(): boolean {
     return this.history.length > 0;
   }
@@ -104,15 +130,17 @@ export class Game {
     if (!settings.allowSingleCandidates && popcount(this.pencils[index]) === 1) {
       this.values[index] = maskToDigit(this.pencils[index]);
       this.pencils[index] = 0;
+      this.cleanPeers(index, this.values[index], settings);
     }
   }
 
   /** Long-click or double-click: this digit is the answer, candidates go away. */
-  forceDigit(index: number, digit: number): void {
-    if (index < 0 || this.completed) return;
+  forceDigit(index: number, digit: number, settings: Settings): number {
+    if (index < 0 || this.completed) return 0;
     this.record([index]);
     this.values[index] = digit;
     this.pencils[index] = 0;
+    return this.cleanPeers(index, digit, settings);
   }
 
   clearCell(index: number): void {
@@ -134,7 +162,7 @@ export class Game {
   }
 
   /** [Hint] — fill one correct digit, preferring the selected cell. */
-  hint(): number | null {
+  hint(settings: Settings): number | null {
     const wrong: number[] = [];
     const empty: number[] = [];
     for (let i = 0; i < CELLS; i++) {
@@ -149,6 +177,7 @@ export class Game {
     this.record([target]);
     this.values[target] = this.puzzle.solution[target];
     this.pencils[target] = 0;
+    this.cleanPeers(target, this.values[target], settings);
     return target;
   }
 

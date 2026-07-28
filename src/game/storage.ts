@@ -25,6 +25,8 @@ export interface Settings {
   highlightCage: boolean;
   /** Tint other cells holding the same digit as the selected one. */
   highlightSameDigit: boolean;
+  /** Placing an answer strikes that digit from its row, column and box marks. */
+  autoRemoveCandidates: boolean;
   hintNeedsLongClick: boolean;
   undoNeedsLongClick: boolean;
   clearNeedsLongClick: boolean;
@@ -38,6 +40,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightPeers: true,
   highlightCage: true,
   highlightSameDigit: true,
+  autoRemoveCandidates: true,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,
   clearNeedsLongClick: true,

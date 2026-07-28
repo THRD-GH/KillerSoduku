@@ -17,6 +17,11 @@ const TOGGLES: Toggle[] = [
     detail: 'On, every tap is a pencil mark and only a long-click writes an answer.',
   },
   {
+    key: 'autoRemoveCandidates',
+    title: 'Tidy candidates automatically',
+    detail: 'Placing an answer strikes that digit from its row, column and box.',
+  },
+  {
     key: 'lazyMode',
     title: 'Lazy mode',
     detail: 'Pre-fill cages that have only one possible combination.',

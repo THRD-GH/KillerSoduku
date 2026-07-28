@@ -1,7 +1,7 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
 import { levelStats, unplayedNumbers } from '../game/storage.ts';
-import { clear, el, formatTime } from './dom.ts';
+import { el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
@@ -25,7 +25,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'div',
       { class: 'hero' },
       el('h1', {}, 'Choose ', el('span', {}, 'Level')),
-      el('p', {}, 'Pick a level, then a pool · # to choose a puzzle number'),
+      el('p', {}, 'Tap a pool to play · # to choose a puzzle number'),
     ),
   );
 
@@ -35,31 +35,9 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
     screen.append(el('div', { class: 'actions' }, btn));
   }
 
-  // A single row of six levels, with the chosen one's pools shown beneath.
-  const strip = el('div', { class: 'level-strip' });
-  const detail = el('div', { class: 'level-detail' });
-  let selected: Level = LEVELS[0];
-
-  const draw = (): void => {
-    clear(strip);
-    for (const level of LEVELS) {
-      const button = el(
-        'button',
-        { class: `level-pick${level === selected ? ' on' : ''}`, 'aria-pressed': level === selected },
-        el('span', { class: 'level-num' }, String(level)),
-      );
-      button.addEventListener('click', () => {
-        selected = level;
-        draw();
-      });
-      strip.append(button);
-    }
-    clear(detail);
-    detail.append(buildLevelPanel(ctx, selected));
-  };
-
-  draw();
-  screen.append(strip, detail);
+  const list = el('div', { class: 'levels' });
+  for (const level of LEVELS) list.append(buildLevelPanel(ctx, level));
+  screen.append(list);
 
   screen.append(
     el(

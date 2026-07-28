@@ -421,46 +421,18 @@ body {
   font-size: 13px;
 }
 
-/* All six levels in a single row; the chosen one's pools appear beneath. */
-.level-strip {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.level-pick {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 9px 2px;
-  color: var(--text);
-  cursor: pointer;
-  touch-action: manipulation;
-  display: grid;
-  place-items: center;
-}
-
-.level-pick .level-num {
-  font-size: 19px;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.level-pick.on {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-}
-
-.level-pick.on .level-num {
-  color: var(--text);
+/* Six levels stacked, each showing both of its pools. */
+.levels {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .level {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 10px 12px 12px;
+  padding: 8px 10px 10px;
   min-width: 0;
   user-select: none;
   -webkit-user-select: none;
@@ -469,8 +441,8 @@ body {
 .level-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 9px;
+  gap: 9px;
+  margin-bottom: 7px;
 }
 
 .level .stars {
@@ -482,14 +454,14 @@ body {
 
 .level .name {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
 }
 
-/* Two pools per level: the shipped grids, and freshly generated ones. */
+/* Two pools per level, side by side: the shipped grids, and generated ones. */
 .sources {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 .source-row {
