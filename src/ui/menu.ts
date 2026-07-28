@@ -1,7 +1,7 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
-import { levelStats, unplayedNumbers } from '../game/storage.ts';
-import { el, formatTime } from './dom.ts';
+import { unplayedNumbers } from '../game/storage.ts';
+import { el } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
@@ -25,7 +25,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'div',
       { class: 'hero' },
       el('h1', {}, 'Choose ', el('span', {}, 'Level')),
-      el('p', {}, 'Tap to play · hold to pick a puzzle number'),
+      el('p', {}, 'Tap a pool to play · # to choose a puzzle number'),
     ),
   );
 
@@ -62,7 +62,7 @@ function buildLevelRow(ctx: AppContext, level: Level): HTMLElement {
     el(
       'div',
       { class: 'level-head' },
-      stars(level, 16),
+      stars(level, 11),
       el('span', { class: 'name' }, LEVEL_NAMES[level]),
     ),
   );
@@ -71,19 +71,12 @@ function buildLevelRow(ctx: AppContext, level: Level): HTMLElement {
   for (const source of ['fixed', 'random'] as Source[]) {
     const size = poolSize(ctx, level, source);
     const left = size === 0 ? 0 : unplayedNumbers(ctx.history, level, source, size).length;
-    const stat = levelStats(ctx.history, level, source, size);
 
     const button = el(
       'button',
       { class: `source ${source}`, disabled: size === 0 },
       el('span', { class: 'source-name' }, source === 'fixed' ? 'Fixed' : 'Random'),
-      el(
-        'span',
-        { class: 'source-meta' },
-        size === 0
-          ? 'not installed'
-          : `${left} left${stat.averageMs === null ? '' : ` · avg ${formatTime(stat.averageMs)}`}`,
-      ),
+      el('span', { class: 'source-meta' }, size === 0 ? 'none' : `${left} left`),
     );
     if (size > 0) {
       bindTap(button, {
@@ -91,7 +84,19 @@ function buildLevelRow(ctx: AppContext, level: Level): HTMLElement {
         onLong: () => openPicker(ctx, level, source),
       });
     }
-    choices.append(button);
+
+    // Picking a specific puzzle used to need a long-press, which nobody finds
+    // on a phone. It gets its own button.
+    const pick = el('button', {
+      class: 'pick',
+      disabled: size === 0,
+      title: `Choose a ${source} puzzle number`,
+      'aria-label': `Choose a ${source} puzzle number for level ${level}`,
+    });
+    pick.textContent = '#';
+    if (size > 0) pick.addEventListener('click', () => openPicker(ctx, level, source));
+
+    choices.append(el('div', { class: 'source-row' }, button, pick));
   }
 
   row.append(choices);

@@ -229,12 +229,13 @@ body {
   stroke-dasharray: 0.13 0.1;
 }
 
-/* Sits inside the cage outline (6%), not on top of it. */
+/* Sits inside the cage outline (6%), not on top of it. Sized to stay legible
+   on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 9%;
+  top: 8%;
   left: 10%;
-  font-size: 0.32em;
+  font-size: 0.42em;
   font-weight: 700;
   line-height: 1;
   color: var(--sum);
@@ -255,7 +256,7 @@ body {
    and the sides clear the cage outline. */
 .marks {
   position: absolute;
-  inset: 32% 10% 10%;
+  inset: 36% 10% 8%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -420,56 +421,93 @@ body {
   font-size: 13px;
 }
 
+/* Six levels as a compact 3x2 grid rather than a tall stack. */
 .levels {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
 }
 
 .level {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 8px 10px 10px;
+  padding: 7px 7px 8px;
+  min-width: 0;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .level-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 7px;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
 }
 
 .level .stars {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   flex: 0 0 auto;
+  min-height: 12px;
 }
 
 .level .name {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Two pools per level: the shipped grids, and freshly generated ones. */
 .sources {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.source-row {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
 }
 
 .source {
+  flex: 1 1 auto;
+  min-width: 0;
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
-  padding: 8px 6px;
+  padding: 6px 5px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
   display: block;
   touch-action: manipulation;
+}
+
+/* Opens the puzzle-number picker for that pool. */
+.pick {
+  flex: 0 0 26px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--dim);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pick:active {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.pick[disabled] {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .source:active {
@@ -484,7 +522,8 @@ body {
 .source-name {
   display: block;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12.5px;
+  line-height: 1.15;
 }
 
 .source.random .source-name {
@@ -494,9 +533,13 @@ body {
 .source-meta {
   display: block;
   color: var(--dim);
-  font-size: 11px;
-  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 1.15;
+  margin-top: 1px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hint-line {
