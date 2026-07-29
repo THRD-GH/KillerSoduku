@@ -52,8 +52,8 @@ menu also has Fill all candidates and Share this puzzle (a link that opens the
 same grid anywhere).
 
 **Settings** — Theme (Night, Day, High contrast), Keypad side, Allow single candidates, Lazy
-mode (pre-fill cages with only one possible combination), highlighting, and
-long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
+mode (pre-fill cages with only one possible combination), highlighting, Keep
+the screen awake, and long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
 and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 

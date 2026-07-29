@@ -37,6 +37,8 @@ export interface Settings {
   autoRemoveCandidates: boolean;
   /** How solid the sum calculator sits over the grid, 0.35 to 1. */
   calcOpacity: number;
+  /** Hold a wake lock while a puzzle is open, so the screen stops dimming. */
+  keepAwake: boolean;
   hintNeedsLongClick: boolean;
   undoNeedsLongClick: boolean;
   clearNeedsLongClick: boolean;
@@ -53,6 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightSameDigit: true,
   autoRemoveCandidates: true,
   calcOpacity: 0.82,
+  keepAwake: true,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,
   clearNeedsLongClick: true,

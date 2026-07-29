@@ -51,6 +51,11 @@ const TOGGLES: Toggle[] = [
   { key: 'hintNeedsLongClick', title: 'Hint needs a long-click', detail: 'Avoids stray hints.' },
   { key: 'undoNeedsLongClick', title: 'Undo needs a long-click', detail: 'Avoids stray undos.' },
   {
+    key: 'keepAwake',
+    title: 'Keep the screen awake',
+    detail: 'Stops the phone dimming and locking while a puzzle is open.',
+  },
+  {
     key: 'showTimer',
     title: 'Show the timer',
     detail: 'The clock keeps running either way.',
@@ -158,6 +163,7 @@ export function openSettings(ctx: AppContext): void {
         ctx.settings[toggle.key] = !ctx.settings[toggle.key];
         knob.classList.toggle('on', ctx.settings[toggle.key]);
         saveSettings(ctx.settings);
+        if (toggle.key === 'keepAwake') ctx.applyWakeLock();
         // The board reads settings live, so it just needs a repaint.
         ctx.refreshBoard();
       });

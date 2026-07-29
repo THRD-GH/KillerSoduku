@@ -4,6 +4,7 @@ import { formatPuzzleId } from './core/types.ts';
 import { getPuzzle, prefetch } from './game/generate.ts';
 import { packCounts } from './game/packs.ts';
 import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
+import { keepScreenAwake } from './game/wakelock.ts';
 import { Game } from './game/state.ts';
 import {
   NEW_POOL_SIZE,
@@ -71,6 +72,11 @@ class App implements AppContext {
   applyTheme(): void {
     document.documentElement.dataset.theme = this.settings.theme;
     setThemeColour(THEME_COLOUR[this.settings.theme]);
+  }
+
+  /** Only worth holding while a puzzle is open and running. */
+  applyWakeLock(): void {
+    keepScreenAwake(this.settings.keepAwake && this.play !== null && !this.play.isPaused);
   }
 
   /** Landscape reads this off the root, so no screen has to be rebuilt. */

@@ -11,6 +11,7 @@ import {
   saveHistory,
   saveSettings,
 } from '../game/storage.ts';
+import { keepScreenAwake } from '../game/wakelock.ts';
 import { Board } from './board.ts';
 import { clear, el, formatTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
@@ -596,6 +597,8 @@ export class PlayScreen {
     if (this.ticker === undefined) {
       this.ticker = window.setInterval(() => this.tick(), 250);
     }
+    // Studying a grid looks like idling to a phone, which then dims and locks.
+    keepScreenAwake(this.ctx.settings.keepAwake);
   }
 
   stop(): void {
@@ -603,6 +606,7 @@ export class PlayScreen {
       clearInterval(this.ticker);
       this.ticker = undefined;
     }
+    keepScreenAwake(false);
   }
 
   private tick(): void {
@@ -619,6 +623,8 @@ export class PlayScreen {
     if (this.paused || this.game.completed) return;
     this.paused = true;
     this.scheduleSave();
+    // Put down mid-puzzle: let the screen behave normally again.
+    keepScreenAwake(false);
 
     const node = el(
       'div',
@@ -639,6 +645,7 @@ export class PlayScreen {
     if (!this.paused) return;
     this.paused = false;
     this.lastTick = performance.now();
+    keepScreenAwake(this.ctx.settings.keepAwake);
     this.pauseNode?.remove();
     this.pauseNode = null;
   }
