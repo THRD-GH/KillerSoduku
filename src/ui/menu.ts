@@ -1,5 +1,6 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
+import { sourceLabel } from '../core/types.ts';
 import { levelStats, unplayedNumbers } from '../game/storage.ts';
 import { el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
@@ -44,8 +45,8 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'p',
       { class: 'hint-line' },
       ctx.packCounts
-        ? 'Fixed plays the original shipped grids. Random generates a new one — 3-R10 is always the same puzzle, everywhere.'
-        : 'No puzzle packs installed, so only Random is available. See tools/import-packs.ts.',
+        ? 'Classic plays the original shipped grids, New generates one. Either way the number always gives the same puzzle.'
+        : 'No puzzle packs installed, so only New is available. See tools/import-packs.ts.',
     ),
   );
   return screen;
@@ -76,7 +77,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     const button = el(
       'button',
       { class: `source ${source}`, disabled: size === 0 },
-      el('span', { class: 'source-name' }, source === 'fixed' ? 'Fixed' : 'Random'),
+      el('span', { class: 'source-name' }, sourceLabel(source)),
       el(
         'span',
         { class: 'source-meta' },
@@ -137,7 +138,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
     return el(
       'div',
       { class: 'panel' },
-      el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${source === 'fixed' ? 'Fixed' : 'Random'}`),
+      el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`),
       el(
         'p',
         { class: 'summary' },

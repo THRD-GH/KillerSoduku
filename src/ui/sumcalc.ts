@@ -1,6 +1,7 @@
 import { findCombos, maxSum, minSum } from '../core/combos.ts';
 import { bit, maskToDigits } from '../core/grid.ts';
 import { el } from './dom.ts';
+import { transparencyIcon } from './icons.ts';
 import { openOverlay } from './overlay.ts';
 
 type DigitState = 'neutral' | 'include' | 'exclude';
@@ -235,7 +236,12 @@ export function openSumCalculator(opts: SumCalcOptions): void {
       el(
         'div',
         { class: 'panel-footer' },
-        el('label', { class: 'glass-slider' }, 'See through', glass),
+        el(
+          'label',
+          { class: 'glass-slider', title: 'How much of the grid shows through' },
+          transparencyIcon(),
+          glass,
+        ),
         el('div', { class: 'footer-buttons three' }, back, reset, autoBtn),
       ),
     );

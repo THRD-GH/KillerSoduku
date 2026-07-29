@@ -27,6 +27,15 @@ export type Source = 'fixed' | 'random';
 
 export const SOURCES: Source[] = ['fixed', 'random'];
 
+/**
+ * What the pools are called on screen. The stored values stay 'fixed' and
+ * 'random' — they key the history and the pack files, so renaming them would
+ * orphan every record.
+ */
+export const SOURCE_LABELS: Record<Source, string> = { fixed: 'Classic', random: 'New' };
+
+export const sourceLabel = (source: Source): string => SOURCE_LABELS[source];
+
 /** Stable puzzle identifier, displayed as "3-10" fixed or "3-R10" random. */
 export interface PuzzleId {
   level: Level;

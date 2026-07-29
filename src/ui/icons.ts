@@ -1,6 +1,48 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
+ * The checkerboard that stands for transparency everywhere it is drawn — a
+ * bordered square with alternate cells filled, so it reads as "what shows
+ * through" rather than as any particular colour.
+ */
+export function transparencyIcon(size = 15): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
+
+  const cell = 3;
+  const origin = 2;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      if ((row + col) % 2 !== 0) continue;
+      const square = document.createElementNS(SVG_NS, 'rect');
+      square.setAttribute('x', String(origin + col * cell));
+      square.setAttribute('y', String(origin + row * cell));
+      square.setAttribute('width', String(cell));
+      square.setAttribute('height', String(cell));
+      square.setAttribute('fill', 'currentColor');
+      square.setAttribute('opacity', '0.75');
+      svg.append(square);
+    }
+  }
+
+  const frame = document.createElementNS(SVG_NS, 'rect');
+  frame.setAttribute('x', '1.5');
+  frame.setAttribute('y', '1.5');
+  frame.setAttribute('width', '13');
+  frame.setAttribute('height', '13');
+  frame.setAttribute('rx', '2');
+  frame.setAttribute('fill', 'none');
+  frame.setAttribute('stroke', 'currentColor');
+  frame.setAttribute('stroke-width', '1.3');
+  svg.append(frame);
+
+  return svg;
+}
+
+/**
  * The undo arrow: a hooked arc pointing back on itself. `mirrored` flips it
  * horizontally for redo, so the pair is unmistakably the same gesture in
  * opposite directions.

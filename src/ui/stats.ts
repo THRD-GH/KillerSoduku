@@ -1,6 +1,6 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
-import { formatPuzzleId } from '../core/types.ts';
+import { formatPuzzleId, sourceLabel } from '../core/types.ts';
 import {
   clearSave,
   forgetPuzzle,
@@ -50,7 +50,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         'button',
         { class: 'statrow open' },
         el('span', {}, formatPuzzleId(id)),
-        el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${id.source === 'fixed' ? 'Fixed' : 'Random'}`),
+        el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
         el('span', { class: 'when' }, record.startedAt ? formatDate(record.startedAt) : ''),
         el('span', { class: 'when' }, `${record.hints ?? 0}h ${record.checks ?? 0}c`),
       );
@@ -121,7 +121,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
       const b = el(
         'button',
         { class: `btn ${s === source ? 'on' : ''}`.trim() },
-        s === 'fixed' ? 'Fixed' : 'Random',
+        sourceLabel(s),
       );
       b.addEventListener('click', () => {
         source = s;
@@ -133,7 +133,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     const size = poolSize();
     const stat = levelStats(ctx.history, level, source, size);
     summary.textContent =
-      `${LEVEL_NAMES[level]} · ${source === 'fixed' ? 'Fixed' : 'Random'} — ` +
+      `${LEVEL_NAMES[level]} · ${sourceLabel(source)} — ` +
       `${stat.played} of ${size} played, ${stat.finished} finished` +
       (stat.averageMs === null ? '' : `, average ${formatTime(stat.averageMs)}`);
 
