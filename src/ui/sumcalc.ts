@@ -12,8 +12,9 @@ export interface SumCalcOptions {
   /** Digits already entered in that cage, so they can be picked out on sight. */
   placed?: number;
   /**
-   * Digits already in the selected cell's row, column or box. They may still
-   * belong to the cage, just not in this cell.
+   * Digits no empty cell of the cage can take, because each is already used in
+   * that cell's row, column or box. Judged across the whole cage, so a digit
+   * merely blocked at the cursor is not counted.
    */
   blocked?: number;
   /** Called by [Auto] when exactly one combination remains. */
@@ -117,7 +118,7 @@ export function openSumCalculator(opts: SumCalcOptions): void {
                     title: inCage
                       ? 'already in this cage'
                       : inPeers
-                        ? "already in this cell's row, column or box"
+                        ? 'cannot go in any empty cell of this cage'
                         : undefined,
                   },
                   String(d),

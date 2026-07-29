@@ -282,11 +282,20 @@ export class PlayScreen {
     for (const c of cage?.cells ?? []) {
       if (this.game.values[c] !== 0) placed |= bit(this.game.values[c]);
     }
-    // And digits ruled out for the selected cell by its row, column or box.
+    /*
+     * Digits the cage cannot use at all. This has to be judged across the whole
+     * cage, not just the selected cell: a cage spans several rows, columns and
+     * boxes, so a digit blocked where the cursor happens to sit is still fine
+     * if any other empty cell of the cage can take it. Only when no empty cell
+     * can is the digit genuinely out.
+     */
     let blocked = 0;
-    if (sel >= 0) {
-      for (const p of PEERS[sel]) {
-        if (this.game.values[p] !== 0) blocked |= bit(this.game.values[p]);
+    const empties = (cage?.cells ?? []).filter((c) => this.game.values[c] === 0);
+    if (empties.length > 0) {
+      for (let digit = 1; digit <= 9; digit++) {
+        if (placed & bit(digit)) continue;
+        const fits = empties.some((c) => !PEERS[c].some((p) => this.game.values[p] === digit));
+        if (!fits) blocked |= bit(digit);
       }
     }
     openSumCalculator({
