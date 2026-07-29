@@ -27,9 +27,22 @@ export interface SumCalcOptions {
  * combination into the cage as candidates.
  */
 export function openSumCalculator(opts: SumCalcOptions): void {
+  // Translucent: the calculator is read against the grid, so the grid has to
+  // stay visible behind it.
   openOverlay((close) => {
-    const state: DigitState[] = Array.from({ length: 10 }, () => 'neutral');
     const placed = opts.placed ?? 0;
+
+    /**
+     * Digits already written into the cage start out required. Any combination
+     * without them cannot be this cage's, so listing them is just noise — and
+     * showing the keys as green says why the list is filtered, and leaves them
+     * tappable if the sum or cell count is being overridden to ask something else.
+     */
+    const state: DigitState[] = Array.from({ length: 10 }, (_, d) =>
+      d >= 1 && placed & bit(d) ? 'include' : 'neutral',
+    );
+    const classFor = (d: number): string =>
+      `btn ${state[d] === 'include' ? 'inc' : state[d] === 'exclude' ? 'exc' : ''}`.trim();
     // A digit in the cage is the stronger fact, so it wins where both apply.
     const blocked = (opts.blocked ?? 0) & ~placed;
 
@@ -64,10 +77,10 @@ export function openSumCalculator(opts: SumCalcOptions): void {
 
     const digitButtons: HTMLButtonElement[] = [];
     for (let d = 1; d <= 9; d++) {
-      const b = el('button', { class: 'btn' }, String(d));
+      const b = el('button', { class: classFor(d) }, String(d));
       b.addEventListener('click', () => {
         state[d] = state[d] === 'neutral' ? 'include' : state[d] === 'include' ? 'exclude' : 'neutral';
-        b.className = `btn ${state[d] === 'include' ? 'inc' : state[d] === 'exclude' ? 'exc' : ''}`.trim();
+        b.className = classFor(d);
         run();
       });
       digitButtons.push(b);
@@ -163,10 +176,12 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     });
 
     const reset = el('button', { class: 'btn' }, 'Reset');
+    // Back to the opening state, which keeps the cage's own digits required —
+    // those are facts about the board, not a filter the player chose.
     reset.addEventListener('click', () => {
       for (let d = 1; d <= 9; d++) {
-        state[d] = 'neutral';
-        digitButtons[d - 1].className = 'btn';
+        state[d] = placed & bit(d) ? 'include' : 'neutral';
+        digitButtons[d - 1].className = classFor(d);
       }
       struck.clear();
       run();
@@ -193,5 +208,5 @@ export function openSumCalculator(opts: SumCalcOptions): void {
 
     run();
     return panel;
-  });
+  }, { overlayClass: 'see-through' });
 }

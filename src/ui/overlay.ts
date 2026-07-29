@@ -6,10 +6,12 @@ import { el } from './dom.ts';
  */
 export function openOverlay(
   build: (close: () => void) => HTMLElement,
-  opts: { dismissable?: boolean } = {},
+  opts: { dismissable?: boolean; overlayClass?: string } = {},
 ): () => void {
   const dismissable = opts.dismissable ?? true;
-  const backdrop = el('div', { class: 'overlay' });
+  const backdrop = el('div', {
+    class: `overlay${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
+  });
 
   const close = (): void => {
     backdrop.remove();
