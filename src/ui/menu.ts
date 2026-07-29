@@ -2,7 +2,7 @@ import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
 import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import { levelStats, unplayedNumbers } from '../game/storage.ts';
-import { buildStamp, el, formatTime } from './dom.ts';
+import { buildStamp, clear, el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
@@ -112,47 +112,119 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
   return row;
 }
 
-/**
- * Most buttons the picker will render at once. Enough to cover a whole New
- * pool; the Classic pools run to thousands, where a full list would be a wall
- * of buttons nobody scrolls through.
- */
-const PICKER_LIMIT = 500;
+/** Puzzle numbers per range tab. A Classic pool runs to thousands. */
+const RANGE_SIZE = 200;
 
-/** The list of puzzle numbers not yet played in this level and pool. */
+/**
+ * The list of puzzle numbers not yet played in this level and pool.
+ *
+ * Classic pools hold thousands, so the numbers are broken into ranges and only
+ * one range is drawn at a time — a flat list is a wall of buttons nobody reads.
+ * A box for typing a number outright covers the case where you know the one
+ * you want.
+ */
 export function openPicker(ctx: AppContext, level: Level, source: Source): void {
   const size = poolSize(ctx, level, source);
-  const numbers = unplayedNumbers(ctx.history, level, source, size);
+  const available = new Set(unplayedNumbers(ctx.history, level, source, size));
 
   openOverlay((close) => {
+    const play = (n: number): void => {
+      close();
+      ctx.playPuzzle({ level, number: n, source });
+    };
+
+    const ranges: { from: number; to: number; free: number }[] = [];
+    for (let from = 1; from <= size; from += RANGE_SIZE) {
+      const to = Math.min(from + RANGE_SIZE - 1, size);
+      let free = 0;
+      for (let n = from; n <= to; n++) if (available.has(n)) free++;
+      ranges.push({ from, to, free });
+    }
+    // Open on the first range that still has something to play.
+    let current = Math.max(0, ranges.findIndex((r) => r.free > 0));
+
+    const tabs = el('div', { class: 'picker-ranges' });
     const grid = el('div', { class: 'picker' });
-    if (numbers.length === 0) {
-      grid.append(
-        el('p', { class: 'summary' }, 'Every puzzle here has been played. Release some in Stats.'),
-      );
-    }
-    for (const n of numbers.slice(0, PICKER_LIMIT)) {
-      const b = el('button', { class: 'btn' }, formatPuzzleId({ level, number: n, source }));
-      b.addEventListener('click', () => {
-        close();
-        ctx.playPuzzle({ level, number: n, source });
-      });
-      grid.append(b);
-    }
+    const summary = el('p', { class: 'summary' });
+
+    const draw = (): void => {
+      clear(tabs);
+      if (ranges.length > 1) {
+        for (const [i, range] of ranges.entries()) {
+          const tab = el(
+            'button',
+            { class: `btn ${i === current ? 'on' : ''}`.trim(), disabled: range.free === 0 },
+            `${range.from}–${range.to}`,
+          );
+          tab.addEventListener('click', () => {
+            current = i;
+            draw();
+          });
+          tabs.append(tab);
+        }
+      }
+
+      const range = ranges[current];
+      clear(grid);
+      let shown = 0;
+      for (let n = range.from; n <= range.to; n++) {
+        if (!available.has(n)) continue;
+        shown++;
+        const b = el('button', { class: 'btn' }, formatPuzzleId({ level, number: n, source }));
+        b.addEventListener('click', () => play(n));
+        grid.append(b);
+      }
+      if (shown === 0) {
+        grid.append(
+          el('p', { class: 'summary' }, 'Nothing left here. Release some in Stats, or try another range.'),
+        );
+      }
+
+      summary.textContent =
+        available.size === 0
+          ? 'Every puzzle here has been played. Release some in Stats.'
+          : `${available.size} of ${size} available` +
+            (ranges.length > 1 ? ` · showing ${range.from}–${range.to}` : '');
+    };
+
+    // Straight to a number, for when you already know which one you want.
+    const jump = el('input', {
+      type: 'number',
+      min: 1,
+      max: size,
+      inputmode: 'numeric',
+      placeholder: 'no.',
+      'aria-label': 'Go to puzzle number',
+    });
+    const go = el('button', { class: 'btn' }, 'Go');
+    const goTo = (): void => {
+      const n = Number(jump.value);
+      if (!Number.isInteger(n) || n < 1 || n > size) {
+        toast(`Pick a number between 1 and ${size}`);
+        return;
+      }
+      if (!available.has(n)) {
+        toast(`${formatPuzzleId({ level, number: n, source })} has been played — release it in Stats`);
+        return;
+      }
+      play(n);
+    };
+    go.addEventListener('click', goTo);
+    jump.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goTo();
+    });
 
     const cancel = el('button', { class: 'btn wide' }, 'Cancel');
     cancel.addEventListener('click', close);
 
+    draw();
     return el(
       'div',
       { class: 'panel' },
       el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`),
-      el(
-        'p',
-        { class: 'summary' },
-        `${numbers.length} of ${size} available` +
-          (numbers.length > PICKER_LIMIT ? `, showing the first ${PICKER_LIMIT}` : ''),
-      ),
+      el('div', { class: 'picker-jump' }, el('label', {}, 'Go to'), jump, go),
+      tabs,
+      summary,
       grid,
       el('div', { class: 'panel-footer' }, cancel),
     );
