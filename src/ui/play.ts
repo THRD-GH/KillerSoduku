@@ -447,6 +447,8 @@ export class PlayScreen {
         elapsedMs: this.game.elapsedMs,
         hints: this.game.hints,
         checks: this.game.checks,
+        // Undo and redo travel with the save; only finishing throws them away.
+        ...this.game.exportHistory(),
       });
     }, 400);
   }

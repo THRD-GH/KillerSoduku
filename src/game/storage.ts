@@ -72,6 +72,9 @@ export interface SavedGame {
   elapsedMs: number;
   hints: number;
   checks: number;
+  /** Undo and redo stacks, so they survive putting the puzzle down. */
+  past?: number[][];
+  future?: number[][];
 }
 
 function read<T>(key: string, fallback: T): T {

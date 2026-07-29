@@ -156,6 +156,7 @@ class App implements AppContext {
     game.elapsedMs = saved.elapsedMs;
     game.hints = saved.hints;
     game.checks = saved.checks;
+    game.importHistory({ past: saved.past, future: saved.future });
     this.startGame(game);
   }
 

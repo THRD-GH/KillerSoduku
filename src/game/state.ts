@@ -41,6 +41,30 @@ export class Game {
     puzzle.cages.forEach((cage, i) => cage.cells.forEach((c) => (this.cageIndex[c] = i)));
   }
 
+  /**
+   * Undo/redo flattened for storage: each move becomes a run of
+   * index, value, pencil triples. Kept with the saved game so putting a
+   * puzzle down and picking it up again does not cost you the history.
+   */
+  exportHistory(): { past: number[][]; future: number[][] } {
+    const encode = (move: Move): number[] =>
+      move.flatMap(({ index, value, pencil }) => [index, value, pencil]);
+    return { past: this.history.map(encode), future: this.future.map(encode) };
+  }
+
+  importHistory(data: { past?: number[][]; future?: number[][] } | undefined): void {
+    if (!data) return;
+    const decode = (flat: number[]): Move => {
+      const move: Move = [];
+      for (let i = 0; i + 2 < flat.length; i += 3) {
+        move.push({ index: flat[i], value: flat[i + 1], pencil: flat[i + 2] });
+      }
+      return move;
+    };
+    this.history = (data.past ?? []).map(decode);
+    this.future = (data.future ?? []).map(decode);
+  }
+
   cageAt(index: number): Cage {
     return this.puzzle.cages[this.cageIndex[index]];
   }
