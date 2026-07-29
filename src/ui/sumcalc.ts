@@ -19,6 +19,9 @@ export interface SumCalcOptions {
   blocked?: number;
   /** Called by [Auto] when exactly one combination remains. */
   onAuto?: (mask: number) => void;
+  /** Starting opacity for the panel, and where to persist a change to it. */
+  opacity?: number;
+  onOpacity?: (value: number) => void;
 }
 
 /**
@@ -167,6 +170,27 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     sumInput.addEventListener('input', run);
     sizeInput.addEventListener('input', run);
 
+    // Slides the panel between almost-clear and solid. The value rides on the
+    // overlay as a custom property, so every surface inside it follows.
+    const startOpacity = opts.opacity ?? 0.82;
+    const glass = el('input', {
+      type: 'range',
+      min: '0.35',
+      max: '1',
+      step: '0.01',
+      value: String(startOpacity),
+      'aria-label': 'Sum calculator transparency',
+    });
+    // The overlay only exists once this panel has been attached to it.
+    queueMicrotask(() =>
+      glass.closest<HTMLElement>('.overlay')?.style.setProperty('--glass', String(startOpacity)),
+    );
+    glass.addEventListener('input', () => {
+      const value = Number(glass.value);
+      glass.closest<HTMLElement>('.overlay')?.style.setProperty('--glass', String(value));
+      opts.onOpacity?.(value);
+    });
+
     const back = el('button', { class: 'btn' }, 'Back');
     back.addEventListener('click', close);
     autoBtn.addEventListener('click', () => {
@@ -203,7 +227,12 @@ export function openSumCalculator(opts: SumCalcOptions): void {
       // Keypad on the left, the combinations it filters on the right. The
       // controls explain themselves through colour; Help carries the detail.
       el('div', { class: 'calc-body' }, digitRow, results),
-      el('div', { class: 'panel-footer three' }, back, reset, autoBtn),
+      el(
+        'div',
+        { class: 'panel-footer' },
+        el('label', { class: 'glass-slider' }, 'See through', glass),
+        el('div', { class: 'footer-buttons three' }, back, reset, autoBtn),
+      ),
     );
 
     run();

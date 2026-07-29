@@ -22,9 +22,9 @@
   --cage-peer: rgba(240, 198, 116, 0.09);
   --same: rgba(86, 209, 245, 0.14);
   --shadow: rgba(0, 0, 0, 0.5);
-  /* Panel background for overlays you need to see through. */
-  --panel-glass: rgba(22, 28, 34, 0.82);
-  --panel-2-glass: rgba(30, 38, 46, 0.72);
+  /* Components for overlays you need to see through, mixed at --glass. */
+  --panel-rgb: 22 28 34;
+  --panel-2-rgb: 30 38 46;
 }
 
 :root[data-theme='day'] {
@@ -48,8 +48,8 @@
   --cage-peer: rgba(138, 90, 0, 0.08);
   --same: rgba(10, 111, 150, 0.13);
   --shadow: rgba(0, 0, 0, 0.25);
-  --panel-glass: rgba(247, 249, 251, 0.84);
-  --panel-2-glass: rgba(231, 236, 241, 0.74);
+  --panel-rgb: 247 249 251;
+  --panel-2-rgb: 231 236 241;
 }
 
 * {
@@ -295,11 +295,60 @@ body {
   gap: 6px;
 }
 
-.side {
+/* Actions sit beside the keypad, small, two to a row. */
+.controls .actions {
   flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: 5px;
+  margin: 0;
+}
+
+.controls .actions .btn {
+  font-size: 13px;
+  padding: 4px 2px;
+}
+
+/* CLEAR, the cage adder, the clock and Pause, across the bottom. */
+.bottom-row {
   display: flex;
-  flex-direction: column;
   gap: 6px;
+  align-items: stretch;
+}
+
+.bottom-row .key.clear,
+.bottom-row .adder,
+.bottom-row .timer {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.pause-btn {
+  flex: 0 0 48px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  touch-action: manipulation;
+}
+
+.pause-btn i {
+  display: block;
+  width: 4px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--text);
+}
+
+.pause-btn:active {
+  background: var(--accent-dim);
 }
 
 .key,
@@ -569,26 +618,50 @@ body {
 }
 
 /* The sum calculator is read against the board, so the board stays visible
-   through it: a barely-there backdrop and a translucent panel. */
+   through it. --glass is driven by the slider in its footer. */
 .overlay.see-through {
-  background: rgba(0, 0, 0, 0.18);
+  --glass: 0.82;
+  background: rgb(0 0 0 / calc(var(--glass) * 0.22));
 }
 
 .overlay.see-through .panel {
-  background: var(--panel-glass);
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
+  background: rgb(var(--panel-rgb) / var(--glass));
   border-color: var(--accent-dim);
 }
 
 .overlay.see-through .panel-footer {
-  background: var(--panel-glass);
+  background: rgb(var(--panel-rgb) / var(--glass));
 }
 
-/* Let the grid show through the calculator's own surfaces too. */
+/* Let the grid show through the calculator's own surfaces too — but never
+   through the required/ruled-out keys, whose whole job is to be unmistakable. */
 .overlay.see-through .results,
-.overlay.see-through .calc-keys .btn {
-  background: var(--panel-2-glass);
+.overlay.see-through .calc-keys .btn:not(.inc):not(.exc) {
+  background: rgb(var(--panel-2-rgb) / calc(var(--glass) * 0.88));
+}
+
+.glass-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--dim);
+}
+
+.glass-slider input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--accent);
+  height: 20px;
+}
+
+.footer-buttons {
+  display: grid;
+  gap: 6px;
+}
+
+.footer-buttons.three {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .panel {
@@ -847,16 +920,19 @@ body {
   font-size: 17px;
 }
 
+/* Fully opaque and high contrast: these have to read at any transparency. */
 .calc-keys button.inc {
-  background: #1f5c33;
-  border-color: #35a35c;
-  color: #d6ffe4;
+  background: #12833f;
+  border-color: #64e39b;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .calc-keys button.exc {
-  background: #6b2323;
-  border-color: #b04040;
-  color: #ffdede;
+  background: #b32222;
+  border-color: #ff9090;
+  color: #ffffff;
+  font-weight: 800;
   text-decoration: line-through;
 }
 

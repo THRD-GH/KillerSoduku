@@ -31,6 +31,8 @@ export class PlayScreen {
   private adderBox = el('div', { class: 'adder' });
   private undoBtn = el('button', { class: 'btn' }, 'Undo');
   private keys = new Map<number, HTMLButtonElement>();
+  /** CLEAR, the cage adder, the clock and Pause — built with the controls. */
+  private bottomRow!: HTMLDivElement;
 
   private ticker: number | undefined;
   private lastTick = 0;
@@ -72,11 +74,12 @@ export class PlayScreen {
 
     this.idLabel.textContent = formatPuzzleId(this.game.id);
 
+    const controls = this.buildControls();
     this.root.append(
       el('div', { class: 'titlebar' }, menuBtn, this.idLabel, this.candidateLine),
       this.board.root,
-      this.buildControls(),
-      this.buildActions(),
+      controls,
+      this.bottomRow,
     );
 
     bindTap(
@@ -114,23 +117,25 @@ export class PlayScreen {
       return raw === 'clear' ? CLEAR_KEY : Number(raw);
     };
 
-    const controls = el(
-      'div',
-      { class: 'controls' },
-      numpad,
-      el('div', { class: 'side' }, clearKey, this.adderBox, this.timerBox),
-    );
+    // Keypad on the left, the action buttons stacked compactly to its right.
+    const controls = el('div', { class: 'controls' }, numpad, this.buildActions());
 
-    // Bound on the wrapper so CLEAR keeps the same gesture set as the digits.
     bindTap(
-      controls,
+      numpad,
       {
-        onTap: (k) => (k === CLEAR_KEY ? this.tapClear() : this.tapDigit(k)),
-        onLong: (k) => (k === CLEAR_KEY ? this.doClear() : this.forceDigit(k)),
-        onDouble: (k) => (k === CLEAR_KEY ? this.doClear() : this.doubleDigit(k)),
+        onTap: (k) => this.tapDigit(k),
+        onLong: (k) => this.forceDigit(k),
+        onDouble: (k) => this.doubleDigit(k),
       },
       keyIndex,
     );
+
+    // CLEAR now sits in the bottom row, so it carries its own gestures.
+    bindTap(clearKey, {
+      onTap: () => this.tapClear(),
+      onLong: () => this.doClear(),
+      onDouble: () => this.doClear(),
+    });
 
     bindTap(this.adderBox, { onTap: () => this.addCage(), onLong: () => this.resetAdder() });
     bindTap(this.timerBox, {
@@ -141,7 +146,19 @@ export class PlayScreen {
       },
     });
 
+    const pause = el('button', { class: 'pause-btn', 'aria-label': 'Pause', title: 'Pause' });
+    pause.append(el('i'), el('i'));
+    pause.addEventListener('click', () => this.pause());
+
     this.resetAdder(true);
+    this.bottomRow = el(
+      'div',
+      { class: 'bottom-row' },
+      clearKey,
+      this.adderBox,
+      this.timerBox,
+      pause,
+    );
     return controls;
   }
 
@@ -183,11 +200,7 @@ export class PlayScreen {
       }, 'New puzzle'),
     );
 
-    // Pausing by long-clicking a cell is too well hidden to be the only way in.
-    const pause = el('button', { class: 'btn wide' }, 'Pause');
-    pause.addEventListener('click', () => this.pause());
-
-    return el('div', { class: 'actions' }, check, hint, sum, restart, next, undo, pause);
+    return el('div', { class: 'actions' }, check, hint, sum, restart, next, undo);
   }
 
   // ------------------------------------------------------------------ input
@@ -303,6 +316,11 @@ export class PlayScreen {
       sum: cage?.sum ?? 3,
       placed,
       blocked,
+      opacity: this.ctx.settings.calcOpacity,
+      onOpacity: (value) => {
+        this.ctx.settings.calcOpacity = value;
+        saveSettings(this.ctx.settings);
+      },
       onAuto:
         sel >= 0
           ? (mask) => {

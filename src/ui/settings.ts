@@ -4,8 +4,13 @@ import { el } from './dom.ts';
 import { openOverlay } from './overlay.ts';
 import type { AppContext } from './app-context.ts';
 
+/** Only the on/off settings belong on this screen. */
+type BooleanSetting = {
+  [K in keyof Settings]: Settings[K] extends boolean ? K : never;
+}[keyof Settings];
+
 interface Toggle {
-  key: keyof Settings;
+  key: BooleanSetting;
   title: string;
   detail: string;
 }

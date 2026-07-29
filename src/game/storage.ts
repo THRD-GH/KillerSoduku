@@ -27,6 +27,8 @@ export interface Settings {
   highlightSameDigit: boolean;
   /** Forcing an answer strikes that digit from its row, column and box marks. */
   autoRemoveCandidates: boolean;
+  /** How solid the sum calculator sits over the grid, 0.35 to 1. */
+  calcOpacity: number;
   hintNeedsLongClick: boolean;
   undoNeedsLongClick: boolean;
   clearNeedsLongClick: boolean;
@@ -41,6 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightCage: true,
   highlightSameDigit: true,
   autoRemoveCandidates: true,
+  calcOpacity: 0.82,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,
   clearNeedsLongClick: true,
