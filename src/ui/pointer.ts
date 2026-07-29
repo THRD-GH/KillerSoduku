@@ -5,12 +5,30 @@ export interface TapOptions {
   /** Fired on double-click when a tap has already been delivered for it. */
   onDouble?: (index: number) => void;
   longMs?: number;
+  /**
+   * Deliver a tap even when the finger slid between pressing and lifting.
+   *
+   * Right for the grid, where a hurried tap that drifts a few pixels into the
+   * next cell is still plainly a tap and dropping it silently loses the move.
+   * Wrong for buttons, where sliding off is how you take an action back.
+   */
+  forgiveDrift?: boolean;
 }
 
 const DEFAULT_LONG_MS = 450;
 
 /** How stale the first of two taps may be and still count as a double-click. */
 const DOUBLE_WINDOW_MS = 900;
+
+/**
+ * Two taps this close together are a double-click, whatever the browser thinks.
+ *
+ * `dblclick` alone is not dependable: it fires on the second, fourth, sixth
+ * click of a run, so one stray tap somewhere else mid-flow puts the count out
+ * of phase and the next deliberate double-click arrives as two singles — the
+ * digit toggles a pencil mark instead of being written in.
+ */
+const DOUBLE_TAP_MS = 400;
 
 /**
  * Binds the tap / long-press / double-click trio the reference app uses.
@@ -57,23 +75,47 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
 
   target.addEventListener('pointerup', (e) => {
     cancel();
-    const i = index(e);
-    if (i < 0 || i !== downIndex) return;
     if (longFired) {
       // Swallow the click that follows a long-press, and the gesture with it.
       e.preventDefault();
       recentTaps.length = 0;
       return;
     }
+
+    const lifted = index(e);
+    // Where the finger came up, or where it went down if it came up somewhere
+    // that means nothing — off the grid, or on the gap between two keys.
+    const i = lifted >= 0 ? lifted : downIndex;
+    if (i < 0) return;
+    if (i !== downIndex && !opts.forgiveDrift) return;
+
+    const previous = recentTaps[recentTaps.length - 1];
+    const isDouble =
+      previous !== undefined &&
+      previous.index === i &&
+      performance.now() - previous.at < DOUBLE_TAP_MS;
+
     recentTaps.push({ index: i, at: performance.now() });
     if (recentTaps.length > 2) recentTaps.shift();
     opts.onTap?.(i);
+
+    // The caller has now had both taps, and rolls the pair back before applying
+    // the stronger action — see doubleDigit.
+    if (isDouble) {
+      recentTaps.length = 0;
+      (opts.onDouble ?? opts.onLong)?.(i);
+    }
   });
 
   for (const ev of ['pointercancel', 'pointerleave'] as const) {
     target.addEventListener(ev, cancel);
   }
 
+  /*
+   * Kept as a second route in, for a double-click slower than DOUBLE_TAP_MS
+   * that the browser still counts as one. Firing above clears the tap record,
+   * so the two paths can never both act on the same pair.
+   */
   target.addEventListener('dblclick', (e) => {
     const i = index(e);
     if (i < 0) return;

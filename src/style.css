@@ -1349,14 +1349,30 @@ body {
 /* Keypad beside the results. Both are fixed height so the panel never
    changes size as combinations are filtered — otherwise the buttons
    underneath move while you are aiming at them. */
-/* The left column sets the floor; a long list of combinations may push the
-   row taller, up to the cap on .results. The footer is pinned, so growing
-   never moves the buttons out from under your finger. */
+/* The keypad column and the combinations sit side by side, both bounded, so
+   the panel is a fixed size whatever the list is doing. */
 .calc-body {
   display: grid;
   grid-template-columns: 126px minmax(0, 1fr);
   gap: 8px;
   align-items: stretch;
+}
+
+/* The calculator's digits go on the same side as the ones you play with —
+   placed explicitly rather than by direction, so the 3x3 pad inside is not
+   itself mirrored. */
+:root[data-keypad='right'] .calc-body {
+  grid-template-columns: minmax(0, 1fr) 126px;
+}
+
+:root[data-keypad='right'] .calc-body > .calc-left {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+:root[data-keypad='right'] .calc-body > .results {
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .calc-left {
@@ -1435,16 +1451,24 @@ body {
   text-shadow: 0 1px 2px rgb(0 0 0 / 0.75);
 }
 
-/* Pinned to the top of the overlay rather than centred: the panel changes
-   height as the list of combinations grows, and centring turned that into the
-   whole thing sliding up and down under your hands. */
+/*
+ * Sat on the bottom edge rather than centred. Two reasons, both about the
+ * footer: its buttons stay solid whatever the transparency slider says, so they
+ * must not sit over the grid — down here they cover the keypad instead, which
+ * is not in use while the calculator is open. And an anchored bottom keeps the
+ * buttons still while the list of combinations above them changes, as well as
+ * within reach of a thumb.
+ */
 .overlay.calc-overlay {
-  align-items: start;
-  padding-top: 3vh;
+  align-items: end;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
 }
 
 .calc .results {
-  max-height: 52vh;
+  /* No taller than the keypad column beside it, so the panel is as short as it
+     can be and the footer stays well clear of the grid. A longer list scrolls
+     inside the box rather than pushing the buttons down the screen. */
+  max-height: 220px;
   overflow-y: auto;
   overflow-x: hidden;
   font-variant-numeric: tabular-nums;
