@@ -76,6 +76,7 @@ const SECTIONS: [string, string[]][] = [
       'Per level and pool: puzzles played, puzzles finished, and the average of your best times.',
       'Each row shows your best time, the date you set it, and the hints and checks it took.',
       'Pink rows are used up; green rows have been released back into the pool.',
+      '“Unfinished games” lists every puzzle you started and never solved, across all levels and both pools, newest first. Tap one to pick it up — the puzzle you were last playing resumes exactly where you left it, and the rest start fresh.',
     ],
   ],
 ];

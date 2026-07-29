@@ -862,6 +862,21 @@ body {
   background: rgba(120, 210, 140, 0.16);
 }
 
+/* Unfinished games: a whole row is the button that picks the game back up. */
+.statrow.open {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  text-align: left;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.statrow.open:active {
+  background: var(--accent-dim);
+}
+
 .statrow .when {
   color: var(--dim);
   font-size: 11.5px;

@@ -54,6 +54,8 @@ export interface PuzzleRecord {
   finished: boolean;
   /** Playable again even though it has been started. */
   released: boolean;
+  /** When it was first opened, so unfinished games can be listed newest first. */
+  startedAt?: number;
   bestMs?: number;
   bestAt?: number;
   hints?: number;
@@ -146,11 +148,42 @@ export function levelStats(
 }
 
 /** Mark a puzzle as started, so it drops out of the unplayed list. */
-export function markStarted(history: History, id: PuzzleId): History {
+export function markStarted(history: History, id: PuzzleId, now = Date.now()): History {
   const key = formatPuzzleId(id);
-  if (!history[key]) history[key] = { finished: false, released: false };
-  else history[key] = { ...history[key], released: false };
+  if (!history[key]) history[key] = { finished: false, released: false, startedAt: now };
+  else history[key] = { ...history[key], released: false, startedAt: history[key].startedAt ?? now };
   return history;
+}
+
+/** The inverse of formatPuzzleId: "3-10" or "3-R10". */
+export function parsePuzzleId(key: string): PuzzleId | null {
+  const match = /^([1-6])-(R?)(\d+)$/.exec(key);
+  if (!match) return null;
+  return {
+    level: Number(match[1]) as Level,
+    source: match[2] === 'R' ? 'random' : 'fixed',
+    number: Number(match[3]),
+  };
+}
+
+export interface UnfinishedGame {
+  id: PuzzleId;
+  record: PuzzleRecord;
+}
+
+/**
+ * Every puzzle opened but never solved, across all levels and both pools,
+ * newest first. Read straight off the history keys rather than by scanning
+ * level ranges, so it does not depend on the pack sizes being known.
+ */
+export function unfinishedGames(history: History): UnfinishedGame[] {
+  const out: UnfinishedGame[] = [];
+  for (const [key, record] of Object.entries(history)) {
+    if (record.finished) continue;
+    const id = parsePuzzleId(key);
+    if (id) out.push({ id, record });
+  }
+  return out.sort((a, b) => (b.record.startedAt ?? 0) - (a.record.startedAt ?? 0));
 }
 
 /** Record a finish, keeping the best time and the stats that went with it. */

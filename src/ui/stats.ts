@@ -1,7 +1,13 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
 import { formatPuzzleId } from '../core/types.ts';
-import { levelStats, releasePuzzle, resetLevel, saveHistory } from '../game/storage.ts';
+import {
+  levelStats,
+  releasePuzzle,
+  resetLevel,
+  saveHistory,
+  unfinishedGames,
+} from '../game/storage.ts';
 import { clear, el, formatDate, formatTime } from './dom.ts';
 import { confirmDialog, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
@@ -20,15 +26,52 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   back.append(el('i'), el('i'), el('i'));
   back.addEventListener('click', () => ctx.goMenu());
 
+  let mode: 'level' | 'unfinished' = 'unfinished';
+  const unfinishedTab = el('button', { class: 'btn wide' });
   const levelTabs = el('div', { class: 'tabs' });
   const sourceTabs = el('div', { class: 'tabs' });
   const summary = el('p', { class: 'summary' });
   const rows = el('div', {});
 
+  /** Every puzzle started and not solved, whatever its level or pool. */
+  const drawUnfinished = (): void => {
+    const games = unfinishedGames(ctx.history);
+    summary.textContent =
+      games.length === 0
+        ? 'No unfinished games — every puzzle you have opened is solved.'
+        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, newest first. Tap one to pick it up.`;
+
+    clear(rows);
+    for (const { id, record } of games) {
+      const row = el(
+        'button',
+        { class: 'statrow open' },
+        el('span', {}, formatPuzzleId(id)),
+        el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${id.source === 'fixed' ? 'Fixed' : 'Random'}`),
+        el('span', { class: 'when' }, record.startedAt ? formatDate(record.startedAt) : ''),
+        el('span', { class: 'when' }, `${record.hints ?? 0}h ${record.checks ?? 0}c`),
+      );
+      row.addEventListener('click', () => ctx.playPuzzle(id));
+      rows.append(row);
+    }
+  };
+
   const poolSize = (): number =>
     source === 'fixed' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
 
   const draw = (): void => {
+    const unfinishedCount = unfinishedGames(ctx.history).length;
+    unfinishedTab.textContent = `Unfinished games (${unfinishedCount})`;
+    unfinishedTab.classList.toggle('primary', mode === 'unfinished');
+    levelTabs.hidden = mode === 'unfinished';
+    sourceTabs.hidden = mode === 'unfinished';
+    reset.hidden = mode === 'unfinished';
+
+    if (mode === 'unfinished') {
+      drawUnfinished();
+      return;
+    }
+
     clear(levelTabs);
     for (const l of LEVELS) {
       const b = el('button', { class: `btn ${l === level ? 'on' : ''}`.trim() }, String(l));
@@ -117,9 +160,15 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   const done = el('button', { class: 'btn wide' }, 'Back to levels');
   done.addEventListener('click', () => ctx.goMenu());
 
+  unfinishedTab.addEventListener('click', () => {
+    mode = mode === 'unfinished' ? 'level' : 'unfinished';
+    draw();
+  });
+
   draw();
   screen.append(
     el('div', { class: 'titlebar' }, back, el('span', { class: 'id' }, 'STATS')),
+    unfinishedTab,
     levelTabs,
     sourceTabs,
     summary,

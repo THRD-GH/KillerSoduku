@@ -13,7 +13,7 @@ import {
   loadSettings,
   unplayedNumbers,
 } from './game/storage.ts';
-import type { History, Settings } from './game/storage.ts';
+import type { History, SavedGame, Settings } from './game/storage.ts';
 import { clear, el } from './ui/dom.ts';
 import { buildMenu } from './ui/menu.ts';
 import { openHelp } from './ui/help.ts';
@@ -73,16 +73,7 @@ class App implements AppContext {
         ? undefined
         : {
             label: `Resume ${formatPuzzleId(saved.id)}`,
-            run: () => {
-              const game = new Game(saved.id, saved.puzzle, {
-                values: saved.values,
-                pencils: saved.pencils,
-              });
-              game.elapsedMs = saved.elapsedMs;
-              game.hints = saved.hints;
-              game.checks = saved.checks;
-              this.startGame(game);
-            },
+            run: () => this.resume(saved),
           };
     this.mount(buildMenu(this, resume));
   }
@@ -114,6 +105,14 @@ class App implements AppContext {
   }
 
   playPuzzle(id: PuzzleId): void {
+    // Picking up the puzzle that is already saved should carry on from where
+    // it was left, not wipe it. Restart is there for starting over.
+    const saved = loadSave();
+    if (saved && formatPuzzleId(saved.id) === formatPuzzleId(id)) {
+      this.resume(saved);
+      return;
+    }
+
     const close = openOverlay(
       () =>
         el(
@@ -147,6 +146,17 @@ class App implements AppContext {
         close();
         toast(err instanceof Error ? err.message : 'Could not load that puzzle');
       });
+  }
+
+  private resume(saved: SavedGame): void {
+    const game = new Game(saved.id, saved.puzzle, {
+      values: saved.values,
+      pencils: saved.pencils,
+    });
+    game.elapsedMs = saved.elapsedMs;
+    game.hints = saved.hints;
+    game.checks = saved.checks;
+    this.startGame(game);
   }
 
   private startGame(game: Game): void {
