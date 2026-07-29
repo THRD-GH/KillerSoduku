@@ -1,5 +1,7 @@
 import { CELLS, PEERS, bit, maskToDigit, popcount } from '../core/grid.ts';
 import { buildConstraints, propagatedCandidates } from '../core/solver.ts';
+import { nextStep } from '../core/techniques.ts';
+import type { Step } from '../core/techniques.ts';
 import { combosFor } from '../core/combos.ts';
 import type { Cage, Puzzle, PuzzleId } from '../core/types.ts';
 import type { Settings } from './storage.ts';
@@ -249,6 +251,15 @@ export class Game {
     return target;
   }
 
+  /** Entries that disagree with the solution, without flagging them. */
+  wrongCount(): number {
+    let wrong = 0;
+    for (let i = 0; i < CELLS; i++) {
+      if (this.values[i] !== 0 && this.values[i] !== this.puzzle.solution[i]) wrong++;
+    }
+    return wrong;
+  }
+
   /** Every cell filled and correct. */
   isSolved(): boolean {
     for (let i = 0; i < CELLS; i++) if (this.values[i] !== this.puzzle.solution[i]) return false;
@@ -314,10 +325,61 @@ export class Game {
     return targets.length;
   }
 
-  /** Candidates a strong solver can still justify — used to sanity-check hints. */
+  /** Candidates a strong solver can still justify from the answers placed. */
   logicalCandidates(): Uint16Array | null {
     const start = new Uint16Array(CELLS).fill(0b111111111);
     for (let i = 0; i < CELLS; i++) if (this.values[i] !== 0) start[i] = bit(this.values[i]);
     return propagatedCandidates(buildConstraints(this.puzzle.cages), start);
+  }
+
+  /**
+   * What a solver would do next from the answers currently on the board, so a
+   * hint can explain itself instead of just filling a digit in silently.
+   *
+   * Worked from the entries alone, deliberately: the player's own pencil marks
+   * may be wrong or incomplete, and a hint built on those could mislead.
+   */
+  nextLogicalStep(): Step | null {
+    const start = new Uint16Array(CELLS).fill(0b111111111);
+    for (let i = 0; i < CELLS; i++) if (this.values[i] !== 0) start[i] = bit(this.values[i]);
+    const cons = buildConstraints(this.puzzle.cages);
+
+    /*
+     * Run forward until a step actually answers a cell. The early steps are
+     * usually broad eliminations — "the cage total rules these digits out" —
+     * touching dozens of cells at once, which is true but useless as a hint.
+     * What a player wants is a cell they can fill and the reason for it, so
+     * the elimination that gets there is only offered if nothing does.
+     */
+    let fallback: Step | null = null;
+    for (let guard = 0; guard < 80; guard++) {
+      const step = nextStep(start, cons);
+      if (step === null) break;
+      if (step.solved) return step;
+      fallback ??= step;
+    }
+    return fallback;
+  }
+
+  /**
+   * Pencil in every candidate the solver can still justify, for each empty
+   * cell. One move, so a single undo takes the lot back.
+   *
+   * Returns -1 if the grid contradicts itself — that means an entry is wrong,
+   * and filling from an impossible position would write nonsense.
+   */
+  fillAllCandidates(): number {
+    const candidates = this.logicalCandidates();
+    if (candidates === null) return -1;
+
+    const targets: number[] = [];
+    for (let i = 0; i < CELLS; i++) {
+      if (this.values[i] === 0 && this.pencils[i] !== candidates[i]) targets.push(i);
+    }
+    if (targets.length === 0) return 0;
+
+    this.record(targets);
+    for (const i of targets) this.pencils[i] = candidates[i];
+    return targets.length;
   }
 }

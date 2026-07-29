@@ -544,6 +544,62 @@ export const TECHNIQUES: Technique[] = [
 
 export const MAX_DIFFICULTY = Math.max(...TECHNIQUES.map((t) => t.difficulty));
 
+export interface Step {
+  /** Which technique moved things on. */
+  technique: string;
+  difficulty: number;
+  /** Cells it changed, for pointing at them on the board. */
+  cells: number[];
+  /** A cell it answered outright, if any. */
+  solved: { cell: number; digit: number } | null;
+}
+
+/**
+ * Striking a placed digit out of its own row, column, box and cage is not a
+ * hint — it is bookkeeping any player does without thinking. Settled before
+ * looking for the next real step, or every hint would be "we removed some
+ * candidates", pointing at half the grid.
+ */
+const BOOKKEEPING = new Set(['naked single', 'cage distinct']);
+
+/**
+ * The next thing a solver would do from this position, using the easiest
+ * technique that still achieves something. Returns null when the grid is
+ * finished, contradictory, or beyond the technique stack.
+ */
+export function nextStep(cand: Candidates, cons: Constraints): Step | null {
+  for (;;) {
+    let moved = false;
+    for (const technique of TECHNIQUES) {
+      if (!BOOKKEEPING.has(technique.name)) continue;
+      const outcome = technique.run(cand, cons);
+      if (outcome === -1) return null;
+      if (outcome === 1) moved = true;
+    }
+    if (!moved) break;
+  }
+
+  for (const technique of TECHNIQUES) {
+    if (BOOKKEEPING.has(technique.name)) continue;
+    const before = Uint16Array.from(cand);
+    const outcome = technique.run(cand, cons);
+    if (outcome === -1) return null;
+    if (outcome === 0) continue;
+
+    const cells: number[] = [];
+    let solved: Step['solved'] = null;
+    for (let i = 0; i < CELLS; i++) {
+      if (cand[i] === before[i]) continue;
+      cells.push(i);
+      if (solved === null && popcount(cand[i]) === 1 && popcount(before[i]) > 1) {
+        solved = { cell: i, digit: 32 - Math.clz32(cand[i]) };
+      }
+    }
+    return { technique: technique.name, difficulty: technique.difficulty, cells, solved };
+  }
+  return null;
+}
+
 export interface LogicTrace {
   /** Hardest technique the solve was forced onto. 0 if nothing was needed. */
   hardest: number;

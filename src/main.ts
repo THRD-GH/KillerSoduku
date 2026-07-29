@@ -7,9 +7,9 @@ import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
 import { Game } from './game/state.ts';
 import {
   NEW_POOL_SIZE,
-  clearSave,
   loadHistory,
-  loadSave,
+  latestSave,
+  loadSaveFor,
   loadSettings,
   unplayedNumbers,
 } from './game/storage.ts';
@@ -67,7 +67,7 @@ class App implements AppContext {
   }
 
   goMenu(): void {
-    const saved = loadSave();
+    const saved = latestSave();
     const resume =
       saved === null
         ? undefined
@@ -105,10 +105,10 @@ class App implements AppContext {
   }
 
   playPuzzle(id: PuzzleId): void {
-    // Picking up the puzzle that is already saved should carry on from where
-    // it was left, not wipe it. Restart is there for starting over.
-    const saved = loadSave();
-    if (saved && formatPuzzleId(saved.id) === formatPuzzleId(id)) {
+    // Every puzzle keeps its own save, so opening one you have played before
+    // carries on from where you left it. Restart is there for starting over.
+    const saved = loadSaveFor(id);
+    if (saved) {
       this.resume(saved);
       return;
     }
@@ -132,7 +132,6 @@ class App implements AppContext {
     void getPuzzle(id)
       .then((puzzle) => {
         close();
-        clearSave();
         this.startGame(new Game(id, puzzle));
         const pool = unplayedNumbers(
           this.history,

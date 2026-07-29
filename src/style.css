@@ -21,6 +21,8 @@
   /* Cages counted into the tally — violet, a hue nothing else on the board
      uses, so it cannot be mistaken for a selection or a matching digit. */
   --tallied: rgba(190, 130, 255, 0.26);
+  /* Cells a hint is pointing at. */
+  --spotlit: rgba(86, 209, 245, 0.3);
   --error: #ff6b6b;
   --clash: #a8443f;
   --sel: rgba(86, 209, 245, 0.26);
@@ -48,6 +50,10 @@
   --k-session: #46243a;
   --k-session-line: #b0648f;
   --k-session-text: #ffe2f0;
+  /* Matches --tallied, the violet the counted cages are tinted with. */
+  --k-tally: #3a2550;
+  --k-tally-line: #b98bff;
+  --k-tally-text: #f1e4ff;
 }
 
 :root[data-theme='day'] {
@@ -67,6 +73,7 @@
   --single: #0d7a3d;
   --single-bg: rgba(13, 122, 61, 0.12);
   --tallied: rgba(140, 70, 210, 0.18);
+  --spotlit: rgba(10, 111, 150, 0.26);
   --error: #c62828;
   --clash: #e59b98;
   --sel: rgba(10, 111, 150, 0.22);
@@ -91,6 +98,9 @@
   --k-session: #f7dcec;
   --k-session-line: #cd8cb4;
   --k-session-text: #47102f;
+  --k-tally: #ece0fa;
+  --k-tally-line: #a173d6;
+  --k-tally-text: #37105e;
 }
 
 * {
@@ -336,6 +346,12 @@ body {
   place-items: center;
 }
 
+/* Cells a hint is pointing at. Loud on purpose and short-lived. */
+.cell.spotlit {
+  background: var(--spotlit);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
 /* Down to one candidate: the cell is answered, it just has not been written in. */
 .cell.single {
   background: var(--single-bg);
@@ -495,11 +511,18 @@ body {
   color: var(--k-edit-text);
 }
 
-.btn.aid,
-.tally {
+.btn.aid {
   background: var(--k-aid);
   border-color: var(--k-aid-line);
   color: var(--k-aid-text);
+}
+
+/* The tally wears the same violet it marks counted cages with, so the button
+   and its effect on the board are plainly the same thing. */
+.tally {
+  background: var(--k-tally);
+  border-color: var(--k-tally-line);
+  color: var(--k-tally-text);
 }
 
 .btn.session {

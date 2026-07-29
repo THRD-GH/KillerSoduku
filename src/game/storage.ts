@@ -75,6 +75,8 @@ export interface SavedGame {
   /** Undo and redo stacks, so they survive putting the puzzle down. */
   past?: number[][];
   future?: number[][];
+  /** When it was last written, so the newest can be resumed and the oldest dropped. */
+  savedAt?: number;
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -124,16 +126,76 @@ export const loadHistory = (): History => {
 };
 export const saveHistory = (h: History): void => write(KEY.history, h);
 
-export const loadSave = (): SavedGame | null => {
-  const saved = read<SavedGame | null>(KEY.save, null);
-  if (saved === null) return null;
-  const wasOld = (saved.id.source as string) === 'random' || (saved.id.source as string) === 'fixed';
-  const migrated = migrate(saved);
-  if (wasOld) write(KEY.save, migrated);
-  return migrated;
-};
-export const saveGame = (g: SavedGame): void => write(KEY.save, g);
-export const clearSave = (): void => localStorage.removeItem(KEY.save);
+/**
+ * Games are saved one key per puzzle, so every unfinished game keeps its own
+ * grid and undo history. A single slot meant only the last puzzle opened was
+ * really resumable, which made the unfinished list a list of intentions.
+ */
+const savePrefix = 'ks:v1:save:';
+const saveKeyFor = (id: PuzzleId): string => savePrefix + formatPuzzleId(id);
+
+/** Parked games kept before the oldest is dropped. About 1.5 kB each. */
+const MAX_SAVES = 30;
+
+function saveKeys(): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key !== null && key.startsWith(savePrefix)) keys.push(key);
+  }
+  return keys;
+}
+
+/** Move a pre-existing single-slot save into its own key. */
+function migrateSaveSlot(): void {
+  const legacy = read<SavedGame | null>(KEY.save, null);
+  if (legacy === null) return;
+  const game = migrate(legacy);
+  write(saveKeyFor(game.id), { ...game, savedAt: game.savedAt ?? Date.now() });
+  localStorage.removeItem(KEY.save);
+}
+
+export function loadSaveFor(id: PuzzleId): SavedGame | null {
+  migrateSaveSlot();
+  const saved = read<SavedGame | null>(saveKeyFor(id), null);
+  return saved === null ? null : migrate(saved);
+}
+
+/** The most recently played game, for the menu's Resume button. */
+export function latestSave(): SavedGame | null {
+  migrateSaveSlot();
+  let best: SavedGame | null = null;
+  for (const key of saveKeys()) {
+    const saved = read<SavedGame | null>(key, null);
+    if (saved === null) continue;
+    if (best === null || (saved.savedAt ?? 0) > (best.savedAt ?? 0)) best = migrate(saved);
+  }
+  return best;
+}
+
+export function saveGame(game: SavedGame): void {
+  write(saveKeyFor(game.id), { ...game, savedAt: Date.now() });
+
+  // Drop the oldest once there are more parked games than we keep.
+  const keys = saveKeys();
+  if (keys.length <= MAX_SAVES) return;
+  const byAge = keys
+    .map((key) => ({ key, at: read<SavedGame | null>(key, null)?.savedAt ?? 0 }))
+    .sort((a, b) => a.at - b.at);
+  for (const stale of byAge.slice(0, keys.length - MAX_SAVES)) localStorage.removeItem(stale.key);
+}
+
+export const clearSaveFor = (id: PuzzleId): void => localStorage.removeItem(saveKeyFor(id));
+
+/** Every parked game, newest first — used by the export. */
+export function allSaves(): SavedGame[] {
+  migrateSaveSlot();
+  return saveKeys()
+    .map((key) => read<SavedGame | null>(key, null))
+    .filter((g): g is SavedGame => g !== null)
+    .map(migrate)
+    .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0));
+}
 
 /** True if the puzzle has been started and not released for replay. */
 export function isLocked(history: History, id: PuzzleId): boolean {

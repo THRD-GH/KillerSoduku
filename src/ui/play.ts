@@ -3,7 +3,7 @@ import type { Level } from '../core/types.ts';
 import { formatPuzzleId } from '../core/types.ts';
 import { Game } from '../game/state.ts';
 import {
-  clearSave,
+  clearSaveFor,
   markFinished,
   markStarted,
   saveGame,
@@ -13,7 +13,9 @@ import {
 import { Board } from './board.ts';
 import { clear, el, formatTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
+import { cellName, describeTechnique, explainStep } from './explain.ts';
 import { clockIcon, undoArrow } from './icons.ts';
+import type { Step } from '../core/techniques.ts';
 import { bindTap } from './pointer.ts';
 import { openSumCalculator } from './sumcalc.ts';
 import type { AppContext } from './app-context.ts';
@@ -293,14 +295,87 @@ export class PlayScreen {
     this.scheduleSave();
   }
 
+  /**
+   * Explains the next step rather than silently filling a digit: which
+   * technique applies, where, and what it gives you. Filling is offered
+   * second, so a hint can teach instead of just advancing the grid.
+   */
   private doHint(): void {
-    const target = this.game.hint();
-    if (target === null) {
-      toast('Nothing left to fill');
+    const step = this.game.nextLogicalStep();
+    if (step === null) {
+      // No logical step means either finished, or the grid contradicts itself.
+      const wrong = this.game.wrongCount();
+      toast(
+        this.game.isSolved()
+          ? 'Solved'
+          : wrong > 0
+            ? `No step follows — ${wrong} entr${wrong === 1 ? 'y is' : 'ies are'} wrong. Try Check.`
+            : 'No further step from plain logic here',
+      );
       return;
     }
-    this.game.selected = target;
-    this.afterMove();
+
+    // Point at what the step is about: the answered cell, or the cells it
+    // narrows — capped, because a broad elimination can touch half the grid.
+    const focus = step.solved ? [step.solved.cell] : step.cells.slice(0, 12);
+    this.board.spotlight(focus);
+    this.render();
+    const extra = step.solved ? 0 : step.cells.length - focus.length;
+
+    openOverlay((close) => {
+      const fill = el('button', { class: 'btn primary' }, step.solved ? 'Fill it in' : 'Apply');
+      fill.addEventListener('click', () => {
+        close();
+        this.board.spotlight([]);
+        this.applyStep(step);
+      });
+      const dismiss = el('button', { class: 'btn' }, 'Just show me');
+      dismiss.addEventListener('click', () => {
+        close();
+        if (step.solved) this.game.selected = step.solved.cell;
+        this.render();
+      });
+      return el(
+        'div',
+        { class: 'panel hint' },
+        el('h2', {}, describeTechnique(step.technique)),
+        el('p', {}, explainStep(step, this.game)),
+        el(
+          'p',
+          { class: 'summary' },
+          `Highlighted: ${focus.map(cellName).join(', ')}${extra > 0 ? ` and ${extra} more` : ''}`,
+        ),
+        el('div', { class: 'panel-footer two' }, dismiss, fill),
+      );
+    });
+  }
+
+  /** Carry out the hinted step: fill the answer, or pencil the eliminations. */
+  private applyStep(step: Step): void {
+    if (step.solved) {
+      this.game.hints++;
+      this.game.forceDigit(step.solved.cell, step.solved.digit, this.ctx.settings);
+      this.game.selected = step.solved.cell;
+      this.afterMove();
+      return;
+    }
+    // No single answer, so the value is in the narrowed candidates.
+    const filled = this.game.fillAllCandidates();
+    this.game.hints++;
+    toast(filled > 0 ? `Candidates updated in ${filled} cells` : 'Candidates already up to date');
+    this.render();
+    this.scheduleSave();
+  }
+
+  private doFillCandidates(): void {
+    const filled = this.game.fillAllCandidates();
+    if (filled === -1) {
+      toast('The grid contradicts itself — an entry must be wrong. Try Check.');
+      return;
+    }
+    toast(filled > 0 ? `Pencilled ${filled} cells` : 'Candidates already up to date');
+    this.render();
+    this.scheduleSave();
   }
 
   private doUndo(): void {
@@ -425,7 +500,7 @@ export class PlayScreen {
       Date.now(),
     );
     saveHistory(this.ctx.history);
-    clearSave();
+    clearSaveFor(this.game.id);
     this.render();
 
     openOverlay((close) => {
@@ -602,6 +677,7 @@ export class PlayScreen {
         el(
           'div',
           { class: 'menu-list' },
+          item('Fill all candidates', () => this.doFillCandidates()),
           item('Pause', () => this.pause()),
           item('Settings', () => this.ctx.openSettings()),
           item('Stats', () => this.ctx.goStats(this.game.puzzle.difficulty as Level)),

@@ -2,10 +2,9 @@ import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
 import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import {
-  clearSave,
+  clearSaveFor,
   forgetPuzzle,
   levelStats,
-  loadSave,
   releasePuzzle,
   resetLevel,
   saveHistory,
@@ -83,8 +82,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
 
   /** Drop a puzzle from the history, and its board state if it is the saved one. */
   const forget = (id: PuzzleId): void => {
-    const saved = loadSave();
-    if (saved && formatPuzzleId(saved.id) === formatPuzzleId(id)) clearSave();
+    clearSaveFor(id);
     ctx.history = forgetPuzzle(ctx.history, id);
     saveHistory(ctx.history);
   };

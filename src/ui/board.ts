@@ -45,6 +45,15 @@ export class Board {
     this.build();
   }
 
+  /** Cells a hint is pointing at. Cleared as soon as play resumes. */
+  private spotlit = new Set<number>();
+
+  /** Draw attention to the cells a hint concerns. Pass [] to clear. */
+  spotlight(cells: number[]): void {
+    this.spotlit = new Set(cells);
+    this.render();
+  }
+
   /** Cell index under an event, or -1. */
   indexOf(e: Event): number {
     const target = (e.target as HTMLElement | null)?.closest('.cell');
@@ -154,6 +163,7 @@ export class Board {
       // spotting the moment an entry elsewhere reduces a cell to it. Derived
       // from the marks each render, so it clears itself when that stops holding.
       if (value === 0 && popcount(g.pencils[i]) === 1) cls.push('single');
+      if (this.spotlit.has(i)) cls.push('spotlit');
       if (g.errors.has(i)) cls.push('error');
       else if (clashes.has(i)) cls.push('clash');
       node.root.className = cls.join(' ');
