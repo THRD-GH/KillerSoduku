@@ -161,6 +161,13 @@ body {
   font-weight: 700;
 }
 
+/* The selected cell's pencil marks, bracketed so they read as candidates
+   rather than as more of the cage description beside them. */
+.titlebar .candidates .cands {
+  color: var(--mark);
+  letter-spacing: 0.5px;
+}
+
 .iconbtn {
   width: 32px;
   height: 28px;

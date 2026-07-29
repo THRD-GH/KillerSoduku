@@ -577,7 +577,8 @@ export class PlayScreen {
       if (this.game.values[sel] !== 0) {
         this.candidateLine.append(el('b', {}, String(this.game.values[sel])));
       } else if (marks.length > 0) {
-        for (const d of marks) this.candidateLine.append(el('span', {}, String(d)));
+        // Bracketed, so they cannot be read as part of the cage's "N in M".
+        this.candidateLine.append(el('span', { class: 'cands' }, `(${marks.join(' ')})`));
       }
     }
   }
