@@ -265,13 +265,28 @@ export class Game {
     return touched.length;
   }
 
-  /** Sum calculator [Auto]: write one combination into the cage's empty cells. */
+  /**
+   * Sum calculator [Auto]: pencil a combination into the cage's empty cells.
+   *
+   * Digits already answered in the cage are dropped — they are spoken for, and
+   * writing them back as candidates in the remaining cells is just wrong. Each
+   * cell then drops anything its own row, column or box already rules out.
+   */
   fillCombination(cageIndex: number, mask: number): number {
     const cage = this.puzzle.cages[cageIndex];
     const targets = cage.cells.filter((c) => this.values[c] === 0);
     if (targets.length === 0) return 0;
+
+    let placed = 0;
+    for (const c of cage.cells) if (this.values[c] !== 0) placed |= bit(this.values[c]);
+    const available = mask & ~placed;
+
     this.record(targets);
-    for (const c of targets) this.pencils[c] = mask;
+    for (const c of targets) {
+      let blocked = 0;
+      for (const p of PEERS[c]) if (this.values[p] !== 0) blocked |= bit(this.values[p]);
+      this.pencils[c] = available & ~blocked;
+    }
     return targets.length;
   }
 

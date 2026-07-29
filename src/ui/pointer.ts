@@ -9,6 +9,9 @@ export interface TapOptions {
 
 const DEFAULT_LONG_MS = 450;
 
+/** How stale the first of two taps may be and still count as a double-click. */
+const DOUBLE_WINDOW_MS = 900;
+
 /**
  * Binds the tap / long-press / double-click trio the reference app uses.
  *
@@ -22,6 +25,13 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
   let timer: number | undefined;
   let longFired = false;
   let downIndex = -1;
+  /**
+   * The last two taps. A double-click only counts when both of them hit the
+   * same target: browsers fire dblclick for two quick clicks on *different*
+   * elements too, and treating that as a force would swallow one of two digits
+   * typed in a hurry.
+   */
+  const recentTaps: { index: number; at: number }[] = [];
 
   const index = (e: Event): number => (indexOf ? indexOf(e) : 0);
 
@@ -50,10 +60,13 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
     const i = index(e);
     if (i < 0 || i !== downIndex) return;
     if (longFired) {
-      // Swallow the click that follows a long-press.
+      // Swallow the click that follows a long-press, and the gesture with it.
       e.preventDefault();
+      recentTaps.length = 0;
       return;
     }
+    recentTaps.push({ index: i, at: performance.now() });
+    if (recentTaps.length > 2) recentTaps.shift();
     opts.onTap?.(i);
   });
 
@@ -65,6 +78,15 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
     const i = index(e);
     if (i < 0) return;
     e.preventDefault();
+
+    const sameTargetTwice =
+      recentTaps.length === 2 &&
+      recentTaps[0].index === i &&
+      recentTaps[1].index === i &&
+      performance.now() - recentTaps[0].at < DOUBLE_WINDOW_MS;
+    if (!sameTargetTwice) return;
+
+    recentTaps.length = 0;
     (opts.onDouble ?? opts.onLong)?.(i);
   });
 
