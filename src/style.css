@@ -13,7 +13,8 @@
   --accent-dim: #1f6b84;
   --cage: #9aa8b5;
   --sum: #f0c674;
-  --mark: #7f97ab;
+  /* Distinctly blue: at grey it read as another grid line. */
+  --mark: #7cc7ee;
   --error: #ff6b6b;
   --clash: #a8443f;
   --sel: rgba(86, 209, 245, 0.26);
@@ -36,7 +37,7 @@
   --accent-dim: #9fd4e6;
   --cage: #9ba7b3;
   --sum: #8a5a00;
-  --mark: #5d7285;
+  --mark: #1f6390;
   --error: #c62828;
   --clash: #e59b98;
   --sel: rgba(10, 111, 150, 0.22);
@@ -256,14 +257,16 @@ body {
    and the sides clear the cage outline. */
 .marks {
   position: absolute;
-  inset: 36% 10% 8%;
+  /* Tucked in from the sides so the 3x3 reads as one compact block in the
+     middle of the cell, and low enough to clear the cage total above it. */
+  inset: 35% 15% 9%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  font-size: 0.3em;
+  font-size: 0.33em;
   line-height: 1;
   color: var(--mark);
-  font-weight: 600;
+  font-weight: 700;
   z-index: 1;
 }
 
