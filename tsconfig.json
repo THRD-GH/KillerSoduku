@@ -19,5 +19,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false
   },
-  "include": ["src", "vite.config.ts"]
+  // vite.config.ts and tools/ run under Node and use its APIs. Typechecking
+  // them would mean pulling in @types/node for two files that Vite and Node
+  // already parse themselves.
+  "include": ["src"]
 }

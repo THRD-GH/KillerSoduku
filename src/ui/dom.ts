@@ -36,6 +36,25 @@ export function formatTime(ms: number): string {
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
+/**
+ * Which build this is: commit and when it was made, in the reader's own time
+ * zone. Worth showing because a PWA can keep serving an older build until the
+ * service worker picks up a new one.
+ */
+export function buildStamp(): string {
+  const when = new Date(__BUILD_TIME__);
+  const stamp = Number.isNaN(when.valueOf())
+    ? __BUILD_TIME__
+    : when.toLocaleString(undefined, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+  return `build ${__BUILD_COMMIT__} · ${stamp}`;
+}
+
 export function formatDate(epochMs: number): string {
   const d = new Date(epochMs);
   const pad = (n: number) => String(n).padStart(2, '0');

@@ -42,6 +42,39 @@ export function transparencyIcon(size = 15): SVGSVGElement {
   return svg;
 }
 
+/** A clock face, shown in place of the time when the clock is hidden. */
+export function clockIcon(size = 20): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
+
+  const group = document.createElementNS(SVG_NS, 'g');
+  group.setAttribute('fill', 'none');
+  group.setAttribute('stroke', 'currentColor');
+  group.setAttribute('stroke-width', '2');
+  group.setAttribute('stroke-linecap', 'round');
+  group.setAttribute('stroke-linejoin', 'round');
+
+  const face = document.createElementNS(SVG_NS, 'circle');
+  face.setAttribute('cx', '12');
+  face.setAttribute('cy', '13');
+  face.setAttribute('r', '8');
+
+  // Hands at roughly ten past two, which reads as a clock at any size.
+  const hands = document.createElementNS(SVG_NS, 'path');
+  hands.setAttribute('d', 'M12 8.5V13h3.5');
+
+  // A small crown, so it is a stopwatch rather than a plain circle.
+  const crown = document.createElementNS(SVG_NS, 'path');
+  crown.setAttribute('d', 'M9.5 2.5h5');
+
+  group.append(face, hands, crown);
+  svg.append(group);
+  return svg;
+}
+
 /**
  * The undo arrow: a hooked arc pointing back on itself. `mirrored` flips it
  * horizontally for redo, so the pair is unmistakably the same gesture in

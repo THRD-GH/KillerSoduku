@@ -2,7 +2,7 @@ import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
 import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import { levelStats, unplayedNumbers } from '../game/storage.ts';
-import { el, formatTime } from './dom.ts';
+import { buildStamp, el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
@@ -48,6 +48,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
         ? 'Classic plays the original shipped grids, New generates one. Either way the number always gives the same puzzle.'
         : 'No puzzle packs installed, so only New is available. See tools/import-packs.ts.',
     ),
+    el('p', { class: 'build-stamp' }, buildStamp()),
   );
   return screen;
 }

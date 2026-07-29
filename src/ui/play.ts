@@ -13,7 +13,7 @@ import {
 import { Board } from './board.ts';
 import { clear, el, formatTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
-import { undoArrow } from './icons.ts';
+import { clockIcon, undoArrow } from './icons.ts';
 import { bindTap } from './pointer.ts';
 import { openSumCalculator } from './sumcalc.ts';
 import type { AppContext } from './app-context.ts';
@@ -534,9 +534,16 @@ export class PlayScreen {
   // ---------------------------------------------------------------- rendering
 
   private updateTimer(): void {
-    this.timerBox.textContent = this.ctx.settings.showTimer
-      ? formatTime(this.game.elapsedMs)
-      : '--:--';
+    if (this.ctx.settings.showTimer) {
+      this.timerBox.textContent = formatTime(this.game.elapsedMs);
+      return;
+    }
+    // A clock face rather than blanked-out digits, so the box still says what
+    // it is. Only built once, not on every tick.
+    if (!this.timerBox.querySelector('svg')) {
+      clear(this.timerBox);
+      this.timerBox.append(clockIcon(21));
+    }
   }
 
   render(): void {

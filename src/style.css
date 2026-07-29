@@ -674,6 +674,17 @@ body {
   text-align: center;
 }
 
+/* Which build is actually running — useful when a phone is holding a cached
+   service worker. */
+.build-stamp {
+  margin: 2px 0 0;
+  color: var(--dim);
+  opacity: 0.65;
+  font-size: 10.5px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- overlays ---------- */
 
 .overlay {
