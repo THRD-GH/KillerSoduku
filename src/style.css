@@ -31,6 +31,20 @@
   /* Required / ruled-out keys, mixed at --glass like every other surface. */
   --inc-rgb: 18 131 63;
   --exc-rgb: 179 34 34;
+
+  /* Control groups, so a key's job is readable from its colour. */
+  --k-digit: #1e4d35;
+  --k-digit-line: #4aa878;
+  --k-digit-text: #dff6e8;
+  --k-edit: #4a3a1c;
+  --k-edit-line: #c39c4c;
+  --k-edit-text: #f8eed6;
+  --k-aid: #1d3a54;
+  --k-aid-line: #4f92c4;
+  --k-aid-text: #dcefff;
+  --k-session: #46243a;
+  --k-session-line: #b0648f;
+  --k-session-text: #ffe2f0;
 }
 
 :root[data-theme='day'] {
@@ -60,6 +74,19 @@
   --panel-2-rgb: 231 236 241;
   --inc-rgb: 15 122 58;
   --exc-rgb: 176 32 32;
+
+  --k-digit: #d6f2e1;
+  --k-digit-line: #6fbf95;
+  --k-digit-text: #123723;
+  --k-edit: #fbeccd;
+  --k-edit-line: #d2a75a;
+  --k-edit-text: #4a3305;
+  --k-aid: #d8eafa;
+  --k-aid-line: #6ba6d4;
+  --k-aid-text: #0f3350;
+  --k-session: #f7dcec;
+  --k-session-line: #cd8cb4;
+  --k-session-text: #47102f;
 }
 
 * {
@@ -436,6 +463,34 @@ body {
   background: var(--accent-dim);
 }
 
+/* Four groups, so what a control does is legible before you read it:
+   digits, the editing keys, the solving aids, and the session buttons. */
+.numpad .key {
+  background: var(--k-digit);
+  border-color: var(--k-digit-line);
+  color: var(--k-digit-text);
+}
+
+.key.clear,
+.undo-pair .btn.icon {
+  background: var(--k-edit);
+  border-color: var(--k-edit-line);
+  color: var(--k-edit-text);
+}
+
+.btn.aid,
+.adder {
+  background: var(--k-aid);
+  border-color: var(--k-aid-line);
+  color: var(--k-aid-text);
+}
+
+.btn.session {
+  background: var(--k-session);
+  border-color: var(--k-session-line);
+  color: var(--k-session-text);
+}
+
 .key.done {
   color: var(--dim);
   opacity: 0.45;
@@ -469,8 +524,6 @@ body {
 }
 
 .adder {
-  background: #4b2f6b;
-  color: #efe4ff;
   font-weight: 700;
   font-size: 18px;
   flex: 1 1 auto;

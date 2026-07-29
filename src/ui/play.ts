@@ -180,10 +180,10 @@ export class PlayScreen {
   }
 
   private buildActions(): HTMLElement {
-    const check = el('button', { class: 'btn' }, 'Check');
+    const check = el('button', { class: 'btn aid' }, 'Check');
     check.addEventListener('click', () => this.doCheck());
 
-    const hint = el('button', { class: 'btn' }, 'Hint');
+    const hint = el('button', { class: 'btn aid' }, 'Hint');
     // These can be set to long-click only, to stop stray taps spoiling a run.
     bindTap(hint, {
       onTap: () => (this.ctx.settings.hintNeedsLongClick ? this.nag('Hint') : this.doHint()),
@@ -202,10 +202,10 @@ export class PlayScreen {
     });
     this.undoPair.append(this.undoBtn, this.redoBtn);
 
-    const sum = el('button', { class: 'btn' }, 'Sum');
+    const sum = el('button', { class: 'btn aid' }, 'Sum');
     sum.addEventListener('click', () => this.openCalculator());
 
-    const restart = el('button', { class: 'btn' }, 'Restart');
+    const restart = el('button', { class: 'btn session' }, 'Restart');
     restart.addEventListener('click', () =>
       confirmDialog('Clear every entry and start this puzzle again?', () => {
         this.game.restart();
@@ -216,7 +216,7 @@ export class PlayScreen {
       }, 'Restart'),
     );
 
-    const next = el('button', { class: 'btn' }, 'New');
+    const next = el('button', { class: 'btn session' }, 'New');
     next.addEventListener('click', () =>
       confirmDialog('Leave this puzzle and start a new one?', () => {
         this.stop();
