@@ -478,6 +478,26 @@ body {
   flex-direction: row-reverse;
 }
 
+/*
+ * The mirror goes all the way down: New, Restart, the clock and Pause belong
+ * out at the screen edge whichever side the controls are on, so their strips
+ * reverse too. `direction` is what flips a grid's columns; each button is put
+ * back to ltr so its own text is unaffected. The digits themselves never
+ * mirror — 1-9 has one order.
+ */
+:root[data-keypad='right'] .controls .actions {
+  direction: rtl;
+}
+
+:root[data-keypad='right'] .controls .actions > * {
+  direction: ltr;
+}
+
+:root[data-keypad='right'] .under-keys,
+:root[data-keypad='right'] .under-actions {
+  flex-direction: row-reverse;
+}
+
 /* Two columns, each with a strip of its own underneath. */
 .controls-left {
   flex: 0 0 54%;
