@@ -233,11 +233,13 @@ body {
   z-index: 0;
 }
 
+/* A continuous rounded outline per cage, not a dash per cell edge. */
 .cages path {
   fill: none;
   stroke: var(--cage);
-  stroke-width: 0.035;
-  stroke-dasharray: 0.13 0.1;
+  stroke-width: 0.042;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 /* Sits inside the cage outline (6%), not on top of it. Sized to stay legible
