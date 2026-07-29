@@ -44,7 +44,7 @@ class App implements AppContext {
   constructor(root: HTMLElement) {
     this.root = root;
     this.applyTheme();
-    this.applyHand();
+    this.applyKeypadSide();
 
     document.addEventListener('keydown', (e) => this.play?.handleKey(e));
     document.addEventListener('visibilitychange', () => {
@@ -74,8 +74,8 @@ class App implements AppContext {
   }
 
   /** Landscape reads this off the root, so no screen has to be rebuilt. */
-  applyHand(): void {
-    document.documentElement.dataset.hand = this.settings.hand;
+  applyKeypadSide(): void {
+    document.documentElement.dataset.keypad = this.settings.keypadSide;
   }
 
   /** Storage was replaced underneath us (an import); start again from it. */
@@ -83,7 +83,7 @@ class App implements AppContext {
     this.settings = loadSettings();
     this.history = loadHistory();
     this.applyTheme();
-    this.applyHand();
+    this.applyKeypadSide();
     this.goMenu();
   }
 

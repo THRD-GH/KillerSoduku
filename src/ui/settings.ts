@@ -1,5 +1,5 @@
 import { exportBackup, importBackup, saveSettings } from '../game/storage.ts';
-import type { Hand, Settings, Theme } from '../game/storage.ts';
+import type { KeypadSide, Settings, Theme } from '../game/storage.ts';
 import { clear, el } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import type { AppContext } from './app-context.ts';
@@ -63,9 +63,9 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: 'contrast', label: 'High contrast' },
 ];
 
-const HANDS: { value: Hand; label: string }[] = [
-  { value: 'right', label: 'Right-handed' },
-  { value: 'left', label: 'Left-handed' },
+const KEYPAD_SIDES: { value: KeypadSide; label: string }[] = [
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
 ];
 
 /**
@@ -127,15 +127,15 @@ export function openSettings(ctx: AppContext): void {
         ),
       ),
       stacked(
-        'Handedness',
-        'Which side the keypad sits on, with the other buttons across from it.',
+        'Keypad side',
+        'Right puts the digits under a right thumb, with the other buttons across from them. Applies in portrait and landscape.',
         picker(
-          HANDS,
-          () => ctx.settings.hand,
-          (hand) => {
-            ctx.settings.hand = hand;
+          KEYPAD_SIDES,
+          () => ctx.settings.keypadSide,
+          (side) => {
+            ctx.settings.keypadSide = side;
             saveSettings(ctx.settings);
-            ctx.applyHand();
+            ctx.applyKeypadSide();
           },
         ),
       ),

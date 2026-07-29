@@ -9,8 +9,8 @@ export interface AppContext {
   packCounts: Record<number, number> | null;
   newPoolSize: number;
   applyTheme(): void;
-  /** Re-apply the left/right-handed landscape layout. */
-  applyHand(): void;
+  /** Re-apply the side the keypad sits on. */
+  applyKeypadSide(): void;
   /** Re-read storage and return to the menu, after an import replaces it. */
   reload(): void;
   /** Repaint the board in place, e.g. after a highlighting setting changes. */

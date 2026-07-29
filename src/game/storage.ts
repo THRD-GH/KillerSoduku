@@ -15,8 +15,8 @@ export const NEW_POOL_SIZE = 500;
 
 export type Theme = 'night' | 'day' | 'contrast';
 
-/** Which hand holds the phone: it decides the side the keypad sits on. */
-export type Hand = 'right' | 'left';
+/** Which side of the controls the number keys sit on. */
+export type KeypadSide = 'left' | 'right';
 
 export interface Settings {
   /** When on, a tapped digit is always a candidate — entries need a long-click. */
@@ -25,8 +25,8 @@ export interface Settings {
   lazyMode: boolean;
   /** Which palette to draw. 'contrast' is the accessible high-contrast one. */
   theme: Theme;
-  /** Landscape only: 'left' mirrors the screen so the keypad is under that hand. */
-  hand: Hand;
+  /** Which side the keypad sits on, with the other buttons across from it. */
+  keypadSide: KeypadSide;
   /** Tint the selected cell's row, column and box. */
   highlightPeers: boolean;
   /** Tint the selected cell's cage. */
@@ -47,7 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   allowSingleCandidates: false,
   lazyMode: false,
   theme: 'night',
-  hand: 'right',
+  keypadSide: 'left',
   highlightPeers: true,
   highlightCage: true,
   highlightSameDigit: true,
@@ -106,11 +106,15 @@ function write(key: string, value: unknown): void {
 }
 
 export const loadSettings = (): Settings => {
-  const stored = read<Partial<Settings> & { nightColors?: boolean }>(KEY.settings, {});
+  const stored = read<
+    Partial<Settings> & { nightColors?: boolean; hand?: KeypadSide }
+  >(KEY.settings, {});
   // Older versions stored a night on/off flag rather than a named theme.
   const theme: Theme =
     stored.theme ?? (stored.nightColors === false ? 'day' : 'night');
-  return { ...DEFAULT_SETTINGS, ...stored, theme };
+  // 'hand' named the same choice — which side to put the keypad on.
+  const keypadSide: KeypadSide = stored.keypadSide ?? stored.hand ?? DEFAULT_SETTINGS.keypadSide;
+  return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide };
 };
 export const saveSettings = (s: Settings): void => write(KEY.settings, s);
 

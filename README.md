@@ -51,18 +51,18 @@ highlights the cells, and only fills the digit in if you ask it to. The in-game
 menu also has Fill all candidates and Share this puzzle (a link that opens the
 same grid anywhere).
 
-**Settings** — Theme (Night, Day, High contrast), Handedness, Allow single candidates, Lazy
+**Settings** — Theme (Night, Day, High contrast), Keypad side, Allow single candidates, Lazy
 mode (pre-fill cages with only one possible combination), highlighting, and
 long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
 and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 
 Every puzzle keeps its own save, undo history included, so leaving one part-way
-and coming back to it later loses nothing. The keypad sits under the hand you
-name in Settings — right by default, with the action buttons across from it —
-and in landscape the board and controls sit side by side, mirroring with it.
-The grid is marked up for screen readers: each cell reads out its position, its
-cage and what is in it.
+and coming back to it later loses nothing. Keypad side puts the digits on the
+left (the default, as the reference app has them) or on the right under a right
+thumb, with the action buttons across from them; in landscape the board and
+controls sit side by side and mirror with it. The grid is marked up for screen
+readers: each cell reads out its position, its cage and what is in it.
 
 The high-contrast theme is drawn from a colour-blind-safe palette — no meaning
 rests on telling red from green — and backs up each colour with a shape: wrong

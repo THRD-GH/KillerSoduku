@@ -468,12 +468,13 @@ body {
 }
 
 /*
- * The keypad belongs under the hand that holds the phone, so a right-handed
- * grip puts the digits on the right and the action buttons across on the left.
- * One flip covers both orientations: in landscape the controls sit beside the
- * board, so reversing them lands the keypad out at the edge on the same side.
+ * Keypad on the right: the digits go under a right thumb and the action
+ * buttons cross to the other side. Left is the default and the layout the
+ * reference app uses. One flip covers both orientations — in landscape the
+ * controls sit beside the board, so reversing them lands the keypad out at
+ * the edge on the same side.
  */
-:root[data-hand='right'] .controls {
+:root[data-keypad='right'] .controls {
   flex-direction: row-reverse;
 }
 
@@ -1549,18 +1550,18 @@ body {
     padding: 3px 8px;
   }
 
-  /* Left-handed: the board moves across and the controls take its place, so
-     the keypad ends up at the left edge — the mirror image of a right-handed
-     grip, where the controls reverse instead (see .controls above). */
-  :root[data-hand='left'] .screen.play {
+  /* Keypad on the left: the board moves across and the controls take its
+     place, so the keypad ends up at the left edge — the mirror image of the
+     right-hand layout, where the controls reverse instead (.controls above). */
+  :root[data-keypad='left'] .screen.play {
     grid-template-columns: minmax(0, 1fr) var(--board);
   }
 
-  :root[data-hand='left'] .screen.play > .board {
+  :root[data-keypad='left'] .screen.play > .board {
     grid-column: 2;
   }
 
-  :root[data-hand='left'] .screen.play > .controls {
+  :root[data-keypad='left'] .screen.play > .controls {
     grid-column: 1;
     grid-row: 2;
   }
