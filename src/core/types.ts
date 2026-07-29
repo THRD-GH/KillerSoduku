@@ -19,24 +19,19 @@ export interface Puzzle {
 }
 
 /**
- * Where a puzzle comes from. 'fixed' plays the reference app's shipped grids,
- * 'random' generates a fresh one. Both are numbered per level and both are
+ * Where a puzzle comes from. 'classic' plays the reference app's shipped
+ * grids, 'new' generates one. Both are numbered per level and both are
  * reproducible, so the two pools are tracked separately.
  */
-export type Source = 'fixed' | 'random';
+export type Source = 'classic' | 'new';
 
-export const SOURCES: Source[] = ['fixed', 'random'];
+export const SOURCES: Source[] = ['classic', 'new'];
 
-/**
- * What the pools are called on screen. The stored values stay 'fixed' and
- * 'random' — they key the history and the pack files, so renaming them would
- * orphan every record.
- */
-export const SOURCE_LABELS: Record<Source, string> = { fixed: 'Classic', random: 'New' };
+export const SOURCE_LABELS: Record<Source, string> = { classic: 'Classic', new: 'New' };
 
 export const sourceLabel = (source: Source): string => SOURCE_LABELS[source];
 
-/** Stable puzzle identifier, displayed as "3-10" fixed or "3-R10" random. */
+/** Stable puzzle identifier, displayed as "3-10" classic or "3-N10" new. */
 export interface PuzzleId {
   level: Level;
   number: number;
@@ -44,4 +39,4 @@ export interface PuzzleId {
 }
 
 export const formatPuzzleId = (id: PuzzleId): string =>
-  `${id.level}-${id.source === 'random' ? 'R' : ''}${id.number}`;
+  `${id.level}-${id.source === 'new' ? 'N' : ''}${id.number}`;

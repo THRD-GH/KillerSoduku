@@ -49,7 +49,7 @@ export async function getPuzzle(id: PuzzleId): Promise<Puzzle> {
   if (cached) return cached;
 
   // Fixed puzzles are a lookup, not a search — no worker needed.
-  if (id.source === 'fixed') {
+  if (id.source === 'classic') {
     const puzzle = await fixedPuzzle(id.level, id.number);
     cachePuzzle(id, puzzle);
     return puzzle;
@@ -73,7 +73,7 @@ export async function getPuzzle(id: PuzzleId): Promise<Puzzle> {
 
 /** Warm the cache for a puzzle the player is likely to open next. */
 export function prefetch(id: PuzzleId): void {
-  if (cachedPuzzle(id) || id.source === 'fixed') return;
+  if (cachedPuzzle(id) || id.source === 'classic') return;
   const w = ensureWorker();
   if (!w) return;
   const token = nextToken++;

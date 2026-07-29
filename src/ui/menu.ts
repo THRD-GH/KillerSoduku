@@ -1,6 +1,6 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
-import { sourceLabel } from '../core/types.ts';
+import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import { levelStats, unplayedNumbers } from '../game/storage.ts';
 import { el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
@@ -53,7 +53,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
 }
 
 function poolSize(ctx: AppContext, level: Level, source: Source): number {
-  return source === 'fixed' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
+  return source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
 }
 
 /** One level as three columns: the difficulty, then each of its two pools. */
@@ -69,7 +69,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     ),
   );
 
-  for (const source of ['fixed', 'random'] as Source[]) {
+  for (const source of SOURCES) {
     const size = poolSize(ctx, level, source);
     const left = size === 0 ? 0 : unplayedNumbers(ctx.history, level, source, size).length;
 
@@ -124,7 +124,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
       );
     }
     for (const n of numbers.slice(0, 400)) {
-      const b = el('button', { class: 'btn' }, `${level}-${source === 'random' ? 'R' : ''}${n}`);
+      const b = el('button', { class: 'btn' }, formatPuzzleId({ level, number: n, source }));
       b.addEventListener('click', () => {
         close();
         ctx.playPuzzle({ level, number: n, source });

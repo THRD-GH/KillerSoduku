@@ -91,7 +91,7 @@ class App implements AppContext {
   }
 
   private poolSize(level: Level, source: Source): number {
-    return source === 'fixed' ? (this.packCounts?.[level] ?? 0) : this.randomPoolSize;
+    return source === 'classic' ? (this.packCounts?.[level] ?? 0) : this.randomPoolSize;
   }
 
   playRandom(level: Level, source: Source): void {
@@ -123,7 +123,7 @@ class App implements AppContext {
           el(
             'p',
             { class: 'summary' },
-            id.source === 'fixed' ? 'One moment.' : 'Generating and proving it has one solution.',
+            id.source === 'classic' ? 'One moment.' : 'Generating and proving it has one solution.',
           ),
         ),
       { dismissable: false },

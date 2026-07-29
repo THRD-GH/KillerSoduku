@@ -8,9 +8,9 @@ Vite + TypeScript, no runtime dependencies. `npm run dev`, `npm run build`.
 ## Installing
 
 It is a PWA: installable from the browser, and it runs offline. The service
-worker precaches the app shell (~87 kB) and caches each level's fixed puzzle
+worker precaches the app shell (~87 kB) and caches each level's Classic puzzle
 pack the first time you open that level, so the 1.2 MB of packs is not part of
-the install. Random mode generates locally and works offline from the start.
+the install. New puzzles are generated locally and work offline from the start.
 
 `npm run build` regenerates `dist/sw.js` from the actual build output, so the
 precache list always matches the hashed filenames. `npm run icons` redraws the
@@ -54,15 +54,15 @@ CLEAR.
 
 Every level offers two pools, with separate history and separate numbering:
 
-- **Fixed** — the original grids shipped with the reference app, numbered
+- **Classic** — the original grids shipped with the reference app, numbered
   `3-10`. Requires importing the packs (below).
-- **Random** — generated on demand and seeded from `(level, number)`, numbered
-  `3-R10`. Same seed, same grid, on every device, forever — but the supply is
+- **New** — generated on demand and seeded from `(level, number)`, numbered
+  `3-N10`. Same seed, same grid, on every device, forever — but the supply is
   unlimited and nothing has to ship with the app. 300 per level.
 
 Played puzzles drop out of their pool until released from Stats.
 
-### The fixed packs
+### The Classic packs
 
 `public/packs/` is committed, so the site works as-is with no import step, and
 Vite copies it into `dist/` on build.
@@ -71,8 +71,8 @@ Those files hold another app's puzzle content, extracted from a copy of it we
 own. **This repository is private, and that is the condition under which
 including them is reasonable.** Do not make the repository public, and do not
 deploy the site publicly, without removing them first — re-add `public/packs/`
-to `.gitignore` and the app degrades gracefully, disabling Fixed mode and
-offering Random only.
+to `.gitignore` and the app degrades gracefully, disabling Classic and
+offering New only.
 
 To rebuild them from the app's assets (the APK is a zip):
 
@@ -190,7 +190,7 @@ KillSud by BotenSoft, from its own in-app help text. No code, artwork or fonts
 from that app are used here — the stars are drawn in SVG and the combination
 table is computed rather than shipped.
 
-Its puzzle packs are a different matter. Fixed mode plays them, and they are
+Its puzzle packs are a different matter. Classic mode plays them, and they are
 committed here so the site runs without a build step — which is defensible only
-because this repository is private. Random mode depends on none of it, so
+because this repository is private. New puzzles depend on none of it, so
 dropping `public/packs/` leaves a fully working game.

@@ -97,10 +97,41 @@ function write(key: string, value: unknown): void {
 export const loadSettings = (): Settings => ({ ...DEFAULT_SETTINGS, ...read(KEY.settings, {}) });
 export const saveSettings = (s: Settings): void => write(KEY.settings, s);
 
-export const loadHistory = (): History => read<History>(KEY.history, {});
+/**
+ * The generated pool was once called 'random' and keyed "3-R10"; it is now
+ * 'new' and "3-N10". Records written before the rename are rewritten on load
+ * so history, best times and unfinished games all carry over.
+ */
+function migrate<T extends { id?: PuzzleId }>(value: T): T {
+  const source = value.id?.source as string | undefined;
+  if (source === 'random') value.id = { ...value.id!, source: 'new' };
+  else if (source === 'fixed') value.id = { ...value.id!, source: 'classic' };
+  return value;
+}
+
+export const loadHistory = (): History => {
+  const stored = read<History>(KEY.history, {});
+  const out: History = {};
+  let renamed = false;
+  for (const [key, record] of Object.entries(stored)) {
+    const old = /^[1-6]-R\d+$/.test(key);
+    renamed ||= old;
+    out[old ? key.replace('-R', '-N') : key] = record;
+  }
+  // Persist at once, so storage never sits in the half-renamed state.
+  if (renamed) write(KEY.history, out);
+  return out;
+};
 export const saveHistory = (h: History): void => write(KEY.history, h);
 
-export const loadSave = (): SavedGame | null => read<SavedGame | null>(KEY.save, null);
+export const loadSave = (): SavedGame | null => {
+  const saved = read<SavedGame | null>(KEY.save, null);
+  if (saved === null) return null;
+  const wasOld = (saved.id.source as string) === 'random' || (saved.id.source as string) === 'fixed';
+  const migrated = migrate(saved);
+  if (wasOld) write(KEY.save, migrated);
+  return migrated;
+};
 export const saveGame = (g: SavedGame): void => write(KEY.save, g);
 export const clearSave = (): void => localStorage.removeItem(KEY.save);
 
@@ -158,13 +189,13 @@ export function markStarted(history: History, id: PuzzleId, now = Date.now()): H
   return history;
 }
 
-/** The inverse of formatPuzzleId: "3-10" or "3-R10". */
+/** The inverse of formatPuzzleId: "3-10" or "3-N10". */
 export function parsePuzzleId(key: string): PuzzleId | null {
-  const match = /^([1-6])-(R?)(\d+)$/.exec(key);
+  const match = /^([1-6])-(N?)(\d+)$/.exec(key);
   if (!match) return null;
   return {
     level: Number(match[1]) as Level,
-    source: match[2] === 'R' ? 'random' : 'fixed',
+    source: match[2] === 'N' ? 'new' : 'classic',
     number: Number(match[3]),
   };
 }

@@ -1,6 +1,6 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
-import { formatPuzzleId, sourceLabel } from '../core/types.ts';
+import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import {
   clearSave,
   forgetPuzzle,
@@ -23,7 +23,7 @@ import type { AppContext } from './app-context.ts';
 export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   const screen = el('div', { class: 'screen' });
   let level = initial;
-  let source: Source = 'fixed';
+  let source: Source = 'classic';
 
   const back = el('button', { class: 'iconbtn', 'aria-label': 'Back' });
   back.append(el('i'), el('i'), el('i'));
@@ -90,7 +90,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   };
 
   const poolSize = (): number =>
-    source === 'fixed' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
+    source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
 
   const draw = (): void => {
     const unfinishedCount = unfinishedGames(ctx.history).length;
@@ -117,7 +117,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     }
 
     clear(sourceTabs);
-    for (const s of ['fixed', 'random'] as Source[]) {
+    for (const s of SOURCES) {
       const b = el(
         'button',
         { class: `btn ${s === source ? 'on' : ''}`.trim() },
