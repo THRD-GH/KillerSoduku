@@ -309,12 +309,49 @@ body {
   gap: 8px;
 }
 
-/* Phone keypad: 1-9 in a 3x3 block on the left. */
-.numpad {
+/* Two columns, each with a strip of its own underneath. */
+.controls-left {
   flex: 0 0 54%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.controls-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Phone keypad: 1-9 in a 3x3 block. */
+.numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
+}
+
+/* CLEAR and undo/redo span the keypad; the adder and Pause span the buttons. */
+.under-keys,
+.under-actions {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.under-keys .key.clear,
+.under-keys .undo-pair {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+.under-actions .adder {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
 }
 
 /* Actions sit beside the keypad, small, two to a row. */
@@ -351,21 +388,6 @@ body {
 
 .btn.icon svg {
   display: block;
-}
-
-/* CLEAR, the cage adder, the clock and Pause, across the bottom. */
-.bottom-row {
-  display: flex;
-  gap: 6px;
-  align-items: stretch;
-}
-
-.bottom-row .key.clear,
-.bottom-row .adder,
-.bottom-row .timer {
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
 }
 
 .pause-btn {

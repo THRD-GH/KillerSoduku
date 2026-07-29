@@ -33,8 +33,8 @@ export class PlayScreen {
   private undoBtn = el('button', { class: 'btn icon', 'aria-label': 'Undo', title: 'Undo' });
   private redoBtn = el('button', { class: 'btn icon', 'aria-label': 'Redo', title: 'Redo' });
   private keys = new Map<number, HTMLButtonElement>();
-  /** CLEAR, the cage adder, the clock and Pause — built with the controls. */
-  private bottomRow!: HTMLDivElement;
+  /** Undo and redo share a cell; built here so the controls can place them. */
+  private undoPair = el('div', { class: 'undo-pair' });
 
   private ticker: number | undefined;
   private lastTick = 0;
@@ -80,12 +80,10 @@ export class PlayScreen {
 
     this.idLabel.textContent = formatPuzzleId(this.game.id);
 
-    const controls = this.buildControls();
     this.root.append(
       el('div', { class: 'titlebar' }, menuBtn, this.idLabel, this.candidateLine),
       this.board.root,
-      controls,
-      this.bottomRow,
+      this.buildControls(),
     );
 
     bindTap(
@@ -123,8 +121,33 @@ export class PlayScreen {
       return raw === 'clear' ? CLEAR_KEY : Number(raw);
     };
 
-    // Keypad on the left, the action buttons stacked compactly to its right.
-    const controls = el('div', { class: 'controls' }, numpad, this.buildActions());
+    const pause = el('button', { class: 'pause-btn', 'aria-label': 'Pause', title: 'Pause' });
+    pause.append(el('i'), el('i'));
+    pause.addEventListener('click', () => this.pause());
+
+    /*
+     * Two columns, each with its own strip underneath:
+     *   keypad          | Check  New
+     *                   | Hint   Restart
+     *                   | Sum    clock
+     *   CLEAR undo/redo | adder  pause
+     */
+    const controls = el(
+      'div',
+      { class: 'controls' },
+      el(
+        'div',
+        { class: 'controls-left' },
+        numpad,
+        el('div', { class: 'under-keys' }, clearKey, this.undoPair),
+      ),
+      el(
+        'div',
+        { class: 'controls-right' },
+        this.buildActions(),
+        el('div', { class: 'under-actions' }, this.adderBox, pause),
+      ),
+    );
 
     bindTap(
       numpad,
@@ -152,19 +175,7 @@ export class PlayScreen {
       },
     });
 
-    const pause = el('button', { class: 'pause-btn', 'aria-label': 'Pause', title: 'Pause' });
-    pause.append(el('i'), el('i'));
-    pause.addEventListener('click', () => this.pause());
-
     this.resetAdder(true);
-    this.bottomRow = el(
-      'div',
-      { class: 'bottom-row' },
-      clearKey,
-      this.adderBox,
-      this.timerBox,
-      pause,
-    );
     return controls;
   }
 
@@ -189,7 +200,7 @@ export class PlayScreen {
       onTap: () => (this.ctx.settings.undoNeedsLongClick ? this.nag('Redo') : this.doRedo()),
       onLong: () => this.doRedo(),
     });
-    const undoPair = el('div', { class: 'undo-pair' }, this.undoBtn, this.redoBtn);
+    this.undoPair.append(this.undoBtn, this.redoBtn);
 
     const sum = el('button', { class: 'btn' }, 'Sum');
     sum.addEventListener('click', () => this.openCalculator());
@@ -213,8 +224,8 @@ export class PlayScreen {
       }, 'New puzzle'),
     );
 
-    // Filled column by column: Check/Hint/Sum, then New/Restart/undo-redo.
-    return el('div', { class: 'actions' }, check, hint, sum, next, restart, undoPair);
+    // Filled column by column: Check/Hint/Sum, then New/Restart/clock.
+    return el('div', { class: 'actions' }, check, hint, sum, next, restart, this.timerBox);
   }
 
   // ------------------------------------------------------------------ input
