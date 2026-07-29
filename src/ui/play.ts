@@ -106,7 +106,8 @@ export class PlayScreen {
   }
 
   private buildControls(): HTMLElement {
-    // A phone-keypad 3x3 block on the left; everything else stacks beside it.
+    // A phone-keypad 3x3 block; everything else stacks beside it. Which side
+    // each ends up on is the Handedness setting, applied in CSS.
     const numpad = el('div', { class: 'numpad' });
     for (let d = 1; d <= 9; d++) {
       const key = el('button', { class: 'key', 'data-key': d }, String(d));
@@ -132,7 +133,8 @@ export class PlayScreen {
     pause.addEventListener('click', () => this.pause());
 
     /*
-     * Two columns, each with its own strip underneath:
+     * Two columns, each with its own strip underneath (in source order — a
+     * right-handed grip draws them the other way round):
      *   keypad          | Check  New
      *                   | Hint   Restart
      *                   | Sum    clock

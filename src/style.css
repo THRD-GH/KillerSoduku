@@ -467,6 +467,16 @@ body {
   gap: 8px;
 }
 
+/*
+ * The keypad belongs under the hand that holds the phone, so a right-handed
+ * grip puts the digits on the right and the action buttons across on the left.
+ * One flip covers both orientations: in landscape the controls sit beside the
+ * board, so reversing them lands the keypad out at the edge on the same side.
+ */
+:root[data-hand='right'] .controls {
+  flex-direction: row-reverse;
+}
+
 /* Two columns, each with a strip of its own underneath. */
 .controls-left {
   flex: 0 0 54%;
@@ -1539,9 +1549,9 @@ body {
     padding: 3px 8px;
   }
 
-  /* Left-handed: the whole thing mirrors, so the keypad ends up under the hand
-     holding that side of the phone. The row-reverse keeps the keypad next to
-     the board and the action buttons out at the edge, as on the right. */
+  /* Left-handed: the board moves across and the controls take its place, so
+     the keypad ends up at the left edge — the mirror image of a right-handed
+     grip, where the controls reverse instead (see .controls above). */
   :root[data-hand='left'] .screen.play {
     grid-template-columns: minmax(0, 1fr) var(--board);
   }
@@ -1553,7 +1563,6 @@ body {
   :root[data-hand='left'] .screen.play > .controls {
     grid-column: 1;
     grid-row: 2;
-    flex-direction: row-reverse;
   }
 
   .screen.play > .board {

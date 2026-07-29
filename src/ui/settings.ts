@@ -128,7 +128,7 @@ export function openSettings(ctx: AppContext): void {
       ),
       stacked(
         'Handedness',
-        'In landscape, the side the keypad sits on. Portrait is unaffected.',
+        'Which side the keypad sits on, with the other buttons across from it.',
         picker(
           HANDS,
           () => ctx.settings.hand,

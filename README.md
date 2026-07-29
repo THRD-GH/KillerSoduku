@@ -58,10 +58,11 @@ and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 
 Every puzzle keeps its own save, undo history included, so leaving one part-way
-and coming back to it later loses nothing. In landscape the board and controls
-sit side by side, mirrored for a left-handed grip so the keypad is always under
-the hand holding that side of the phone. The grid is marked up for screen
-readers: each cell reads out its position, its cage and what is in it.
+and coming back to it later loses nothing. The keypad sits under the hand you
+name in Settings — right by default, with the action buttons across from it —
+and in landscape the board and controls sit side by side, mirroring with it.
+The grid is marked up for screen readers: each cell reads out its position, its
+cage and what is in it.
 
 The high-contrast theme is drawn from a colour-blind-safe palette — no meaning
 rests on telling red from green — and backs up each colour with a shape: wrong
