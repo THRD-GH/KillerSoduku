@@ -8,7 +8,7 @@ Vite + TypeScript, no runtime dependencies. `npm run dev`, `npm run build`.
 ## Installing
 
 It is a PWA: installable from the browser, and it runs offline. The service
-worker precaches the app shell (~87 kB) and caches each level's Classic puzzle
+worker precaches the app shell (~100 kB) and caches each level's Classic puzzle
 pack the first time you open that level, so the 1.2 MB of packs is not part of
 the install. New puzzles are generated locally and work offline from the start.
 
@@ -43,7 +43,7 @@ mistake first if there is one), Sum (combination calculator), Restart, New, Undo
 and the undo/redo arrows. Undo winds back as far as the empty grid; redo goes
 forward until a new move abandons it. The tally totals cage sums for
 innie/outie arithmetic: tap to count the selected cage, hold to clear, each
-cage counts once, and counted cages are ringed on the grid. The white box
+cage counts once, and counted cages are tinted on the grid. The white box
 is the clock; tap to hide it, it keeps running.
 
 **Settings** — Allow single candidates, Lazy mode (pre-fill cages with only one
@@ -58,7 +58,7 @@ Every level offers two pools, with separate history and separate numbering:
   `3-10`. Requires importing the packs (below).
 - **New** — generated on demand and seeded from `(level, number)`, numbered
   `3-N10`. Same seed, same grid, on every device, forever — but the supply is
-  unlimited and nothing has to ship with the app. 300 per level.
+  unlimited and nothing has to ship with the app. 500 per level.
 
 Played puzzles drop out of their pool until released from Stats.
 

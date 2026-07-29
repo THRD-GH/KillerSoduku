@@ -18,8 +18,9 @@
   /* A cell down to its last candidate. */
   --single: #7fe6a8;
   --single-bg: rgba(127, 230, 168, 0.14);
-  /* Cages counted into the tally. */
-  --tallied: rgba(150, 170, 255, 0.5);
+  /* Cages counted into the tally — violet, a hue nothing else on the board
+     uses, so it cannot be mistaken for a selection or a matching digit. */
+  --tallied: rgba(190, 130, 255, 0.26);
   --error: #ff6b6b;
   --clash: #a8443f;
   --sel: rgba(86, 209, 245, 0.26);
@@ -65,7 +66,7 @@
   --mark: #1f6390;
   --single: #0d7a3d;
   --single-bg: rgba(13, 122, 61, 0.12);
-  --tallied: rgba(70, 90, 200, 0.45);
+  --tallied: rgba(140, 70, 210, 0.18);
   --error: #c62828;
   --clash: #e59b98;
   --sel: rgba(10, 111, 150, 0.22);
@@ -241,6 +242,12 @@ body {
   background: var(--same);
 }
 
+/* Counted into the tally. Sits above the peer and matching-digit tints but
+   below the selection and error colours, which are the transient states. */
+.cell.tallied {
+  background: var(--tallied);
+}
+
 .cell.sel {
   background: var(--sel);
 }
@@ -320,12 +327,6 @@ body {
 .mark {
   display: grid;
   place-items: center;
-}
-
-/* Counted into the tally. A ring rather than a fill, so it survives on top of
-   the selection and error colours and a gap in a run of cages is obvious. */
-.cell.tallied {
-  box-shadow: inset 0 0 0 2px var(--tallied);
 }
 
 /* Down to one candidate: the cell is answered, it just has not been written in. */

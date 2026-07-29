@@ -134,8 +134,8 @@ export class Board {
       }
 
       const cls = [node.base];
-      // Ringed rather than tinted, so it survives alongside the selection and
-      // error colours and a gap in a run of counted cages is obvious.
+      // Tinted so a gap in a run of counted cages is obvious at a glance. The
+      // selection and error colours still win, being the transient states.
       if (this.tallied.has(g.cageIndexAt(i))) cls.push('tallied');
       if (i === sel) cls.push('sel');
       else if (sel >= 0) {
