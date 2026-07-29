@@ -1539,6 +1539,23 @@ body {
     padding: 3px 8px;
   }
 
+  /* Left-handed: the whole thing mirrors, so the keypad ends up under the hand
+     holding that side of the phone. The row-reverse keeps the keypad next to
+     the board and the action buttons out at the edge, as on the right. */
+  :root[data-hand='left'] .screen.play {
+    grid-template-columns: minmax(0, 1fr) var(--board);
+  }
+
+  :root[data-hand='left'] .screen.play > .board {
+    grid-column: 2;
+  }
+
+  :root[data-hand='left'] .screen.play > .controls {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: row-reverse;
+  }
+
   .screen.play > .board {
     width: var(--board);
     height: var(--board);

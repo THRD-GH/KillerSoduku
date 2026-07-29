@@ -15,6 +15,9 @@ export const NEW_POOL_SIZE = 500;
 
 export type Theme = 'night' | 'day' | 'contrast';
 
+/** Which hand holds the phone: it decides the side the keypad sits on. */
+export type Hand = 'right' | 'left';
+
 export interface Settings {
   /** When on, a tapped digit is always a candidate — entries need a long-click. */
   allowSingleCandidates: boolean;
@@ -22,6 +25,8 @@ export interface Settings {
   lazyMode: boolean;
   /** Which palette to draw. 'contrast' is the accessible high-contrast one. */
   theme: Theme;
+  /** Landscape only: 'left' mirrors the screen so the keypad is under that hand. */
+  hand: Hand;
   /** Tint the selected cell's row, column and box. */
   highlightPeers: boolean;
   /** Tint the selected cell's cage. */
@@ -42,6 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   allowSingleCandidates: false,
   lazyMode: false,
   theme: 'night',
+  hand: 'right',
   highlightPeers: true,
   highlightCage: true,
   highlightSameDigit: true,

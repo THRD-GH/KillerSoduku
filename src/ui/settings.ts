@@ -1,5 +1,5 @@
 import { exportBackup, importBackup, saveSettings } from '../game/storage.ts';
-import type { Settings, Theme } from '../game/storage.ts';
+import type { Hand, Settings, Theme } from '../game/storage.ts';
 import { clear, el } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import type { AppContext } from './app-context.ts';
@@ -63,29 +63,82 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: 'contrast', label: 'High contrast' },
 ];
 
+const HANDS: { value: Hand; label: string }[] = [
+  { value: 'right', label: 'Right-handed' },
+  { value: 'left', label: 'Left-handed' },
+];
+
+/**
+ * A row of buttons where exactly one is on — used for the settings that are a
+ * choice rather than a switch.
+ */
+function picker<T extends string>(
+  options: { value: T; label: string }[],
+  current: () => T,
+  choose: (value: T) => void,
+): HTMLElement {
+  const tabs = el('div', { class: 'tabs' });
+  const draw = (): void => {
+    clear(tabs);
+    for (const option of options) {
+      const on = current() === option.value;
+      const button = el(
+        'button',
+        { class: `btn ${on ? 'on' : ''}`.trim(), 'aria-pressed': String(on) },
+        option.label,
+      );
+      button.addEventListener('click', () => {
+        choose(option.value);
+        draw();
+      });
+      tabs.append(button);
+    }
+  };
+  draw();
+  return tabs;
+}
+
+/** A labelled row whose control sits underneath rather than beside it. */
+const stacked = (title: string, detail: string | null, control: HTMLElement): HTMLElement =>
+  el(
+    'div',
+    { class: 'setting stacked' },
+    el('span', { class: 'label' }, title, detail === null ? null : el('small', {}, detail)),
+    control,
+  );
+
 export function openSettings(ctx: AppContext): void {
   openOverlay((close) => {
     const list = el('div', {});
 
     // Theme first: it changes everything else on the screen.
-    const themeTabs = el('div', { class: 'tabs' });
-    const drawThemes = (): void => {
-      clear(themeTabs);
-      for (const theme of THEMES) {
-        const on = ctx.settings.theme === theme.value;
-        const b = el('button', { class: `btn ${on ? 'on' : ''}`.trim() }, theme.label);
-        b.addEventListener('click', () => {
-          ctx.settings.theme = theme.value;
-          saveSettings(ctx.settings);
-          ctx.applyTheme();
-          drawThemes();
-        });
-        themeTabs.append(b);
-      }
-    };
-    drawThemes();
     list.append(
-      el('div', { class: 'setting stacked' }, el('span', { class: 'label' }, 'Theme'), themeTabs),
+      stacked(
+        'Theme',
+        null,
+        picker(
+          THEMES,
+          () => ctx.settings.theme,
+          (theme) => {
+            ctx.settings.theme = theme;
+            saveSettings(ctx.settings);
+            ctx.applyTheme();
+          },
+        ),
+      ),
+      stacked(
+        'Handedness',
+        'In landscape, the side the keypad sits on. Portrait is unaffected.',
+        picker(
+          HANDS,
+          () => ctx.settings.hand,
+          (hand) => {
+            ctx.settings.hand = hand;
+            saveSettings(ctx.settings);
+            ctx.applyHand();
+          },
+        ),
+      ),
     );
 
     for (const toggle of TOGGLES) {
@@ -154,17 +207,10 @@ export function openSettings(ctx: AppContext): void {
     );
 
     list.append(
-      el(
-        'div',
-        { class: 'setting stacked' },
-        el(
-          'span',
-          { class: 'label' },
-          'Your data',
-          el('small', {}, 'History, settings and parked games as a file you keep.'),
-        ),
-        el('div', { class: 'tabs' }, save, load),
-        file,
+      stacked(
+        'Your data',
+        'History, settings and parked games as a file you keep.',
+        el('div', { class: 'tabs' }, save, load, file),
       ),
     );
 

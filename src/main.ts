@@ -44,6 +44,7 @@ class App implements AppContext {
   constructor(root: HTMLElement) {
     this.root = root;
     this.applyTheme();
+    this.applyHand();
 
     document.addEventListener('keydown', (e) => this.play?.handleKey(e));
     document.addEventListener('visibilitychange', () => {
@@ -72,11 +73,17 @@ class App implements AppContext {
     setThemeColour(THEME_COLOUR[this.settings.theme]);
   }
 
+  /** Landscape reads this off the root, so no screen has to be rebuilt. */
+  applyHand(): void {
+    document.documentElement.dataset.hand = this.settings.hand;
+  }
+
   /** Storage was replaced underneath us (an import); start again from it. */
   reload(): void {
     this.settings = loadSettings();
     this.history = loadHistory();
     this.applyTheme();
+    this.applyHand();
     this.goMenu();
   }
 
