@@ -34,9 +34,13 @@ export class Board {
   /** Live reference — the settings panel mutates this object in place. */
   private settings: Settings;
 
-  constructor(game: Game, settings: Settings) {
+  /** Cage indices counted into the tally; a live reference, read each render. */
+  private tallied: Set<number>;
+
+  constructor(game: Game, settings: Settings, tallied: Set<number>) {
     this.game = game;
     this.settings = settings;
+    this.tallied = tallied;
     this.root = el('div', { class: 'board', role: 'grid', 'aria-label': 'Killer sudoku grid' });
     this.build();
   }
@@ -130,6 +134,9 @@ export class Board {
       }
 
       const cls = [node.base];
+      // Ringed rather than tinted, so it survives alongside the selection and
+      // error colours and a gap in a run of counted cages is obvious.
+      if (this.tallied.has(g.cageIndexAt(i))) cls.push('tallied');
       if (i === sel) cls.push('sel');
       else if (sel >= 0) {
         if (

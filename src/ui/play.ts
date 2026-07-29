@@ -29,7 +29,7 @@ export class PlayScreen {
   private idLabel = el('span', { class: 'id' });
   private candidateLine = el('span', { class: 'candidates' });
   private timerBox = el('div', { class: 'timer' }, '00:00');
-  private adderBox = el('div', { class: 'adder' });
+  private tallyBox = el('div', { class: 'tally' });
   private undoBtn = el('button', { class: 'btn icon', 'aria-label': 'Undo', title: 'Undo' });
   private redoBtn = el('button', { class: 'btn icon', 'aria-label': 'Redo', title: 'Redo' });
   private keys = new Map<number, HTMLButtonElement>();
@@ -42,8 +42,8 @@ export class PlayScreen {
   private pauseNode: HTMLElement | null = null;
   private saveTimer: number | undefined;
 
-  private adderTotal = 0;
-  private adderCages = new Set<number>();
+  private tallyTotal = 0;
+  private tallyCages = new Set<number>();
 
   /**
    * Numpad taps kept briefly so a double-click can roll them back. The cell is
@@ -55,7 +55,7 @@ export class PlayScreen {
   constructor(ctx: AppContext, game: Game) {
     this.ctx = ctx;
     this.game = game;
-    this.board = new Board(game, ctx.settings);
+    this.board = new Board(game, ctx.settings, this.tallyCages);
     this.root = el('div', { class: 'screen' });
     this.build();
 
@@ -130,7 +130,7 @@ export class PlayScreen {
      *   keypad          | Check  New
      *                   | Hint   Restart
      *                   | Sum    clock
-     *   CLEAR undo/redo | adder  pause
+     *   CLEAR undo/redo | tally  pause
      */
     const controls = el(
       'div',
@@ -145,7 +145,7 @@ export class PlayScreen {
         'div',
         { class: 'controls-right' },
         this.buildActions(),
-        el('div', { class: 'under-actions' }, this.adderBox, pause),
+        el('div', { class: 'under-actions' }, this.tallyBox, pause),
       ),
     );
 
@@ -166,7 +166,7 @@ export class PlayScreen {
       onDouble: () => this.doClear(),
     });
 
-    bindTap(this.adderBox, { onTap: () => this.addCage(), onLong: () => this.resetAdder() });
+    bindTap(this.tallyBox, { onTap: () => this.addCage(), onLong: () => this.resetTally() });
     bindTap(this.timerBox, {
       onTap: () => {
         this.ctx.settings.showTimer = !this.ctx.settings.showTimer;
@@ -175,7 +175,7 @@ export class PlayScreen {
       },
     });
 
-    this.resetAdder(true);
+    this.resetTally(true);
     return controls;
   }
 
@@ -210,7 +210,7 @@ export class PlayScreen {
       confirmDialog('Clear every entry and start this puzzle again?', () => {
         this.game.restart();
         this.game.elapsedMs = 0;
-        this.resetAdder();
+        this.resetTally();
         if (this.ctx.settings.lazyMode) this.game.fillSingleCombinationCages();
         this.render();
       }, 'Restart'),
@@ -376,27 +376,31 @@ export class PlayScreen {
       return;
     }
     const idx = this.game.cageIndexAt(sel);
-    if (this.adderCages.has(idx)) {
-      toast('That cage is already in the total');
+    if (this.tallyCages.has(idx)) {
+      toast('That cage is already counted');
       return;
     }
-    this.adderCages.add(idx);
-    this.adderTotal += this.game.cageAt(sel).sum;
-    this.renderAdder();
+    this.tallyCages.add(idx);
+    this.tallyTotal += this.game.cageAt(sel).sum;
+    this.renderTally();
+    this.board.render();
   }
 
-  private resetAdder(quiet = false): void {
-    this.adderTotal = 0;
-    this.adderCages.clear();
-    this.renderAdder();
-    if (!quiet) toast('Adder cleared');
+  private resetTally(quiet = false): void {
+    this.tallyTotal = 0;
+    this.tallyCages.clear();
+    this.renderTally();
+    if (!quiet) {
+      this.board.render();
+      toast('Tally cleared');
+    }
   }
 
-  private renderAdder(): void {
-    clear(this.adderBox);
-    this.adderBox.append(
-      document.createTextNode(String(this.adderTotal)),
-      el('small', {}, this.adderCages.size === 0 ? 'adder' : `${this.adderCages.size} cages`),
+  private renderTally(): void {
+    clear(this.tallyBox);
+    this.tallyBox.append(
+      document.createTextNode(String(this.tallyTotal)),
+      el('small', {}, this.tallyCages.size === 0 ? 'tally' : `${this.tallyCages.size} cages`),
     );
   }
 

@@ -18,6 +18,8 @@
   /* A cell down to its last candidate. */
   --single: #7fe6a8;
   --single-bg: rgba(127, 230, 168, 0.14);
+  /* Cages counted into the tally. */
+  --tallied: rgba(150, 170, 255, 0.5);
   --error: #ff6b6b;
   --clash: #a8443f;
   --sel: rgba(86, 209, 245, 0.26);
@@ -63,6 +65,7 @@
   --mark: #1f6390;
   --single: #0d7a3d;
   --single-bg: rgba(13, 122, 61, 0.12);
+  --tallied: rgba(70, 90, 200, 0.45);
   --error: #c62828;
   --clash: #e59b98;
   --sel: rgba(10, 111, 150, 0.22);
@@ -319,6 +322,12 @@ body {
   place-items: center;
 }
 
+/* Counted into the tally. A ring rather than a fill, so it survives on top of
+   the selection and error colours and a gap in a run of cages is obvious. */
+.cell.tallied {
+  box-shadow: inset 0 0 0 2px var(--tallied);
+}
+
 /* Down to one candidate: the cell is answered, it just has not been written in. */
 .cell.single {
   background: var(--single-bg);
@@ -360,7 +369,7 @@ body {
   gap: 6px;
 }
 
-/* CLEAR and undo/redo span the keypad; the adder and Pause span the buttons. */
+/* CLEAR and undo/redo span the keypad; the tally and Pause span the buttons. */
 .under-keys,
 .under-actions {
   display: flex;
@@ -375,7 +384,7 @@ body {
   margin: 0;
 }
 
-.under-actions .adder {
+.under-actions .tally {
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
@@ -479,7 +488,7 @@ body {
 }
 
 .btn.aid,
-.adder {
+.tally {
   background: var(--k-aid);
   border-color: var(--k-aid-line);
   color: var(--k-aid-text);
@@ -511,7 +520,7 @@ body {
   padding: 12px 4px;
 }
 
-.adder,
+.tally,
 .timer {
   border-radius: 5px;
   border: 1px solid var(--line);
@@ -523,7 +532,7 @@ body {
   -webkit-user-select: none;
 }
 
-.adder {
+.tally {
   font-weight: 700;
   font-size: 18px;
   flex: 1 1 auto;
@@ -532,7 +541,7 @@ body {
   line-height: 1.1;
 }
 
-.adder small {
+.tally small {
   display: block;
   font-size: 10px;
   font-weight: 500;
