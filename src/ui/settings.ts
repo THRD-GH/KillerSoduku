@@ -25,7 +25,7 @@ const TOGGLES: Toggle[] = [
   {
     key: 'autoRemoveCandidates',
     title: 'Tidy candidates automatically',
-    detail: 'Forcing an answer (long-click or double-click) strikes that digit from its row, column and box. A plain tap never does.',
+    detail: 'Forcing an answer (long-click or double-click) strikes that digit from its row, column, box and the rest of its cage. A plain tap never does.',
   },
   {
     key: 'instantCheck',

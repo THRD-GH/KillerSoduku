@@ -31,7 +31,7 @@ display as pencil marks. That single idea explains the whole keypad.
 | --- | --- |
 | Tap cell | Select it |
 | Tap keypad digit | Toggle that digit in the cell |
-| Long-click / double-click keypad digit | Force it in as the answer, clearing candidates |
+| Long-click / double-click keypad digit | Force it in as the answer, striking that digit from its row, column, box and cage |
 | Long-click / double-click CLEAR | Empty the cell |
 | Long-click cell | Pause — or use the Pause button (long-click the pause screen, or Escape, to resume) |
 

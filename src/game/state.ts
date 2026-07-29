@@ -123,8 +123,12 @@ export class Game {
 
   /**
    * Forcing an answer rules that digit out for every cell sharing its row,
-   * column or box, so strike it from their pencil marks. Folded into the
-   * current move: one undo puts the candidates back along with the answer.
+   * column or box — and for the rest of its cage, which is the killer rule and
+   * a separate matter: a cage runs across rows, columns and boxes, so a
+   * cage-mate two boxes away is ruled out by the no-repeat-in-a-cage rule even
+   * though it is not a peer in the ordinary sense. Strike the digit from all
+   * of them. Folded into the current move: one undo puts the candidates back
+   * along with the answer.
    *
    * Only the deliberate gestures do this — long-click and double-click. A
    * plain tap is far too easy to make by accident to be wiping candidates
@@ -133,7 +137,12 @@ export class Game {
   private cleanPeers(index: number, digit: number, settings: Settings): number {
     if (!settings.autoRemoveCandidates) return 0;
     const b = bit(digit);
-    const targets = PEERS[index].filter((p) => this.values[p] === 0 && (this.pencils[p] & b) !== 0);
+    const ruledOut = new Set<number>(PEERS[index]);
+    for (const c of this.cageAt(index).cells) if (c !== index) ruledOut.add(c);
+
+    const targets = [...ruledOut].filter(
+      (p) => this.values[p] === 0 && (this.pencils[p] & b) !== 0,
+    );
     if (targets.length === 0) return 0;
     this.recordAlso(targets);
     for (const p of targets) this.pencils[p] &= ~b;
