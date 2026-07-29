@@ -8,6 +8,7 @@ import {
   releasePuzzle,
   resetLevel,
   saveHistory,
+  totalStats,
   unfinishedGames,
 } from '../game/storage.ts';
 import { clear, el, formatDate, formatTime } from './dom.ts';
@@ -34,6 +35,37 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   const sourceTabs = el('div', { class: 'tabs' });
   const summary = el('p', { class: 'summary' });
   const rows = el('div', {});
+  const totals = el('div', { class: 'totals' });
+
+  /**
+   * The running totals across everything played. The per-pool line below is
+   * about one slice; this is the answer to "how am I doing", which is what
+   * anyone opens a stats screen for.
+   */
+  const drawTotals = (): void => {
+    clear(totals);
+    const t = totalStats(ctx.history);
+    if (t.played === 0) return;
+
+    const tile = (value: string, label: string): HTMLElement =>
+      el('div', { class: 'tile' }, el('b', {}, value), el('small', {}, label));
+
+    totals.append(
+      tile(String(t.finished), `solved of ${t.played}`),
+      tile(t.averageMs === null ? '—' : formatTime(t.averageMs), 'average'),
+      tile(
+        t.best === null ? '—' : formatTime(t.best.ms),
+        t.best === null ? 'best' : `best · ${t.best.id}`,
+      ),
+      tile(String(t.streak), t.streak === 1 ? 'day streak' : 'day streak'),
+      tile(String(t.hints), t.hints === 1 ? 'hint' : 'hints'),
+      tile(String(t.checks), t.checks === 1 ? 'check' : 'checks'),
+    );
+
+    // Where the solving has actually happened, at a glance.
+    const spread = LEVELS.map((l) => `${LEVEL_NAMES[l]} ${t.byLevel[l]}`).join(' · ');
+    totals.append(el('p', { class: 'spread' }, spread));
+  };
 
   /** Every puzzle started and not solved, whatever its level or pool. */
   const drawUnfinished = (): void => {
@@ -91,6 +123,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.newPoolSize;
 
   const draw = (): void => {
+    drawTotals();
     const unfinishedCount = unfinishedGames(ctx.history).length;
     unfinishedTab.textContent = `Unfinished games (${unfinishedCount})`;
     unfinishedTab.classList.toggle('primary', mode === 'unfinished');
@@ -218,6 +251,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   draw();
   screen.append(
     el('div', { class: 'titlebar' }, back, el('span', { class: 'id' }, 'STATS')),
+    totals,
     unfinishedTab,
     levelTabs,
     sourceTabs,

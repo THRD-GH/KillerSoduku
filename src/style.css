@@ -413,6 +413,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* A total counting down is a different number from a cage total, so it reads
+   as a different number: the accent colour, and a leading minus-free figure
+   that shrinks. A finished cage fades rather than showing a bare 0. */
+.sum.left {
+  color: var(--accent);
+}
+
+.sum.done {
+  opacity: 0.4;
+}
+
 /* The answer should read at a glance and clearly outrank the pencil marks. */
 .big {
   font-weight: 700;
@@ -1485,8 +1496,56 @@ body {
   border-bottom-color: transparent;
 }
 
+/* Running totals at the top of Stats. */
+.totals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.totals .tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 4px;
+  text-align: center;
+  min-width: 0;
+}
+
+.totals .tile b {
+  display: block;
+  font-size: 19px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.totals .tile small {
+  display: block;
+  color: var(--dim);
+  font-size: 10.5px;
+  margin-top: 2px;
+  /* A long label ("best · 3-N411") must not stretch its column. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.totals .spread {
+  grid-column: 1 / -1;
+  margin: 0;
+  text-align: center;
+  color: var(--dim);
+  font-size: 11.5px;
+}
+
 .won {
   text-align: center;
+}
+
+/* What the puzzle needed of you, on the win screen. */
+.summary.techniques {
+  color: var(--mark);
 }
 
 .won .time {

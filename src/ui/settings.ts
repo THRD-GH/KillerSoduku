@@ -28,6 +28,16 @@ const TOGGLES: Toggle[] = [
     detail: 'Forcing an answer (long-click or double-click) strikes that digit from its row, column and box. A plain tap never does.',
   },
   {
+    key: 'countdownCages',
+    title: 'Count cage totals down',
+    detail: 'A cage of 15 with a 6 in it shows 9 — what is left to place. Off, the printed total never changes.',
+  },
+  {
+    key: 'instantCheck',
+    title: 'Flag mistakes as you go',
+    detail: 'Marks a wrong entry the moment it is made, instead of waiting for Check.',
+  },
+  {
     key: 'lazyMode',
     title: 'Lazy mode',
     detail: 'Pre-fill cages that have only one possible combination.',

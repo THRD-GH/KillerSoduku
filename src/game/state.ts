@@ -222,14 +222,43 @@ export class Game {
     this.pencils[index] = 0;
   }
 
-  /** [Check] — flag entries that disagree with the solution. */
-  check(): number {
-    this.checks++;
+  /** Flag entries that disagree with the solution. */
+  private markWrong(): number {
     this.errors.clear();
     for (let i = 0; i < CELLS; i++) {
       if (this.values[i] !== 0 && this.values[i] !== this.puzzle.solution[i]) this.errors.add(i);
     }
     return this.errors.size;
+  }
+
+  /** [Check] — the deliberate version, which is counted against the puzzle. */
+  check(): number {
+    this.checks++;
+    return this.markWrong();
+  }
+
+  /**
+   * The same flagging, done automatically after each move when the player has
+   * asked for it. Not counted: it is a way of playing, not a hint taken.
+   */
+  flagMistakes(): number {
+    return this.markWrong();
+  }
+
+  /**
+   * Undo back to the last position where nothing on the board was wrong.
+   *
+   * Check tells you *that* you have gone wrong; from a grid built on a bad
+   * digit, undoing by hand means guessing how far back the damage goes. Every
+   * move is on the undo stack, so winding back until the board agrees with the
+   * solution again finds the exact point. Returns the moves taken back.
+   */
+  rewindToLastCorrect(): number {
+    let steps = 0;
+    while (this.wrongCount() > 0 && this.undo()) steps++;
+    // Wound back past the mistake, so the flags no longer describe anything.
+    if (steps > 0) this.errors.clear();
+    return steps;
   }
 
   /** [Hint] — fill one correct digit, preferring the selected cell. */
@@ -359,6 +388,31 @@ export class Game {
       fallback ??= step;
     }
     return fallback;
+  }
+
+  /**
+   * Every technique a solver needs to get from the bare cages to the answer,
+   * counted. There are no givens in a killer sudoku, so this describes the
+   * puzzle itself rather than the route the player happened to take — which is
+   * what makes it worth showing once the puzzle is done.
+   *
+   * Ordered hardest first. Empty if the stack cannot finish it unaided.
+   */
+  solveTrace(): { technique: string; difficulty: number; count: number }[] {
+    const candidates = new Uint16Array(CELLS).fill(0b111111111);
+    const cons = buildConstraints(this.puzzle.cages);
+    const seen = new Map<string, { technique: string; difficulty: number; count: number }>();
+
+    // Generous, but bounded: a hard grid runs to a few hundred steps.
+    for (let guard = 0; guard < 2000; guard++) {
+      const step = nextStep(candidates, cons);
+      if (step === null) break;
+      const tally = seen.get(step.technique);
+      if (tally) tally.count++;
+      else seen.set(step.technique, { technique: step.technique, difficulty: step.difficulty, count: 1 });
+    }
+
+    return [...seen.values()].sort((a, b) => b.difficulty - a.difficulty || b.count - a.count);
   }
 
   /**

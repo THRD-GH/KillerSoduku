@@ -46,14 +46,26 @@ innie/outie arithmetic: tap to count the selected cage, hold to clear, each
 cage counts once, and counted cages are tinted on the grid. The white box
 is the clock; tap to hide it, it keeps running.
 
+Cage totals count down as the cage fills — a cage of 15 with a 6 in it shows 9,
+which is the arithmetic you would be doing anyway.
+
 Hint names the technique that cracks the position, says why it works and
-highlights the cells, and only fills the digit in if you ask it to. The in-game
-menu also has Fill all candidates and Share this puzzle (a link that opens the
-same grid anywhere).
+highlights the cells, and only fills the digit in if you ask it to. Check
+offers to rewind: winding the board back to the last position where nothing was
+wrong, so a run built on a bad digit does not have to be unpicked by hand. Redo
+puts it back. The in-game menu also has Fill all candidates, Rewind and Share
+this puzzle (a link that opens the same grid anywhere).
+
+Solving a puzzle names the hardest technique it actually needed, and how many
+deductions it took — the solver works that out for every hint, so the level
+number can be checked against what the grid really asked of you. Stats opens on
+running totals: solved, average, best, day streak, hints and checks, and where
+the solving has happened across the six levels.
 
 **Settings** — Theme (Night, Day, High contrast), Keypad side, Allow single candidates, Lazy
-mode (pre-fill cages with only one possible combination), highlighting, Keep
-the screen awake, and long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
+mode (pre-fill cages with only one possible combination), counting cage totals
+down, flagging mistakes as you go, highlighting, Keep the screen awake, and
+long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
 and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 

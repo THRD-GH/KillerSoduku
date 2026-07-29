@@ -35,6 +35,10 @@ export interface Settings {
   highlightSameDigit: boolean;
   /** Forcing an answer strikes that digit from its row, column and box marks. */
   autoRemoveCandidates: boolean;
+  /** Cage totals count down as the cage fills, rather than standing still. */
+  countdownCages: boolean;
+  /** Flag a wrong entry the moment it is made, without waiting for Check. */
+  instantCheck: boolean;
   /** How solid the sum calculator sits over the grid, 0.35 to 1. */
   calcOpacity: number;
   /** Hold a wake lock while a puzzle is open, so the screen stops dimming. */
@@ -54,6 +58,8 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightCage: true,
   highlightSameDigit: true,
   autoRemoveCandidates: true,
+  countdownCages: true,
+  instantCheck: false,
   calcOpacity: 0.82,
   keepAwake: true,
   hintNeedsLongClick: false,
@@ -263,6 +269,70 @@ export function levelStats(
     }
   }
   return { played, finished, averageMs: finished > 0 ? Math.round(total / finished) : null };
+}
+
+export interface TotalStats {
+  played: number;
+  finished: number;
+  averageMs: number | null;
+  best: { id: string; ms: number } | null;
+  hints: number;
+  checks: number;
+  /** Days in a row, up to today, with at least one puzzle finished. */
+  streak: number;
+  /** Puzzles finished per level, indexed 1-6. */
+  byLevel: number[];
+}
+
+/** The day a timestamp falls on, in the reader's own time zone. */
+const dayNumber = (ms: number): number => {
+  const d = new Date(ms);
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86_400_000);
+};
+
+/**
+ * Everything played, across every level and both pools. The per-pool figures
+ * are already on the screen; this answers "how am I doing overall".
+ */
+export function totalStats(history: History, now = Date.now()): TotalStats {
+  const out: TotalStats = {
+    played: 0,
+    finished: 0,
+    averageMs: null,
+    best: null,
+    hints: 0,
+    checks: 0,
+    streak: 0,
+    byLevel: new Array<number>(7).fill(0),
+  };
+
+  let total = 0;
+  const days = new Set<number>();
+
+  for (const [key, rec] of Object.entries(history)) {
+    out.played++;
+    out.hints += rec.hints ?? 0;
+    out.checks += rec.checks ?? 0;
+    if (!rec.finished || rec.bestMs === undefined) continue;
+    out.finished++;
+    total += rec.bestMs;
+    const level = Number(key[0]);
+    if (level >= 1 && level <= 6) out.byLevel[level]++;
+    if (out.best === null || rec.bestMs < out.best.ms) out.best = { id: key, ms: rec.bestMs };
+    if (rec.bestAt !== undefined) days.add(dayNumber(rec.bestAt));
+  }
+
+  out.averageMs = out.finished > 0 ? Math.round(total / out.finished) : null;
+
+  // Counted back from today, or from yesterday when today has not been played
+  // yet — an evening habit should not read as broken all morning.
+  const today = dayNumber(now);
+  let day = days.has(today) ? today : today - 1;
+  while (days.has(day)) {
+    out.streak++;
+    day--;
+  }
+  return out;
 }
 
 /** Mark a puzzle as started, so it drops out of the unplayed list. */

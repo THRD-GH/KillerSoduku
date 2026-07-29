@@ -297,9 +297,56 @@ export class PlayScreen {
 
   private doCheck(): void {
     const wrong = this.game.check();
-    toast(wrong === 0 ? 'No mistakes so far' : `${wrong} wrong ${wrong === 1 ? 'entry' : 'entries'}`);
     this.render();
     this.scheduleSave();
+    if (wrong === 0) {
+      toast('No mistakes so far');
+      return;
+    }
+    // Knowing a digit is wrong is only half of it — everything built on top of
+    // it is suspect too, and undoing by hand means guessing how far back to go.
+    this.offerRewind(`${wrong} wrong ${wrong === 1 ? 'entry' : 'entries'}`);
+  }
+
+  /** Offer to wind the board back to before the first wrong entry. */
+  private offerRewind(title: string): void {
+    if (!this.game.canUndo()) {
+      toast(`${title} — no history to wind back`);
+      return;
+    }
+    openOverlay((close) => {
+      const rewind = el('button', { class: 'btn primary' }, 'Rewind');
+      rewind.addEventListener('click', () => {
+        close();
+        this.doRewind();
+      });
+      const stay = el('button', { class: 'btn' }, 'Leave it');
+      stay.addEventListener('click', close);
+      return el(
+        'div',
+        { class: 'panel' },
+        el('h2', {}, title),
+        el(
+          'p',
+          {},
+          'Rewind takes the board back to the last position where everything was still right, ' +
+            'undoing whatever was built on the mistake. Redo puts it all back if you change your mind.',
+        ),
+        el('div', { class: 'panel-footer two' }, stay, rewind),
+      );
+    });
+  }
+
+  private doRewind(): void {
+    const steps = this.game.rewindToLastCorrect();
+    this.recentTaps.length = 0;
+    this.render();
+    this.scheduleSave();
+    toast(
+      steps === 0
+        ? 'Nothing wrong to wind back'
+        : `Wound back ${steps} move${steps === 1 ? '' : 's'}`,
+    );
   }
 
   /**
@@ -525,6 +572,9 @@ export class PlayScreen {
   // --------------------------------------------------------------- lifecycle
 
   private afterMove(): void {
+    // Flagged as you go, for a relaxed game — Check stays the deliberate,
+    // counted version for anyone who would rather find their own mistakes.
+    if (this.ctx.settings.instantCheck) this.game.flagMistakes();
     this.render();
     this.scheduleSave();
     if (!this.game.completed && this.game.isSolved()) this.win();
@@ -568,9 +618,35 @@ export class PlayScreen {
           `${this.game.hints} hint${this.game.hints === 1 ? '' : 's'}, ` +
             `${this.game.checks} check${this.game.checks === 1 ? '' : 's'}`,
         ),
+        this.techniqueReport(),
         el('div', { class: 'actions', style: 'grid-template-columns: 1fr 1fr' }, menu, again),
       );
     });
+  }
+
+  /**
+   * What the puzzle actually asked of you. The solver already knows which
+   * techniques the grid needs — it is worked out for every hint — and until
+   * now that was thrown away the moment the puzzle ended. Naming the hardest
+   * one is how a level stops being a number and starts meaning something.
+   */
+  private techniqueReport(): HTMLElement | null {
+    const trace = this.game.solveTrace();
+    if (trace.length === 0) return null;
+
+    const hardest = trace[0];
+    // Everything at the top difficulty, not just the first: two techniques of
+    // equal standing both deserve the credit.
+    const peers = trace.filter((t) => t.difficulty === hardest.difficulty);
+    const names = peers.map((t) => describeTechnique(t.technique).toLowerCase());
+    const steps = peers.reduce((n, t) => n + t.count, 0);
+
+    return el(
+      'p',
+      { class: 'summary techniques' },
+      `Hardest step: ${names.join(' and ')} — needed ${steps} time${steps === 1 ? '' : 's'}, ` +
+        `out of ${trace.reduce((n, t) => n + t.count, 0)} deductions in all.`,
+    );
   }
 
   private scheduleSave(): void {
@@ -729,6 +805,10 @@ export class PlayScreen {
           'div',
           { class: 'menu-list' },
           item('Fill all candidates', () => this.doFillCandidates()),
+          item('Rewind to before a mistake', () => {
+            if (this.game.wrongCount() === 0) toast('Nothing wrong on the board');
+            else this.offerRewind('Rewind');
+          }),
           item('Share this puzzle', () => this.shareLink()),
           item('Pause', () => this.pause()),
           item('Settings', () => this.ctx.openSettings()),
