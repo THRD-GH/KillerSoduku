@@ -6,7 +6,7 @@ import { packCounts } from './game/packs.ts';
 import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
 import { Game } from './game/state.ts';
 import {
-  RANDOM_POOL_SIZE,
+  NEW_POOL_SIZE,
   clearSave,
   loadHistory,
   loadSave,
@@ -27,7 +27,7 @@ class App implements AppContext {
   settings: Settings = loadSettings();
   history: History = loadHistory();
   packCounts: Record<number, number> | null = null;
-  readonly randomPoolSize = RANDOM_POOL_SIZE;
+  readonly newPoolSize = NEW_POOL_SIZE;
 
   private root: HTMLElement;
   private play: PlayScreen | null = null;
@@ -91,7 +91,7 @@ class App implements AppContext {
   }
 
   private poolSize(level: Level, source: Source): number {
-    return source === 'classic' ? (this.packCounts?.[level] ?? 0) : this.randomPoolSize;
+    return source === 'classic' ? (this.packCounts?.[level] ?? 0) : this.newPoolSize;
   }
 
   playRandom(level: Level, source: Source): void {

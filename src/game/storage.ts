@@ -8,10 +8,10 @@ const KEY = {
   cache: 'ks:v1:cache',
 } as const;
 
-/** How many random puzzles each level offers. Generation is unlimited; this
- *  just bounds the picker list so "unplayed puzzles" stays a meaningful set.
- *  Fixed levels use however many the imported pack holds. */
-export const RANDOM_POOL_SIZE = 300;
+/** How many New puzzles each level offers. Generation is unlimited; this just
+ *  bounds the picker list so "unplayed puzzles" stays a meaningful set.
+ *  Classic levels use however many the imported pack holds. */
+export const NEW_POOL_SIZE = 500;
 
 export interface Settings {
   /** When on, a tapped digit is always a candidate — entries need a long-click. */

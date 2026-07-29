@@ -323,7 +323,9 @@ body {
   min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  /* Column by column, so each column is a group that belongs together. */
+  grid-auto-flow: column;
   gap: 5px;
   margin: 0;
 }
@@ -462,7 +464,12 @@ body {
   opacity: 0.75;
 }
 
+/* The box stretches to the row, so centre the time inside it rather than
+   letting it sit on the top padding. */
 .timer {
+  display: grid;
+  place-items: center;
+  line-height: 1;
   background: var(--panel);
   color: var(--text);
   font-size: 17px;
@@ -1125,10 +1132,23 @@ body {
   border-bottom: 2px dotted var(--error);
 }
 
+/* Each digit is its own inline-block, and text-decoration does not reach into
+   those — so the strike is drawn as a rule across the whole row instead. */
 .calc .combo.struck {
-  opacity: 0.45;
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
+  opacity: 0.5;
+}
+
+.calc .combo.struck::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--error);
+  pointer-events: none;
 }
 
 .calc .combo.struck .d.placed {

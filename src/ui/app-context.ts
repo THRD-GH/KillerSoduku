@@ -7,7 +7,7 @@ export interface AppContext {
   history: History;
   /** Puzzles per level in the imported packs, or null when none are installed. */
   packCounts: Record<number, number> | null;
-  randomPoolSize: number;
+  newPoolSize: number;
   applyTheme(): void;
   /** Repaint the board in place, e.g. after a highlighting setting changes. */
   refreshBoard(): void;

@@ -53,7 +53,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
 }
 
 function poolSize(ctx: AppContext, level: Level, source: Source): number {
-  return source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
+  return source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.newPoolSize;
 }
 
 /** One level as three columns: the difficulty, then each of its two pools. */
@@ -111,6 +111,13 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
   return row;
 }
 
+/**
+ * Most buttons the picker will render at once. Enough to cover a whole New
+ * pool; the Classic pools run to thousands, where a full list would be a wall
+ * of buttons nobody scrolls through.
+ */
+const PICKER_LIMIT = 500;
+
 /** The list of puzzle numbers not yet played in this level and pool. */
 export function openPicker(ctx: AppContext, level: Level, source: Source): void {
   const size = poolSize(ctx, level, source);
@@ -123,7 +130,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
         el('p', { class: 'summary' }, 'Every puzzle here has been played. Release some in Stats.'),
       );
     }
-    for (const n of numbers.slice(0, 400)) {
+    for (const n of numbers.slice(0, PICKER_LIMIT)) {
       const b = el('button', { class: 'btn' }, formatPuzzleId({ level, number: n, source }));
       b.addEventListener('click', () => {
         close();
@@ -142,7 +149,8 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
       el(
         'p',
         { class: 'summary' },
-        `${numbers.length} of ${size} available${numbers.length > 400 ? ', showing the first 400' : ''}`,
+        `${numbers.length} of ${size} available` +
+          (numbers.length > PICKER_LIMIT ? `, showing the first ${PICKER_LIMIT}` : ''),
       ),
       grid,
       el('div', { class: 'panel-footer' }, cancel),

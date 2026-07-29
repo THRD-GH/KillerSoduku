@@ -90,7 +90,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   };
 
   const poolSize = (): number =>
-    source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.randomPoolSize;
+    source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.newPoolSize;
 
   const draw = (): void => {
     const unfinishedCount = unfinishedGames(ctx.history).length;

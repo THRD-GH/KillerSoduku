@@ -213,7 +213,8 @@ export class PlayScreen {
       }, 'New puzzle'),
     );
 
-    return el('div', { class: 'actions' }, check, hint, sum, restart, next, undoPair);
+    // Filled column by column: Check/Hint/Sum, then New/Restart/undo-redo.
+    return el('div', { class: 'actions' }, check, hint, sum, next, restart, undoPair);
   }
 
   // ------------------------------------------------------------------ input
