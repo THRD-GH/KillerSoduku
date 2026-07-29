@@ -518,11 +518,6 @@ export class PlayScreen {
       sum: cage?.sum ?? 3,
       placed,
       blocked,
-      opacity: this.ctx.settings.calcOpacity,
-      onOpacity: (value) => {
-        this.ctx.settings.calcOpacity = value;
-        saveSettings(this.ctx.settings);
-      },
       onAuto:
         sel >= 0
           ? (mask) => {

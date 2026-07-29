@@ -20,9 +20,6 @@ export interface SumCalcOptions {
   blocked?: number;
   /** Called by [Auto] when exactly one combination remains. */
   onAuto?: (mask: number) => void;
-  /** Starting opacity for the panel, and where to persist a change to it. */
-  opacity?: number;
-  onOpacity?: (value: number) => void;
 }
 
 /**
@@ -164,30 +161,51 @@ export function openSumCalculator(opts: SumCalcOptions): void {
 
       remaining = lastMatches.filter((m) => !struck.has(m));
       autoBtn.disabled = !(remaining.length === 1 && opts.onAuto !== undefined);
+      holdHeight();
+    };
+
+    /*
+     * The list of combinations is the only thing in the panel that changes
+     * size, and filtering it down used to shrink the whole panel — which moved
+     * the buttons underneath while you were still aiming at them. The box is
+     * held at the tallest it has needed so far, so ruling digits out empties
+     * space rather than collapsing it. It still grows if a new sum or cell
+     * count needs more room, and the cap in the stylesheet still applies.
+     */
+    let floor = 0;
+    const holdHeight = (): void => {
+      // A detached box measures zero, and the panel is built before it is
+      // attached — measuring then would pin it shut. The first real
+      // measurement is taken once it is on screen.
+      if (!results.isConnected) return;
+      results.style.height = 'auto';
+      // scrollHeight covers the padding but not the border, and the box sizes
+      // border-box, so the two edges have to be added back.
+      floor = Math.max(floor, results.scrollHeight + 2);
+      results.style.height = `${floor}px`;
     };
 
     sumInput.addEventListener('input', run);
     sizeInput.addEventListener('input', run);
 
-    // Slides the panel between almost-clear and solid. The value rides on the
-    // overlay as a custom property, so every surface inside it follows.
-    const startOpacity = opts.opacity ?? 0.82;
+    /*
+     * Slides the panel between almost-clear and solid. The value rides on the
+     * overlay as a custom property, so every surface inside it follows.
+     *
+     * Always opens solid. Seeing through the panel is something you want for a
+     * moment, to check the grid behind it — carrying that setting over to the
+     * next time you open the calculator only means opening it half-readable.
+     */
     const glass = el('input', {
       type: 'range',
       min: '0.35',
       max: '1',
       step: '0.01',
-      value: String(startOpacity),
+      value: '1',
       'aria-label': 'Sum calculator transparency',
     });
-    // The overlay only exists once this panel has been attached to it.
-    queueMicrotask(() =>
-      glass.closest<HTMLElement>('.overlay')?.style.setProperty('--glass', String(startOpacity)),
-    );
     glass.addEventListener('input', () => {
-      const value = Number(glass.value);
-      glass.closest<HTMLElement>('.overlay')?.style.setProperty('--glass', String(value));
-      opts.onOpacity?.(value);
+      glass.closest<HTMLElement>('.overlay')?.style.setProperty('--glass', glass.value);
     });
 
     const back = el('button', { class: 'btn' }, 'Back');
@@ -247,6 +265,8 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     );
 
     run();
+    // Now that it is on screen it can be measured, and held at that height.
+    queueMicrotask(holdHeight);
     return panel;
-  }, { overlayClass: 'see-through' });
+  }, { overlayClass: 'see-through calc-overlay' });
 }

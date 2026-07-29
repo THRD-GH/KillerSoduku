@@ -37,8 +37,6 @@ export interface Settings {
   autoRemoveCandidates: boolean;
   /** Flag a wrong entry the moment it is made, without waiting for Check. */
   instantCheck: boolean;
-  /** How solid the sum calculator sits over the grid, 0.35 to 1. */
-  calcOpacity: number;
   /** Hold a wake lock while a puzzle is open, so the screen stops dimming. */
   keepAwake: boolean;
   hintNeedsLongClick: boolean;
@@ -57,7 +55,6 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightSameDigit: true,
   autoRemoveCandidates: true,
   instantCheck: false,
-  calcOpacity: 0.82,
   keepAwake: true,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,
