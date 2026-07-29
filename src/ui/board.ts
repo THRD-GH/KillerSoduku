@@ -13,6 +13,12 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  */
 const CAGE_INSET = 0.05;
 
+/**
+ * Corner rounding, in cell widths. Small enough to read as a crisp corner —
+ * just off a hard mitre, which renders harshly at these stroke widths.
+ */
+const CAGE_CORNER = 0.05;
+
 interface CellNodes {
   root: HTMLDivElement;
   big: HTMLSpanElement;
@@ -96,7 +102,7 @@ export class Board {
 
     for (const cage of this.game.puzzle.cages) {
       const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET));
+      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET, CAGE_CORNER));
       svg.append(path);
     }
     return svg;

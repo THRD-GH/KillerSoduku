@@ -54,7 +54,7 @@ const SECTIONS: [string, string[]][] = [
     'Sum calculator',
     [
       'Sum and cell count are filled in from the selected cage; both can be overridden.',
-      'Tap a digit once to require it (green), again to rule it out (red), again for neutral.',
+      'Tap a digit once to rule it out (red), again to require it (green), again for neutral.',
       'Tap a combination to strike it off — for when you can rule one out by reasoning that no digit filter expresses. Tap again to bring it back.',
       'In each combination, digits already in that cage are marked in the accent colour, and digits already in the selected cell’s row, column or box are marked in red — those cannot go in this cell, though they may still belong elsewhere in the cage.',
       'When exactly one combination is left — after strikes — Auto writes it into the cage as candidates.',

@@ -82,7 +82,10 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     for (let d = 1; d <= 9; d++) {
       const b = el('button', { class: classFor(d) }, String(d));
       b.addEventListener('click', () => {
-        state[d] = state[d] === 'neutral' ? 'include' : state[d] === 'include' ? 'exclude' : 'neutral';
+        // Ruling a digit out is the common move, so it comes first:
+        // neutral -> exclude -> include -> neutral.
+        state[d] =
+          state[d] === 'neutral' ? 'exclude' : state[d] === 'exclude' ? 'include' : 'neutral';
         b.className = classFor(d);
         run();
       });
@@ -160,13 +163,8 @@ export function openSumCalculator(opts: SumCalcOptions): void {
 
       remaining = lastMatches.filter((m) => !struck.has(m));
       autoBtn.disabled = !(remaining.length === 1 && opts.onAuto !== undefined);
-      const ruledOut = lastMatches.length - remaining.length;
-      count.textContent =
-        (remaining.length === 1 ? '1 combination' : `${remaining.length} combinations`) +
-        (ruledOut > 0 ? ` (${ruledOut} ruled out)` : '');
     };
 
-    const count = el('span', { class: 'label' });
     sumInput.addEventListener('input', run);
     sizeInput.addEventListener('input', run);
 
@@ -215,18 +213,25 @@ export function openSumCalculator(opts: SumCalcOptions): void {
       'div',
       { class: 'panel calc' },
       el('h2', {}, 'Sum calculator'),
+      // Keypad and the two fields on the left, the combinations they filter on
+      // the right, given the full height. The controls explain themselves
+      // through colour; Help carries the detail.
       el(
         'div',
-        { class: 'row' },
-        el('label', {}, 'Sum'),
-        sumInput,
-        el('label', {}, 'Cells'),
-        sizeInput,
-        count,
+        { class: 'calc-body' },
+        el(
+          'div',
+          { class: 'calc-left' },
+          digitRow,
+          el(
+            'div',
+            { class: 'calc-fields' },
+            el('label', {}, 'Sum', sumInput),
+            el('label', {}, 'Cells', sizeInput),
+          ),
+        ),
+        results,
       ),
-      // Keypad on the left, the combinations it filters on the right. The
-      // controls explain themselves through colour; Help carries the detail.
-      el('div', { class: 'calc-body' }, digitRow, results),
       el(
         'div',
         { class: 'panel-footer' },

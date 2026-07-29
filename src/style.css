@@ -28,6 +28,9 @@
   /* Components for overlays you need to see through, mixed at --glass. */
   --panel-rgb: 22 28 34;
   --panel-2-rgb: 30 38 46;
+  /* Required / ruled-out keys, mixed at --glass like every other surface. */
+  --inc-rgb: 18 131 63;
+  --exc-rgb: 179 34 34;
 }
 
 :root[data-theme='day'] {
@@ -55,6 +58,8 @@
   --shadow: rgba(0, 0, 0, 0.25);
   --panel-rgb: 247 249 251;
   --panel-2-rgb: 231 236 241;
+  --inc-rgb: 15 122 58;
+  --exc-rgb: 176 32 32;
 }
 
 * {
@@ -668,10 +673,11 @@ body {
   background: rgb(var(--panel-rgb) / var(--glass));
 }
 
-/* Let the grid show through the calculator's own surfaces too — but never
-   through the required/ruled-out keys, whose whole job is to be unmistakable. */
+/* Every surface inside follows the slider: the results, the keys, and the
+   sum and cell-count fields. */
 .overlay.see-through .results,
-.overlay.see-through .calc-keys .btn:not(.inc):not(.exc) {
+.overlay.see-through .calc-keys .btn:not(.inc):not(.exc),
+.overlay.see-through .calc input[type='number'] {
   background: rgb(var(--panel-2-rgb) / calc(var(--glass) * 0.88));
 }
 
@@ -978,11 +984,21 @@ body {
 /* Keypad beside the results. Both are fixed height so the panel never
    changes size as combinations are filtered — otherwise the buttons
    underneath move while you are aiming at them. */
+/* The left column sets the floor; a long list of combinations may push the
+   row taller, up to the cap on .results. The footer is pinned, so growing
+   never moves the buttons out from under your finger. */
 .calc-body {
   display: grid;
   grid-template-columns: 126px minmax(0, 1fr);
   gap: 8px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.calc-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .calc-keys {
@@ -993,29 +1009,69 @@ body {
   height: 156px;
 }
 
+/* Sum and cell count live under the keypad, leaving the combinations the
+   full height of the panel. */
+.calc-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.calc-fields label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+/* Two digits at most, so no wider than that. The spinners are dropped: they
+   would take more room than the number does. */
+.calc-fields input[type='number'] {
+  flex: 0 0 46px;
+  width: 46px;
+  min-width: 0;
+  padding: 4px 2px;
+  font-size: 14px;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.calc-fields input[type='number']::-webkit-outer-spin-button,
+.calc-fields input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .calc-keys button {
   padding: 0;
   font-size: 17px;
 }
 
-/* Fully opaque and high contrast: these have to read at any transparency. */
+/* Required and ruled-out keys. They fade with everything else, so the colour
+   is carried by an opaque border and shadowed white text rather than by the
+   fill alone. */
 .calc-keys button.inc {
-  background: #12833f;
+  background: rgb(var(--inc-rgb) / var(--glass, 1));
   border-color: #64e39b;
   color: #ffffff;
   font-weight: 800;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.75);
 }
 
 .calc-keys button.exc {
-  background: #b32222;
+  background: rgb(var(--exc-rgb) / var(--glass, 1));
   border-color: #ff9090;
   color: #ffffff;
   font-weight: 800;
   text-decoration: line-through;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.75);
 }
 
 .calc .results {
-  height: 156px;
+  max-height: 52vh;
   overflow-y: auto;
   overflow-x: hidden;
   font-variant-numeric: tabular-nums;

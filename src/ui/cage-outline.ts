@@ -103,7 +103,7 @@ const fmt = (n: number): string => String(Math.round(n * 1000) / 1000);
  * boundary, rather than a dash per cell edge. Corners join properly and the
  * line runs continuously the whole way round.
  */
-export function cageOutlinePath(cells: number[], inset: number, radius = 0.13): string {
+export function cageOutlinePath(cells: number[], inset: number, radius = 0.05): string {
   const parts: string[] = [];
 
   for (const loop of boundaryLoops(cells)) {
