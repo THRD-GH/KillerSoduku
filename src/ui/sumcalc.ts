@@ -48,7 +48,7 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     });
 
     const results = el('div', { class: 'results' });
-    const digitRow = el('div', { class: 'digits' });
+    const digitRow = el('div', { class: 'calc-keys' });
     const autoBtn = el('button', { class: 'btn' }, 'Auto');
     autoBtn.disabled = true;
     let lastMatches: number[] = [];
@@ -184,17 +184,10 @@ export function openSumCalculator(opts: SumCalcOptions): void {
         sizeInput,
         count,
       ),
-      el(
-        'p',
-        { class: 'summary' },
-        'Tap a digit to require it (green), again to rule it out (red). ' +
-          'Tap a combination to strike it off. In each combination, digits already ' +
-          'in this cage are marked, and digits already in the selected cell’s row, ' +
-          'column or box are shown as unavailable to that cell.',
-      ),
-      digitRow,
-      results,
-      el('div', { class: 'actions' }, back, reset, autoBtn),
+      // Keypad on the left, the combinations it filters on the right. The
+      // controls explain themselves through colour; Help carries the detail.
+      el('div', { class: 'calc-body' }, digitRow, results),
+      el('div', { class: 'panel-footer three' }, back, reset, autoBtn),
     );
 
     run();

@@ -793,25 +793,36 @@ body {
   border-radius: 4px;
 }
 
-.calc .digits {
+/* Keypad beside the results. Both are fixed height so the panel never
+   changes size as combinations are filtered — otherwise the buttons
+   underneath move while you are aiming at them. */
+.calc-body {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: 126px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   gap: 4px;
-  margin-bottom: 10px;
+  height: 156px;
 }
 
-.calc .digits button {
-  padding: 9px 0;
-  font-size: 16px;
+.calc-keys button {
+  padding: 0;
+  font-size: 17px;
 }
 
-.calc .digits button.inc {
+.calc-keys button.inc {
   background: #1f5c33;
   border-color: #35a35c;
   color: #d6ffe4;
 }
 
-.calc .digits button.exc {
+.calc-keys button.exc {
   background: #6b2323;
   border-color: #b04040;
   color: #ffdede;
@@ -819,17 +830,16 @@ body {
 }
 
 .calc .results {
-  max-height: 34vh;
-  overflow: auto;
+  height: 156px;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-variant-numeric: tabular-nums;
-  font-size: 15px;
-  line-height: 1.7;
-  letter-spacing: 1px;
+  font-size: 14px;
+  line-height: 1.55;
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
-  padding: 8px 10px;
-  margin-bottom: 10px;
+  padding: 5px 7px;
 }
 
 .calc .results div.none {
@@ -852,7 +862,7 @@ body {
 
 .calc .combo .d {
   display: inline-block;
-  min-width: 1.15em;
+  min-width: 1.05em;
   text-align: center;
 }
 
