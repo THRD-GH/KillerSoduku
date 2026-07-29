@@ -20,7 +20,7 @@ import type { History, SavedGame, Settings, Theme } from './game/storage.ts';
 import { clear, el } from './ui/dom.ts';
 import { buildMenu } from './ui/menu.ts';
 import { openHelp } from './ui/help.ts';
-import { openOverlay, toast } from './ui/overlay.ts';
+import { closeTopOverlay, onOverlayOpen, openOverlay, toast } from './ui/overlay.ts';
 import { PlayScreen } from './ui/play.ts';
 import { openSettings } from './ui/settings.ts';
 import { buildStats } from './ui/stats.ts';
@@ -47,6 +47,7 @@ class App implements AppContext {
     this.applyTheme();
     this.applyKeypadSide();
 
+    this.guardBackButton();
     document.addEventListener('keydown', (e) => this.play?.handleKey(e));
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.play?.pause();
@@ -67,6 +68,37 @@ class App implements AppContext {
       this.goMenu();
       this.playPuzzle(linked);
     }
+  }
+
+  /**
+   * Installed as a PWA there is no browser chrome, so the phone's back gesture
+   * is the only back there is — and by default it leaves the app entirely,
+   * mid-puzzle. One history entry is kept while anything other than the menu
+   * is on screen, and going back spends it: the top panel closes, or the menu
+   * comes back. Only from the bare menu does back leave, which is what it
+   * should do there.
+   */
+  private guarded = false;
+
+  private guardBackButton(): void {
+    onOverlayOpen(() => this.armBack());
+    window.addEventListener('popstate', () => {
+      if (closeTopOverlay()) {
+        // The panel took the press; arm another for what is underneath.
+        this.guarded = false;
+        this.armBack();
+        return;
+      }
+      if (!this.guarded) return;
+      this.guarded = false;
+      this.goMenu(true);
+    });
+  }
+
+  private armBack(): void {
+    if (this.guarded) return;
+    history.pushState({ ks: 'back' }, '');
+    this.guarded = true;
   }
 
   applyTheme(): void {
@@ -104,7 +136,18 @@ class App implements AppContext {
     this.root.append(node);
   }
 
-  goMenu(): void {
+  goMenu(fromBack = false): void {
+    /*
+     * Leaving by a button rather than by the back gesture: spend the entry we
+     * are holding instead of stacking another. The popstate that follows comes
+     * straight back here with fromBack set, and that is what mounts the menu —
+     * so the flag has to stay up until then, or the handler ignores it and the
+     * screen never changes.
+     */
+    if (!fromBack && this.guarded) {
+      history.back();
+      return;
+    }
     const saved = latestSave();
     const resume =
       saved === null
@@ -117,6 +160,7 @@ class App implements AppContext {
   }
 
   goStats(level: Level): void {
+    this.armBack();
     this.mount(buildStats(this, level));
   }
 
@@ -198,6 +242,7 @@ class App implements AppContext {
   }
 
   private startGame(game: Game): void {
+    this.armBack();
     this.play?.destroy();
     clear(this.root);
     const screen = new PlayScreen(this, game);

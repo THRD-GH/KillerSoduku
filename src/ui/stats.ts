@@ -29,8 +29,18 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   back.append(el('i'), el('i'), el('i'));
   back.addEventListener('click', () => ctx.goMenu());
 
-  let mode: 'level' | 'unfinished' = 'unfinished';
+  /*
+   * Both halves of the screen are on show at once: the unfinished games and
+   * the per-level history. They answer different questions — "what did I leave
+   * lying around" and "how far through this pool am I" — and having to close
+   * one to read the other made comparing them impossible. The unfinished list
+   * still folds away, because it is the part that can run long, but folding it
+   * no longer reveals anything: the level stats are always below it.
+   */
+  let showUnfinished = true;
   const unfinishedTab = el('button', { class: 'btn wide' });
+  const unfinishedSummary = el('p', { class: 'summary' });
+  const unfinishedRows = el('div', {});
   const levelTabs = el('div', { class: 'tabs' });
   const sourceTabs = el('div', { class: 'tabs' });
   const summary = el('p', { class: 'summary' });
@@ -70,22 +80,39 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   /** Every puzzle started and not solved, whatever its level or pool. */
   const drawUnfinished = (): void => {
     const games = unfinishedGames(ctx.history);
-    summary.textContent =
+    unfinishedSummary.textContent =
       games.length === 0
         ? 'No unfinished games — every puzzle you have opened is solved.'
-        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, newest first. Tap one to pick it up.`;
+        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, newest first. Hold one to pick it up.`;
 
-    clear(rows);
+    clear(unfinishedRows);
     for (const { id, record } of games) {
       const row = el(
         'button',
-        { class: 'statrow open' },
+        { class: 'statrow open', 'aria-label': `Resume ${formatPuzzleId(id)}` },
         el('span', {}, formatPuzzleId(id)),
         el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
         el('span', { class: 'when' }, record.startedAt ? formatDate(record.startedAt) : ''),
         el('span', { class: 'when' }, `${record.hints ?? 0}h ${record.checks ?? 0}c`),
+        el('span', { class: 'hold' }, 'hold'),
       );
-      row.addEventListener('click', () => ctx.playPuzzle(id));
+      /*
+       * Held, not tapped. These rows sit right next to the reset crosses in a
+       * scrolling list, and a stray tap while scrolling would drop you into a
+       * puzzle you did not mean to open — the same reason the rest of the
+       * screen guards its actions this way.
+       */
+      bindTap(row, {
+        onTap: () => toast('Hold to resume'),
+        onLong: () => ctx.playPuzzle(id),
+      });
+      // A keyboard has no long press; Enter or Space means what it says.
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          ctx.playPuzzle(id);
+        }
+      });
 
       const drop = el(
         'button',
@@ -108,7 +135,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         ),
       );
 
-      rows.append(el('div', { class: 'unfinished-row' }, row, drop));
+      unfinishedRows.append(el('div', { class: 'unfinished-row' }, row, drop));
     }
   };
 
@@ -124,18 +151,15 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
 
   const draw = (): void => {
     drawTotals();
-    const unfinishedCount = unfinishedGames(ctx.history).length;
-    unfinishedTab.textContent = `Unfinished games (${unfinishedCount})`;
-    unfinishedTab.classList.toggle('primary', mode === 'unfinished');
-    levelTabs.hidden = mode === 'unfinished';
-    sourceTabs.hidden = mode === 'unfinished';
-    reset.hidden = mode === 'unfinished';
-    resetAll.hidden = mode !== 'unfinished';
 
-    if (mode === 'unfinished') {
-      drawUnfinished();
-      return;
-    }
+    const unfinishedCount = unfinishedGames(ctx.history).length;
+    unfinishedTab.textContent =
+      `${showUnfinished ? '▾' : '▸'} Unfinished games (${unfinishedCount})`;
+    unfinishedTab.classList.toggle('primary', showUnfinished);
+    unfinishedSummary.hidden = !showUnfinished;
+    unfinishedRows.hidden = !showUnfinished;
+    resetAll.hidden = !showUnfinished || unfinishedCount === 0;
+    drawUnfinished();
 
     clear(levelTabs);
     for (const l of LEVELS) {
@@ -244,7 +268,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   done.addEventListener('click', () => ctx.goMenu());
 
   unfinishedTab.addEventListener('click', () => {
-    mode = mode === 'unfinished' ? 'level' : 'unfinished';
+    showUnfinished = !showUnfinished;
     draw();
   });
 
@@ -253,11 +277,15 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     el('div', { class: 'titlebar' }, back, el('span', { class: 'id' }, 'STATS')),
     totals,
     unfinishedTab,
+    unfinishedSummary,
+    unfinishedRows,
+    resetAll,
+    el('p', { class: 'section-label' }, 'By level and pool'),
     levelTabs,
     sourceTabs,
     summary,
     rows,
-    el('div', { class: 'actions', style: 'margin-top: 10px' }, reset, resetAll, done),
+    el('div', { class: 'actions', style: 'margin-top: 10px' }, reset, done),
   );
   return screen;
 }

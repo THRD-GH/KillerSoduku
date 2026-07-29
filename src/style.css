@@ -1256,12 +1256,36 @@ body {
 
 .statrow.open {
   width: 100%;
+  /* One more column than the level rows: the hold badge on the end. */
+  grid-template-columns: 1fr auto auto auto auto;
   background: var(--panel-2);
   border: 1px solid var(--line);
   color: var(--text);
   text-align: left;
   margin-bottom: 5px;
   font-size: 13px;
+}
+
+/* Says what the row wants, on the row itself — resuming is a long press, so
+   a stray tap while scrolling a long list cannot drop you into a puzzle. */
+.statrow .hold {
+  color: var(--dim);
+  font-size: 9.5px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* Heading over the second half of the Stats screen. */
+.section-label {
+  margin: 14px 0 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .statrow.open:active {

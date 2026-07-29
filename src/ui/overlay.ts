@@ -4,6 +4,23 @@ import { el } from './dom.ts';
  * Opens a modal panel. `build` receives a close callback so the content can
  * dismiss itself; clicking the backdrop or pressing Escape also closes.
  */
+/** Open panels, innermost last, so the back button can close the top one. */
+const stack: { close: () => void }[] = [];
+
+/** Told when a panel opens, so the app shell can arm the back button. */
+let onOpen: (() => void) | null = null;
+export const onOverlayOpen = (fn: () => void): void => {
+  onOpen = fn;
+};
+
+/** Close the innermost open panel. True if there was one. */
+export function closeTopOverlay(): boolean {
+  const top = stack[stack.length - 1];
+  if (!top) return false;
+  top.close();
+  return true;
+}
+
 export function openOverlay(
   build: (close: () => void) => HTMLElement,
   opts: { dismissable?: boolean; overlayClass?: string } = {},
@@ -13,10 +30,16 @@ export function openOverlay(
     class: `overlay${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
   });
 
+  const entry = { close: (): void => undefined };
   const close = (): void => {
     backdrop.remove();
     document.removeEventListener('keydown', onKey, true);
+    const at = stack.indexOf(entry);
+    if (at >= 0) stack.splice(at, 1);
   };
+  entry.close = close;
+  stack.push(entry);
+  onOpen?.();
 
   const onKey = (e: KeyboardEvent): void => {
     if (e.key === 'Escape' && dismissable) {

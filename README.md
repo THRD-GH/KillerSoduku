@@ -88,7 +88,11 @@ Every level offers two pools, with separate history and separate numbering:
   `3-N10`. Same seed, same grid, on every device, forever — but the supply is
   unlimited and nothing has to ship with the app. 500 per level.
 
-Played puzzles drop out of their pool until released from Stats.
+Played puzzles drop out of their pool until released from Stats. Stats shows
+the running totals, the unfinished games and the per-level history all at once;
+hold an unfinished row to pick that game up. Installed as a PWA, the phone's
+back gesture closes the open panel, then returns to the menu, and only leaves
+the app from the menu itself.
 
 ### The Classic packs
 

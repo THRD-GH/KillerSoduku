@@ -270,25 +270,6 @@ export class Game {
     return steps;
   }
 
-  /** [Hint] — fill one correct digit, preferring the selected cell. */
-  hint(): number | null {
-    const wrong: number[] = [];
-    const empty: number[] = [];
-    for (let i = 0; i < CELLS; i++) {
-      if (this.values[i] === 0) empty.push(i);
-      else if (this.values[i] !== this.puzzle.solution[i]) wrong.push(i);
-    }
-    // Correcting a mistake helps more than filling a fresh cell.
-    const pool = wrong.length > 0 ? wrong : empty;
-    if (pool.length === 0) return null;
-    const target = pool.includes(this.selected) ? this.selected : pool[0];
-    this.hints++;
-    this.record([target]);
-    this.values[target] = this.puzzle.solution[target];
-    this.pencils[target] = 0;
-    return target;
-  }
-
   /** Entries that disagree with the solution, without flagging them. */
   wrongCount(): number {
     let wrong = 0;
