@@ -40,7 +40,9 @@ Keyboard: arrows move, `1`–`9` toggle, `Shift`+digit forces, `Backspace` clear
 
 **Buttons** — Check (flag wrong entries), Hint (fill one correct digit, fixing a
 mistake first if there is one), Sum (combination calculator), Restart, New, Undo
-(one step, no redo), Pause. The purple box totals cage sums for innie/outie arithmetic:
+and the undo/redo arrows. Undo winds back as far as the empty grid; redo goes
+forward until a new move abandons it. The purple box totals cage sums for
+innie/outie arithmetic:
 tap to add the selected cage, hold to clear, each cage counts once. The white box
 is the clock; tap to hide it, it keeps running.
 

@@ -13,6 +13,7 @@ import {
 import { Board } from './board.ts';
 import { clear, el, formatTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
+import { undoArrow } from './icons.ts';
 import { bindTap } from './pointer.ts';
 import { openSumCalculator } from './sumcalc.ts';
 import type { AppContext } from './app-context.ts';
@@ -29,7 +30,8 @@ export class PlayScreen {
   private candidateLine = el('span', { class: 'candidates' });
   private timerBox = el('div', { class: 'timer' }, '00:00');
   private adderBox = el('div', { class: 'adder' });
-  private undoBtn = el('button', { class: 'btn' }, 'Undo');
+  private undoBtn = el('button', { class: 'btn icon', 'aria-label': 'Undo', title: 'Undo' });
+  private redoBtn = el('button', { class: 'btn icon', 'aria-label': 'Redo', title: 'Redo' });
   private keys = new Map<number, HTMLButtonElement>();
   /** CLEAR, the cage adder, the clock and Pause — built with the controls. */
   private bottomRow!: HTMLDivElement;
@@ -167,16 +169,23 @@ export class PlayScreen {
     check.addEventListener('click', () => this.doCheck());
 
     const hint = el('button', { class: 'btn' }, 'Hint');
-    const undo = this.undoBtn;
-    // These two can be set to long-click only, to stop stray taps spoiling a run.
+    // These can be set to long-click only, to stop stray taps spoiling a run.
     bindTap(hint, {
       onTap: () => (this.ctx.settings.hintNeedsLongClick ? this.nag('Hint') : this.doHint()),
       onLong: () => this.doHint(),
     });
-    bindTap(undo, {
+
+    this.undoBtn.append(undoArrow());
+    this.redoBtn.append(undoArrow(true));
+    bindTap(this.undoBtn, {
       onTap: () => (this.ctx.settings.undoNeedsLongClick ? this.nag('Undo') : this.doUndo()),
       onLong: () => this.doUndo(),
     });
+    bindTap(this.redoBtn, {
+      onTap: () => (this.ctx.settings.undoNeedsLongClick ? this.nag('Redo') : this.doRedo()),
+      onLong: () => this.doRedo(),
+    });
+    const undoPair = el('div', { class: 'undo-pair' }, this.undoBtn, this.redoBtn);
 
     const sum = el('button', { class: 'btn' }, 'Sum');
     sum.addEventListener('click', () => this.openCalculator());
@@ -200,7 +209,7 @@ export class PlayScreen {
       }, 'New puzzle'),
     );
 
-    return el('div', { class: 'actions' }, check, hint, sum, restart, next, undo);
+    return el('div', { class: 'actions' }, check, hint, sum, restart, next, undoPair);
   }
 
   // ------------------------------------------------------------------ input
@@ -285,6 +294,17 @@ export class PlayScreen {
     this.recentTaps.length = 0;
     this.render();
     this.scheduleSave();
+  }
+
+  private doRedo(): void {
+    if (!this.game.redo()) {
+      toast('Nothing to redo');
+      return;
+    }
+    this.recentTaps.length = 0;
+    this.render();
+    this.scheduleSave();
+    if (!this.game.completed && this.game.isSolved()) this.win();
   }
 
   private openCalculator(): void {
@@ -504,6 +524,7 @@ export class PlayScreen {
     this.board.render();
     this.updateTimer();
     this.undoBtn.disabled = !this.game.canUndo();
+    this.redoBtn.disabled = !this.game.canRedo();
 
     for (let d = 1; d <= 9; d++) {
       const key = this.keys.get(d);
@@ -604,7 +625,11 @@ export class PlayScreen {
       }
       case 'z':
       case 'u':
-        this.doUndo();
+        if (e.shiftKey) this.doRedo();
+        else this.doUndo();
+        break;
+      case 'y':
+        this.doRedo();
         break;
       case 'h':
         this.doHint();

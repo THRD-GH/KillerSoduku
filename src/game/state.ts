@@ -10,7 +10,7 @@ interface CellDelta {
   pencil: number;
 }
 
-/** One user action, stored as the state it replaced. Undo pops; there is no redo. */
+/** One user action, stored as the cells it replaced and what was in them. */
 type Move = CellDelta[];
 
 export class Game {
@@ -28,6 +28,8 @@ export class Game {
   /** Cells flagged wrong by the last [Check]. Cleared as soon as they change. */
   errors = new Set<number>();
   private history: Move[] = [];
+  /** Moves taken back, waiting to be reapplied. Emptied by any fresh move. */
+  private future: Move[] = [];
   private cageIndex: Int16Array;
 
   constructor(id: PuzzleId, puzzle: Puzzle, restore?: { values: number[]; pencils: number[] }) {
@@ -56,10 +58,29 @@ export class Game {
     return this.values.reduce((n, v) => n + (v === digit ? 1 : 0), 0);
   }
 
+  private snapshot(indices: number[]): Move {
+    return indices.map((index) => ({
+      index,
+      value: this.values[index],
+      pencil: this.pencils[index],
+    }));
+  }
+
+  /** Swap the recorded cells into the grid, returning what was there before. */
+  private apply(move: Move): Move {
+    const previous = this.snapshot(move.map((d) => d.index));
+    for (const { index, value, pencil } of move) {
+      this.values[index] = value;
+      this.pencils[index] = pencil;
+      this.errors.delete(index);
+    }
+    return previous;
+  }
+
   private record(indices: number[]): void {
-    this.history.push(
-      indices.map((index) => ({ index, value: this.values[index], pencil: this.pencils[index] })),
-    );
+    this.history.push(this.snapshot(indices));
+    // Branching off the undone line abandons it, as in any editor.
+    this.future.length = 0;
     for (const i of indices) this.errors.delete(i);
   }
 
@@ -97,14 +118,28 @@ export class Game {
     return this.history.length > 0;
   }
 
+  canRedo(): boolean {
+    return this.future.length > 0;
+  }
+
+  /**
+   * Every mutation is recorded, so repeated undo winds the grid all the way
+   * back to how it started — including past a Restart.
+   */
   undo(): boolean {
     const move = this.history.pop();
     if (!move) return false;
-    for (const { index, value, pencil } of move) {
-      this.values[index] = value;
-      this.pencils[index] = pencil;
-      this.errors.delete(index);
-    }
+    this.future.push(this.apply(move));
+    this.completed = false;
+    return true;
+  }
+
+  redo(): boolean {
+    const move = this.future.pop();
+    if (!move) return false;
+    // Straight onto the history, not through record(), which would discard
+    // the rest of the redo stack.
+    this.history.push(this.apply(move));
     this.completed = false;
     return true;
   }

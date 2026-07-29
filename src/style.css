@@ -311,6 +311,24 @@ body {
   padding: 4px 2px;
 }
 
+/* Undo and redo share one cell of the actions grid. */
+.undo-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  min-width: 0;
+}
+
+.btn.icon {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.btn.icon svg {
+  display: block;
+}
+
 /* CLEAR, the cage adder, the clock and Pause, across the bottom. */
 .bottom-row {
   display: flex;

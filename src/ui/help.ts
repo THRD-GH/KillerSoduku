@@ -30,7 +30,7 @@ const SECTIONS: [string, string[]][] = [
       'Sum — open the combination calculator.',
       'Restart — clear the grid and start the same puzzle again.',
       'New — leave for a fresh puzzle at the same level.',
-      'Undo — step back one move. There is no redo.',
+      'Undo and redo — the two arrow buttons. Undo winds back move by move, as far as the empty grid. Redo goes forward again, until you make a new move, which abandons it.',
       'Pause — stop the clock. You can also long-click any cell.',
       'The purple box adds up cage totals: tap to add the selected cage, hold to clear. Each cage counts once.',
       'The white box is the clock. Tap it to hide or show the time; it keeps running.',
