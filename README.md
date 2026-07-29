@@ -100,11 +100,15 @@ the app from the menu itself.
 Vite copies it into `dist/` on build.
 
 Those files hold another app's puzzle content, extracted from a copy of it we
-own. **This repository is private, and that is the condition under which
-including them is reasonable.** Do not make the repository public, and do not
-deploy the site publicly, without removing them first — re-add `public/packs/`
-to `.gitignore` and the app degrades gracefully, disabling Classic and
-offering New only.
+own. They were committed while this repository was private. **It is public now,
+and the packs are published with it** — GitHub Pages needs a public repository,
+and a public URL is what makes the PWA installable on a phone, which is the
+whole point of deploying it.
+
+That is a deliberate trade, not an oversight, and it is one line to undo: put
+`public/packs/` back in `.gitignore` and the app degrades gracefully, disabling
+Classic and offering New only. New puzzles are generated locally and owe nothing
+to the reference app, so the game still works in full without them.
 
 To rebuild them from the app's assets (the APK is a zip):
 
@@ -222,7 +226,8 @@ KillSud by BotenSoft, from its own in-app help text. No code, artwork or fonts
 from that app are used here — the stars are drawn in SVG and the combination
 table is computed rather than shipped.
 
-Its puzzle packs are a different matter. Classic mode plays them, and they are
-committed here so the site runs without a build step — which is defensible only
-because this repository is private. New puzzles depend on none of it, so
+Its puzzle packs are a different matter. Classic mode plays them, they are
+committed here, and this repository is public — so they are redistributed, which
+is more than the original commit intended. It was done knowingly, to get the PWA
+onto a phone, and it stays reversible: New puzzles depend on none of it, so
 dropping `public/packs/` leaves a fully working game.
