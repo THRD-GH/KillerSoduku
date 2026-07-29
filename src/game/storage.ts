@@ -35,8 +35,6 @@ export interface Settings {
   highlightSameDigit: boolean;
   /** Forcing an answer strikes that digit from its row, column and box marks. */
   autoRemoveCandidates: boolean;
-  /** Cage totals count down as the cage fills, rather than standing still. */
-  countdownCages: boolean;
   /** Flag a wrong entry the moment it is made, without waiting for Check. */
   instantCheck: boolean;
   /** How solid the sum calculator sits over the grid, 0.35 to 1. */
@@ -58,7 +56,6 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightCage: true,
   highlightSameDigit: true,
   autoRemoveCandidates: true,
-  countdownCages: true,
   instantCheck: false,
   calcOpacity: 0.82,
   keepAwake: true,

@@ -413,17 +413,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* A total counting down is a different number from a cage total, so it reads
-   as a different number: the accent colour, and a leading minus-free figure
-   that shrinks. A finished cage fades rather than showing a bare 0. */
-.sum.left {
-  color: var(--accent);
-}
-
-.sum.done {
-  opacity: 0.4;
-}
-
 /* The answer should read at a glance and clearly outrank the pencil marks. */
 .big {
   font-weight: 700;

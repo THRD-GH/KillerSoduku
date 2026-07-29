@@ -46,9 +46,6 @@ innie/outie arithmetic: tap to count the selected cage, hold to clear, each
 cage counts once, and counted cages are tinted on the grid. The white box
 is the clock; tap to hide it, it keeps running.
 
-Cage totals count down as the cage fills — a cage of 15 with a 6 in it shows 9,
-which is the arithmetic you would be doing anyway.
-
 Hint names the technique that cracks the position, says why it works and
 highlights the cells, and only fills the digit in if you ask it to. Check
 offers to rewind: winding the board back to the last position where nothing was
@@ -63,9 +60,9 @@ running totals: solved, average, best, day streak, hints and checks, and where
 the solving has happened across the six levels.
 
 **Settings** — Theme (Night, Day, High contrast), Keypad side, Allow single candidates, Lazy
-mode (pre-fill cages with only one possible combination), counting cage totals
-down, flagging mistakes as you go, highlighting, Keep the screen awake, and
-long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
+mode (pre-fill cages with only one possible combination), flagging mistakes as
+you go, highlighting, Keep the screen awake, and long-click guards on Hint,
+Undo and CLEAR. Export data writes history, settings
 and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 

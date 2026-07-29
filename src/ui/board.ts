@@ -23,8 +23,6 @@ interface CellNodes {
   root: HTMLDivElement;
   big: HTMLSpanElement;
   marks: HTMLSpanElement[];
-  /** The cage total, on the one cell of each cage that prints it. */
-  sum: HTMLSpanElement | null;
   /** Structural classes that never change. */
   base: string;
 }
@@ -86,8 +84,7 @@ export class Board {
       if (c % 3 === 0 && c !== 0) classes.push('box-l');
       if (r % 3 === 0 && r !== 0) classes.push('box-t');
 
-      const anchor = cage.cells[0] === i;
-      const sum = el('span', { class: 'sum' }, anchor ? String(cage.sum) : '');
+      const sum = el('span', { class: 'sum' }, cage.cells[0] === i ? String(cage.sum) : '');
       const big = el('span', { class: 'big' });
       const marksBox = el('span', { class: 'marks' });
       const marks: HTMLSpanElement[] = [];
@@ -112,7 +109,7 @@ export class Board {
         marksBox,
         big,
       );
-      this.cells.push({ root, big, marks, sum: anchor ? sum : null, base: classes.join(' ') });
+      this.cells.push({ root, big, marks, base: classes.join(' ') });
       rows[r].append(root);
     }
 
@@ -139,39 +136,8 @@ export class Board {
     return svg;
   }
 
-  /**
-   * Cage totals, counted down as the cage fills: a cage of 15 with a 6 in it
-   * shows 9, because 9 is what you actually need. That subtraction is the
-   * arithmetic every cage costs you, over and over. The remaining figure is
-   * coloured differently from a full total so the two are never confused, and
-   * a finished cage dims rather than showing a bare 0.
-   */
-  private renderSums(): void {
-    const g = this.game;
-    for (const [index, cage] of g.puzzle.cages.entries()) {
-      const node = this.cells[cage.cells[0]];
-      if (node.sum === null) continue;
-
-      let placed = 0;
-      let empty = 0;
-      for (const c of cage.cells) {
-        if (g.values[c] === 0) empty++;
-        else placed += g.values[c];
-      }
-
-      const counting = this.settings.countdownCages && placed > 0;
-      node.sum.textContent = String(counting && empty > 0 ? cage.sum - placed : cage.sum);
-      node.sum.className = `sum${counting && empty > 0 ? ' left' : ''}${empty === 0 ? ' done' : ''}`;
-      this.remaining[index] = counting && empty > 0 ? cage.sum - placed : null;
-    }
-  }
-
-  /** Per cage: what is left to place, or null when nothing is placed yet. */
-  private remaining: (number | null)[] = [];
-
   render(): void {
     const g = this.game;
-    this.renderSums();
     const sel = g.selected;
     const selRow = sel >= 0 ? rowOf(sel) : -1;
     const selCol = sel >= 0 ? colOf(sel) : -1;
@@ -231,11 +197,9 @@ export class Board {
           : digits.length > 0
             ? `pencil ${digits.join(' ')}`
             : 'empty';
-      const left = this.remaining[g.cageIndexAt(i)];
       node.root.setAttribute(
         'aria-label',
-        `R${rowOf(i) + 1}C${colOf(i) + 1}, cage ${cage.sum} in ${cage.cells.length} cells` +
-          `${left === null ? '' : `, ${left} left`}, ${content}`,
+        `R${rowOf(i) + 1}C${colOf(i) + 1}, cage ${cage.sum} in ${cage.cells.length} cells, ${content}`,
       );
       node.root.setAttribute('aria-selected', String(i === sel));
       // Roving tabindex: tabbing into the board lands on the live cell.
