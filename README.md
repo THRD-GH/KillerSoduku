@@ -61,8 +61,8 @@ the solving has happened across the six levels.
 
 **Settings** — Theme (Night, Day, High contrast), Keypad side, Allow single candidates, Lazy
 mode (pre-fill cages with only one possible combination), flagging mistakes as
-you go, highlighting, Keep the screen awake, and long-click guards on Hint,
-Undo and CLEAR. Export data writes history, settings
+you go, trimming filled candidates by row and column, highlighting, Keep the
+screen awake, and long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
 and every parked game to a file; Import data puts them back — a backup worth
 taking, because a browser can clear its storage without warning.
 

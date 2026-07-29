@@ -521,7 +521,11 @@ export class PlayScreen {
       onAuto:
         sel >= 0
           ? (mask) => {
-              const filled = this.game.fillCombination(this.game.cageIndexAt(sel), mask);
+              const filled = this.game.fillCombination(
+                this.game.cageIndexAt(sel),
+                mask,
+                this.ctx.settings,
+              );
               toast(filled > 0 ? `Filled ${filled} cells` : 'That cage is already complete');
               this.afterMove();
             }

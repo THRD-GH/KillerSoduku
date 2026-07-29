@@ -33,6 +33,12 @@ const TOGGLES: Toggle[] = [
     detail: 'Marks a wrong entry the moment it is made, instead of waiting for Check.',
   },
   {
+    key: 'trimBlockedCandidates',
+    title: 'Trim filled candidates by row and column',
+    detail:
+      'When the sum calculator writes a combination into a cage, also drop digits that cell’s row, column or box already rules out. Off, only the digits already in the cage are dropped.',
+  },
+  {
     key: 'lazyMode',
     title: 'Lazy mode',
     detail: 'Pre-fill cages that have only one possible combination.',

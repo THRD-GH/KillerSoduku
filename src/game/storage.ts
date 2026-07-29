@@ -37,6 +37,8 @@ export interface Settings {
   autoRemoveCandidates: boolean;
   /** Flag a wrong entry the moment it is made, without waiting for Check. */
   instantCheck: boolean;
+  /** The calculator's [Auto] also drops digits the row, column or box rules out. */
+  trimBlockedCandidates: boolean;
   /** Hold a wake lock while a puzzle is open, so the screen stops dimming. */
   keepAwake: boolean;
   hintNeedsLongClick: boolean;
@@ -55,6 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highlightSameDigit: true,
   autoRemoveCandidates: true,
   instantCheck: false,
+  trimBlockedCandidates: false,
   keepAwake: true,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,

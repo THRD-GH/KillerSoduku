@@ -322,11 +322,15 @@ export class Game {
   /**
    * Sum calculator [Auto]: pencil a combination into the cage's empty cells.
    *
-   * Digits already answered in the cage are dropped — they are spoken for, and
-   * writing them back as candidates in the remaining cells is just wrong. Each
-   * cell then drops anything its own row, column or box already rules out.
+   * Digits already answered in the cage are always dropped — they are spoken
+   * for, and writing them back as candidates in the remaining cells is just
+   * wrong. What the cage itself says is the whole of it by default: work the
+   * row and column out yourself, which is the puzzle.
+   *
+   * `trimBlocked` hands that step to the app instead, so each cell also drops
+   * whatever its own row, column or box already rules out.
    */
-  fillCombination(cageIndex: number, mask: number): number {
+  fillCombination(cageIndex: number, mask: number, settings: Settings): number {
     const cage = this.puzzle.cages[cageIndex];
     const targets = cage.cells.filter((c) => this.values[c] === 0);
     if (targets.length === 0) return 0;
@@ -338,7 +342,9 @@ export class Game {
     this.record(targets);
     for (const c of targets) {
       let blocked = 0;
-      for (const p of PEERS[c]) if (this.values[p] !== 0) blocked |= bit(this.values[p]);
+      if (settings.trimBlockedCandidates) {
+        for (const p of PEERS[c]) if (this.values[p] !== 0) blocked |= bit(this.values[p]);
+      }
       this.pencils[c] = available & ~blocked;
     }
     return targets.length;
