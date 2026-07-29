@@ -4,6 +4,7 @@ import { formatPuzzleId } from '../core/types.ts';
 import { Game } from '../game/state.ts';
 import {
   clearSaveFor,
+  puzzleLink,
   markFinished,
   markStarted,
   saveGame,
@@ -58,7 +59,8 @@ export class PlayScreen {
     this.ctx = ctx;
     this.game = game;
     this.board = new Board(game, ctx.settings, this.tallyCages);
-    this.root = el('div', { class: 'screen' });
+    // 'play' marks the one screen that re-lays-out side by side in landscape.
+    this.root = el('div', { class: 'screen play' });
     this.build();
 
     if (ctx.settings.lazyMode && game.filledCount === 0) {
@@ -108,7 +110,9 @@ export class PlayScreen {
     const numpad = el('div', { class: 'numpad' });
     for (let d = 1; d <= 9; d++) {
       const key = el('button', { class: 'key', 'data-key': d }, String(d));
-      key.append(el('span', { class: 'count' }));
+      // The remaining-count badge is decoration; on its own it would be read
+      // out as part of the key's name ("5 4"). render() names the key instead.
+      key.append(el('span', { class: 'count', 'aria-hidden': 'true' }));
       this.keys.set(d, key);
       numpad.append(key);
     }
@@ -367,6 +371,42 @@ export class PlayScreen {
     this.scheduleSave();
   }
 
+  /**
+   * A link to this exact puzzle. Nothing of the grid travels — level and
+   * number reproduce it, so the link stays short and works on any device.
+   */
+  private shareLink(): void {
+    const link = puzzleLink(this.game.id);
+    const share = navigator.share?.bind(navigator);
+    if (share) {
+      void share({ title: `Killer Sudoku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
+        () => undefined,
+      );
+      return;
+    }
+    void navigator.clipboard
+      ?.writeText(link)
+      .then(() => toast('Link copied'))
+      .catch(() => this.showLink(link));
+  }
+
+  /** Fallback when neither sharing nor the clipboard is available. */
+  private showLink(link: string): void {
+    openOverlay((close) => {
+      const field = el('input', { type: 'text', value: link, readonly: true, class: 'link-box' });
+      const done = el('button', { class: 'btn wide' }, 'Close');
+      done.addEventListener('click', close);
+      queueMicrotask(() => field.select());
+      return el(
+        'div',
+        { class: 'panel' },
+        el('h2', {}, `Puzzle ${formatPuzzleId(this.game.id)}`),
+        field,
+        el('div', { class: 'panel-footer' }, done),
+      );
+    });
+  }
+
   private doFillCandidates(): void {
     const filled = this.game.fillAllCandidates();
     if (filled === -1) {
@@ -475,7 +515,7 @@ export class PlayScreen {
     clear(this.tallyBox);
     this.tallyBox.append(
       document.createTextNode(String(this.tallyTotal)),
-      el('small', {}, this.tallyCages.size === 0 ? 'tally' : `${this.tallyCages.size} cages`),
+      el('small', {}, this.tallyCages.size === 0 ? 'Tally' : `${this.tallyCages.size} cages`),
     );
   }
 
@@ -635,9 +675,11 @@ export class PlayScreen {
       const key = this.keys.get(d);
       if (!key) continue;
       const used = this.game.countOf(d);
+      const left = 9 - used;
       key.classList.toggle('done', used >= 9);
       const badge = key.querySelector('.count');
-      if (badge) badge.textContent = used >= 9 ? '' : String(9 - used);
+      if (badge) badge.textContent = used >= 9 ? '' : String(left);
+      key.setAttribute('aria-label', left > 0 ? `Digit ${d}, ${left} left` : `Digit ${d}, all placed`);
     }
 
     clear(this.candidateLine);
@@ -678,6 +720,7 @@ export class PlayScreen {
           'div',
           { class: 'menu-list' },
           item('Fill all candidates', () => this.doFillCandidates()),
+          item('Share this puzzle', () => this.shareLink()),
           item('Pause', () => this.pause()),
           item('Settings', () => this.ctx.openSettings()),
           item('Stats', () => this.ctx.goStats(this.game.puzzle.difficulty as Level)),

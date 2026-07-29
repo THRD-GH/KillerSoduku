@@ -1,5 +1,5 @@
-/* Night is the default, matching the reference app's dark scheme; the
-   "Night Colors" setting flips to the day palette. */
+/* Night is the default, matching the reference app's dark scheme; the Theme
+   setting swaps in the day or high-contrast palette. */
 :root {
   --bg: #0a0d10;
   --panel: #161c22;
@@ -101,6 +101,90 @@
   --k-tally: #ece0fa;
   --k-tally-line: #a173d6;
   --k-tally-text: #37105e;
+}
+
+/* High contrast: pure black behind white text, and every hue drawn from the
+   Okabe-Ito colour-blind-safe set. Red and green never carry meaning on their
+   own here — vermillion against blue-green is the pair that survives all three
+   common kinds of colour blindness, and the rules further down add a shape cue
+   wherever colour alone was doing the work. */
+:root[data-theme='contrast'] {
+  --bg: #000000;
+  --panel: #000000;
+  --panel-2: #101014;
+  --line: #8a8a8a;
+  --line-strong: #ffffff;
+  --cell: #000000;
+  --text: #ffffff;
+  --dim: #c9c9c9;
+  --accent: #56b4e9;
+  --accent-dim: #0072b2;
+  --cage: #ffffff;
+  --sum: #f0e442;
+  --mark: #56b4e9;
+  --single: #33e0b0;
+  --single-bg: rgba(0, 158, 115, 0.22);
+  --tallied: rgba(204, 121, 167, 0.38);
+  --spotlit: rgba(86, 180, 233, 0.35);
+  --error: #d55e00;
+  --clash: #e69f00;
+  --sel: rgba(86, 180, 233, 0.34);
+  --peer: rgba(255, 255, 255, 0.1);
+  --cage-peer: rgba(240, 228, 66, 0.12);
+  --same: rgba(86, 180, 233, 0.18);
+  --shadow: rgba(0, 0, 0, 0.9);
+  --panel-rgb: 0 0 0;
+  --panel-2-rgb: 16 16 20;
+  /* Blue for required, vermillion for ruled out — not green and red. */
+  --inc-rgb: 0 114 178;
+  --exc-rgb: 213 94 0;
+
+  --k-digit: #002218;
+  --k-digit-line: #33e0b0;
+  --k-digit-text: #ffffff;
+  --k-edit: #262100;
+  --k-edit-line: #f0e442;
+  --k-edit-text: #ffffff;
+  --k-aid: #001d2e;
+  --k-aid-line: #56b4e9;
+  --k-aid-text: #ffffff;
+  --k-session: #2b1000;
+  --k-session-line: #e69f00;
+  --k-session-text: #ffffff;
+  --k-tally: #26001d;
+  --k-tally-line: #cc79a7;
+  --k-tally-text: #ffffff;
+}
+
+/* Heavier strokes: thin grey lines are the first thing to disappear. */
+:root[data-theme='contrast'] .cages path {
+  stroke-width: 0.055;
+}
+
+:root[data-theme='contrast'] .btn {
+  border-width: 2px;
+}
+
+/* Shape cues, so none of these states rely on colour alone. */
+:root[data-theme='contrast'] .cell.error .big {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+:root[data-theme='contrast'] .cell.single {
+  box-shadow: inset 0 0 0 2px var(--single);
+}
+
+:root[data-theme='contrast'] .cell.tallied::after {
+  content: '';
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: var(--k-tally-line);
+  z-index: 3;
 }
 
 * {
@@ -231,12 +315,26 @@ body {
   cursor: pointer;
 }
 
-.cell:nth-child(9n + 1) {
+/* The nine row elements exist for screen readers only; `contents` leaves the
+   cells as direct children of the grid, so the layout is unaffected. */
+.board .row {
+  display: contents;
+}
+
+.row .cell:first-child {
   border-left: none;
 }
 
-.cell:nth-child(-n + 9) {
+.row:first-child .cell {
   border-top: none;
+}
+
+/* Keyboard focus has to be visible in its own right: the selection tint alone
+   is easy to miss, and inside the grid an outline must sit within the cell. */
+.cell:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+  z-index: 3;
 }
 
 .cell.box-l {
@@ -943,6 +1041,31 @@ body {
   border-bottom: none;
 }
 
+/* A row whose control is a group of buttons rather than a switch: the label
+   sits above it, and the row itself is not the click target. */
+.setting.stacked {
+  display: block;
+  cursor: default;
+}
+
+.setting.stacked .tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.setting.stacked .tabs .btn {
+  flex: 1 1 0;
+  font-size: 13px;
+  padding: 7px 4px;
+}
+
+.setting.stacked .tabs .btn.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .setting .label {
   flex: 1 1 auto;
 }
@@ -1382,5 +1505,85 @@ body {
   .key {
     font-size: 18px;
     padding: 9px 4px;
+  }
+}
+
+/*
+ * Landscape on a phone: stacked, the controls end up a screen and a half below
+ * the board and cannot be reached. Side by side instead — the board takes the
+ * height it can get and the controls fill the width beside it. The board stays
+ * square by being given the same value for width and height, worked out from
+ * whichever of the two runs out first.
+ */
+@media (orientation: landscape) and (max-height: 560px) {
+  #app {
+    align-items: flex-start;
+  }
+
+  .screen.play {
+    /* 56px covers the title bar, the page padding and the gap under it;
+       236px reserves a usable width for the keypad column. */
+    --board: min(calc(100dvh - 56px), calc(100vw - 236px));
+    max-width: none;
+    height: 100dvh;
+    padding: 6px;
+    gap: 6px;
+    display: grid;
+    grid-template-columns: var(--board) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .screen.play > .titlebar {
+    grid-column: 1 / -1;
+    min-height: 34px;
+    padding: 3px 8px;
+  }
+
+  .screen.play > .board {
+    width: var(--board);
+    height: var(--board);
+    font-size: min(3.4vh, 26px);
+  }
+
+  /* Every row of controls shares out the height beside the board, rather than
+     each taking the height its text wants. */
+  .screen.play > .controls {
+    height: 100%;
+  }
+
+  .controls-left {
+    flex: 0 0 52%;
+  }
+
+  .numpad {
+    flex: 1 1 auto;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .controls .actions {
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  .key,
+  .btn {
+    padding: 2px 4px;
+    font-size: 17px;
+  }
+
+  .key.clear {
+    padding: 2px 4px;
+  }
+
+  .controls .actions .btn {
+    font-size: 12.5px;
+  }
+
+  .under-keys,
+  .under-actions {
+    flex: 0 0 34px;
+  }
+
+  .pause-btn {
+    flex: 0 0 40px;
   }
 }

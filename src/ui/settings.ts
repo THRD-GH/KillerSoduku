@@ -1,7 +1,7 @@
-import { saveSettings } from '../game/storage.ts';
-import type { Settings } from '../game/storage.ts';
-import { el } from './dom.ts';
-import { openOverlay } from './overlay.ts';
+import { exportBackup, importBackup, saveSettings } from '../game/storage.ts';
+import type { Settings, Theme } from '../game/storage.ts';
+import { clear, el } from './dom.ts';
+import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import type { AppContext } from './app-context.ts';
 
 /** Only the on/off settings belong on this screen. */
@@ -32,7 +32,6 @@ const TOGGLES: Toggle[] = [
     title: 'Lazy mode',
     detail: 'Pre-fill cages that have only one possible combination.',
   },
-  { key: 'nightColors', title: 'Night colours', detail: 'Dark board and panels.' },
   {
     key: 'highlightPeers',
     title: 'Highlight row, column and box',
@@ -58,9 +57,36 @@ const TOGGLES: Toggle[] = [
   },
 ];
 
+const THEMES: { value: Theme; label: string }[] = [
+  { value: 'night', label: 'Night' },
+  { value: 'day', label: 'Day' },
+  { value: 'contrast', label: 'High contrast' },
+];
+
 export function openSettings(ctx: AppContext): void {
   openOverlay((close) => {
     const list = el('div', {});
+
+    // Theme first: it changes everything else on the screen.
+    const themeTabs = el('div', { class: 'tabs' });
+    const drawThemes = (): void => {
+      clear(themeTabs);
+      for (const theme of THEMES) {
+        const on = ctx.settings.theme === theme.value;
+        const b = el('button', { class: `btn ${on ? 'on' : ''}`.trim() }, theme.label);
+        b.addEventListener('click', () => {
+          ctx.settings.theme = theme.value;
+          saveSettings(ctx.settings);
+          ctx.applyTheme();
+          drawThemes();
+        });
+        themeTabs.append(b);
+      }
+    };
+    drawThemes();
+    list.append(
+      el('div', { class: 'setting stacked' }, el('span', { class: 'label' }, 'Theme'), themeTabs),
+    );
 
     for (const toggle of TOGGLES) {
       const knob = el('span', { class: `switch ${ctx.settings[toggle.key] ? 'on' : ''}`.trim() });
@@ -79,12 +105,68 @@ export function openSettings(ctx: AppContext): void {
         ctx.settings[toggle.key] = !ctx.settings[toggle.key];
         knob.classList.toggle('on', ctx.settings[toggle.key]);
         saveSettings(ctx.settings);
-        if (toggle.key === 'nightColors') ctx.applyTheme();
         // The board reads settings live, so it just needs a repaint.
         ctx.refreshBoard();
       });
       list.append(row);
     }
+
+    /*
+     * Everything lives in localStorage, which a browser can clear without
+     * warning. A file you keep is the only real protection for a long history.
+     */
+    const save = el('button', { class: 'btn' }, 'Export data');
+    save.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(exportBackup(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = el('a', { href: url, download: `killer-sudoku-backup.json` });
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('Backup downloaded');
+    });
+
+    const file = el('input', { type: 'file', accept: 'application/json,.json' });
+    file.hidden = true;
+    file.addEventListener('change', () => {
+      const chosen = file.files?.[0];
+      file.value = '';
+      if (!chosen) return;
+      void chosen
+        .text()
+        .then((text) => {
+          const counts = importBackup(JSON.parse(text) as unknown);
+          close();
+          ctx.reload();
+          toast(`Restored ${counts.history} puzzles and ${counts.saves} games`);
+        })
+        .catch((err: unknown) => {
+          toast(err instanceof Error ? err.message : 'Could not read that file');
+        });
+    });
+
+    const load = el('button', { class: 'btn' }, 'Import data');
+    load.addEventListener('click', () =>
+      confirmDialog(
+        'Replace your history and saved games with a backup file?',
+        () => file.click(),
+        'Choose file',
+      ),
+    );
+
+    list.append(
+      el(
+        'div',
+        { class: 'setting stacked' },
+        el(
+          'span',
+          { class: 'label' },
+          'Your data',
+          el('small', {}, 'History, settings and parked games as a file you keep.'),
+        ),
+        el('div', { class: 'tabs' }, save, load),
+        file,
+      ),
+    );
 
     const done = el('button', { class: 'btn primary' }, 'Done');
     done.addEventListener('click', close);

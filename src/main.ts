@@ -7,13 +7,15 @@ import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
 import { Game } from './game/state.ts';
 import {
   NEW_POOL_SIZE,
+  clearPuzzleLink,
+  linkedPuzzle,
   loadHistory,
   latestSave,
   loadSaveFor,
   loadSettings,
   unplayedNumbers,
 } from './game/storage.ts';
-import type { History, SavedGame, Settings } from './game/storage.ts';
+import type { History, SavedGame, Settings, Theme } from './game/storage.ts';
 import { clear, el } from './ui/dom.ts';
 import { buildMenu } from './ui/menu.ts';
 import { openHelp } from './ui/help.ts';
@@ -22,6 +24,13 @@ import { PlayScreen } from './ui/play.ts';
 import { openSettings } from './ui/settings.ts';
 import { buildStats } from './ui/stats.ts';
 import type { AppContext } from './ui/app-context.ts';
+
+/** The browser chrome colour that matches each board, for the PWA title bar. */
+const THEME_COLOUR: Record<Theme, string> = {
+  night: '#0a0d10',
+  day: '#dfe4e9',
+  contrast: '#000000',
+};
 
 class App implements AppContext {
   settings: Settings = loadSettings();
@@ -41,18 +50,34 @@ class App implements AppContext {
       if (document.hidden) this.play?.pause();
     });
 
+    // A shared link names a puzzle outright; honour it instead of the menu.
+    const linked = linkedPuzzle();
+    clearPuzzleLink();
+
     // Packs are optional; the menu renders either way and redraws once known.
     void packCounts().then((counts) => {
       this.packCounts = counts;
-      if (!this.play) this.goMenu();
+      if (!this.play && linked === null) this.goMenu();
     });
-    this.goMenu();
+
+    if (linked === null) this.goMenu();
+    else {
+      this.goMenu();
+      this.playPuzzle(linked);
+    }
   }
 
   applyTheme(): void {
-    const night = this.settings.nightColors;
-    document.documentElement.dataset.theme = night ? 'night' : 'day';
-    setThemeColour(night ? '#0a0d10' : '#dfe4e9');
+    document.documentElement.dataset.theme = this.settings.theme;
+    setThemeColour(THEME_COLOUR[this.settings.theme]);
+  }
+
+  /** Storage was replaced underneath us (an import); start again from it. */
+  reload(): void {
+    this.settings = loadSettings();
+    this.history = loadHistory();
+    this.applyTheme();
+    this.goMenu();
   }
 
   refreshBoard(): void {

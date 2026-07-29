@@ -46,9 +46,26 @@ innie/outie arithmetic: tap to count the selected cage, hold to clear, each
 cage counts once, and counted cages are tinted on the grid. The white box
 is the clock; tap to hide it, it keeps running.
 
-**Settings** — Allow single candidates, Lazy mode (pre-fill cages with only one
-possible combination), Night colours, and long-click guards on Hint, Undo and
-CLEAR.
+Hint names the technique that cracks the position, says why it works and
+highlights the cells, and only fills the digit in if you ask it to. The in-game
+menu also has Fill all candidates and Share this puzzle (a link that opens the
+same grid anywhere).
+
+**Settings** — Theme (Night, Day, High contrast), Allow single candidates, Lazy
+mode (pre-fill cages with only one possible combination), highlighting, and
+long-click guards on Hint, Undo and CLEAR. Export data writes history, settings
+and every parked game to a file; Import data puts them back — a backup worth
+taking, because a browser can clear its storage without warning.
+
+Every puzzle keeps its own save, undo history included, so leaving one part-way
+and coming back to it later loses nothing. In landscape the board and controls
+sit side by side. The grid is marked up for screen readers: each cell reads out
+its position, its cage and what is in it.
+
+The high-contrast theme is drawn from a colour-blind-safe palette — no meaning
+rests on telling red from green — and backs up each colour with a shape: wrong
+answers are struck through, solved-but-unwritten cells are ringed, and cages
+counted into the tally carry a corner dot.
 
 ## Puzzles
 

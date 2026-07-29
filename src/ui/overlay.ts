@@ -40,7 +40,8 @@ let toastTimer: number | undefined;
 
 export function toast(message: string): void {
   document.querySelector('.toast')?.remove();
-  const node = el('div', { class: 'toast' }, message);
+  // A status region, so the message is spoken as well as shown.
+  const node = el('div', { class: 'toast', role: 'status', 'aria-live': 'polite' }, message);
   document.body.append(node);
   if (toastTimer !== undefined) clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => node.remove(), 2200);

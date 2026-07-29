@@ -13,12 +13,15 @@ const KEY = {
  *  Classic levels use however many the imported pack holds. */
 export const NEW_POOL_SIZE = 500;
 
+export type Theme = 'night' | 'day' | 'contrast';
+
 export interface Settings {
   /** When on, a tapped digit is always a candidate — entries need a long-click. */
   allowSingleCandidates: boolean;
   /** Pre-fill candidates for cages that have only one possible combination. */
   lazyMode: boolean;
-  nightColors: boolean;
+  /** Which palette to draw. 'contrast' is the accessible high-contrast one. */
+  theme: Theme;
   /** Tint the selected cell's row, column and box. */
   highlightPeers: boolean;
   /** Tint the selected cell's cage. */
@@ -38,7 +41,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   allowSingleCandidates: false,
   lazyMode: false,
-  nightColors: true,
+  theme: 'night',
   highlightPeers: true,
   highlightCage: true,
   highlightSameDigit: true,
@@ -96,7 +99,13 @@ function write(key: string, value: unknown): void {
   }
 }
 
-export const loadSettings = (): Settings => ({ ...DEFAULT_SETTINGS, ...read(KEY.settings, {}) });
+export const loadSettings = (): Settings => {
+  const stored = read<Partial<Settings> & { nightColors?: boolean }>(KEY.settings, {});
+  // Older versions stored a night on/off flag rather than a named theme.
+  const theme: Theme =
+    stored.theme ?? (stored.nightColors === false ? 'day' : 'night');
+  return { ...DEFAULT_SETTINGS, ...stored, theme };
+};
 export const saveSettings = (s: Settings): void => write(KEY.settings, s);
 
 /**
@@ -249,6 +258,76 @@ export function markStarted(history: History, id: PuzzleId, now = Date.now()): H
   if (!history[key]) history[key] = { finished: false, released: false, startedAt: now };
   else history[key] = { ...history[key], released: false, startedAt: history[key].startedAt ?? now };
   return history;
+}
+
+export interface Backup {
+  app: 'killer-sudoku';
+  version: 1;
+  exportedAt: string;
+  settings: Settings;
+  history: History;
+  saves: SavedGame[];
+}
+
+/** Everything worth keeping, in one object. */
+export function exportBackup(): Backup {
+  return {
+    app: 'killer-sudoku',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    settings: loadSettings(),
+    history: loadHistory(),
+    saves: allSaves(),
+  };
+}
+
+/**
+ * Restore a backup, replacing what is here. Validated before anything is
+ * written, so a wrong file cannot leave storage half-overwritten.
+ */
+export function importBackup(raw: unknown): { history: number; saves: number } {
+  const data = raw as Partial<Backup> | null;
+  if (!data || data.app !== 'killer-sudoku' || typeof data.history !== 'object') {
+    throw new Error('That is not a Killer Sudoku backup');
+  }
+  const saves = Array.isArray(data.saves) ? data.saves : [];
+  for (const game of saves) {
+    if (!game?.id || !Array.isArray(game.values) || game.values.length !== 81) {
+      throw new Error('That backup is damaged');
+    }
+  }
+
+  for (const key of saveKeys()) localStorage.removeItem(key);
+  write(KEY.history, data.history);
+  if (data.settings) write(KEY.settings, { ...DEFAULT_SETTINGS, ...data.settings });
+  for (const game of saves) write(saveKeyFor(game.id), game);
+
+  return { history: Object.keys(data.history as History).length, saves: saves.length };
+}
+
+/**
+ * A link to one puzzle. Puzzles are fully determined by level and number, so
+ * the id is the whole payload — no grid needs encoding.
+ */
+export function puzzleLink(id: PuzzleId): string {
+  const url = new URL(window.location.href);
+  url.search = `?p=${formatPuzzleId(id)}`;
+  url.hash = '';
+  return url.toString();
+}
+
+/** The puzzle named in ?p=, if the address bar carries one. */
+export function linkedPuzzle(): PuzzleId | null {
+  const asked = new URLSearchParams(window.location.search).get('p');
+  return asked === null ? null : parsePuzzleId(asked.trim().toUpperCase());
+}
+
+/** Drop ?p= once it has been acted on, so a refresh does not reopen it. */
+export function clearPuzzleLink(): void {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('p')) return;
+  url.search = '';
+  window.history.replaceState(null, '', url.toString());
 }
 
 /** The inverse of formatPuzzleId: "3-10" or "3-N10". */

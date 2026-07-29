@@ -63,6 +63,18 @@ export class Board {
   }
 
   private build(): void {
+    /*
+     * Nine real rows, so the grid reports itself the way a screen reader
+     * expects. They lay out as `display: contents`, which leaves the 81 cells
+     * as direct children of the CSS grid — the visual board is unchanged.
+     */
+    const rows: HTMLDivElement[] = [];
+    for (let r = 0; r < 9; r++) {
+      const row = el('div', { class: 'row', role: 'row', 'aria-rowindex': r + 1 });
+      rows.push(row);
+      this.root.append(row);
+    }
+
     for (let i = 0; i < CELLS; i++) {
       const r = rowOf(i);
       const c = colOf(i);
@@ -89,13 +101,16 @@ export class Board {
           'data-i': i,
           'data-cage': this.game.cageIndexAt(i),
           role: 'gridcell',
+          'aria-colindex': c + 1,
+          // Roving focus: only the selected cell is in the tab order.
+          tabindex: -1,
         },
         sum,
         marksBox,
         big,
       );
       this.cells.push({ root, big, marks, base: classes.join(' ') });
-      this.root.append(root);
+      rows[r].append(root);
     }
 
     this.root.append(this.buildCageLayer());
@@ -164,9 +179,37 @@ export class Board {
       // from the marks each render, so it clears itself when that stops holding.
       if (value === 0 && popcount(g.pencils[i]) === 1) cls.push('single');
       if (this.spotlit.has(i)) cls.push('spotlit');
-      if (g.errors.has(i)) cls.push('error');
+      const wrong = g.errors.has(i);
+      if (wrong) cls.push('error');
       else if (clashes.has(i)) cls.push('clash');
       node.root.className = cls.join(' ');
+
+      /*
+       * Everything a sighted player reads off the cell — where it is, which
+       * cage it belongs to, what is in it — said in words. Cage totals are
+       * printed in one corner cell only, so without this a screen reader
+       * would never tie the other cells to their sum.
+       */
+      const cage = g.cageAt(i);
+      const content =
+        value !== 0
+          ? `${value}${wrong ? ', wrong' : ''}`
+          : digits.length > 0
+            ? `pencil ${digits.join(' ')}`
+            : 'empty';
+      node.root.setAttribute(
+        'aria-label',
+        `R${rowOf(i) + 1}C${colOf(i) + 1}, cage ${cage.sum} in ${cage.cells.length} cells, ${content}`,
+      );
+      node.root.setAttribute('aria-selected', String(i === sel));
+      // Roving tabindex: tabbing into the board lands on the live cell.
+      node.root.tabIndex = i === (sel >= 0 ? sel : 0) ? 0 : -1;
+    }
+
+    // Keep the keyboard where the game thinks it is, but never steal focus
+    // from a button or a panel the player is using.
+    if (sel >= 0 && this.root.contains(document.activeElement)) {
+      this.cells[sel].root.focus({ preventScroll: true });
     }
   }
 }
