@@ -1,4 +1,4 @@
-import { CELLS, boxOf, colOf, maskToDigits, rowOf } from '../core/grid.ts';
+import { CELLS, boxOf, colOf, maskToDigits, popcount, rowOf } from '../core/grid.ts';
 import type { Game } from '../game/state.ts';
 import type { Settings } from '../game/storage.ts';
 import { cageOutlinePath } from './cage-outline.ts';
@@ -137,6 +137,10 @@ export class Board {
       if (this.settings.highlightSameDigit && value !== 0 && selValue !== 0 && value === selValue) {
         cls.push('same');
       }
+      // One candidate left is an answer waiting to be written in — worth
+      // spotting the moment an entry elsewhere reduces a cell to it. Derived
+      // from the marks each render, so it clears itself when that stops holding.
+      if (value === 0 && popcount(g.pencils[i]) === 1) cls.push('single');
       if (g.errors.has(i)) cls.push('error');
       else if (clashes.has(i)) cls.push('clash');
       node.root.className = cls.join(' ');

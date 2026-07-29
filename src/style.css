@@ -15,6 +15,9 @@
   --sum: #f0c674;
   /* Distinctly blue: at grey it read as another grid line. */
   --mark: #7cc7ee;
+  /* A cell down to its last candidate. */
+  --single: #7fe6a8;
+  --single-bg: rgba(127, 230, 168, 0.14);
   --error: #ff6b6b;
   --clash: #a8443f;
   --sel: rgba(86, 209, 245, 0.26);
@@ -41,6 +44,8 @@
   --cage: #9ba7b3;
   --sum: #8a5a00;
   --mark: #1f6390;
+  --single: #0d7a3d;
+  --single-bg: rgba(13, 122, 61, 0.12);
   --error: #c62828;
   --clash: #e59b98;
   --sel: rgba(10, 111, 150, 0.22);
@@ -278,6 +283,16 @@ body {
 .mark {
   display: grid;
   place-items: center;
+}
+
+/* Down to one candidate: the cell is answered, it just has not been written in. */
+.cell.single {
+  background: var(--single-bg);
+}
+
+.cell.single .marks {
+  color: var(--single);
+  font-weight: 800;
 }
 
 /* ---------- keypad and controls ---------- */
@@ -862,7 +877,35 @@ body {
   background: rgba(120, 210, 140, 0.16);
 }
 
-/* Unfinished games: a whole row is the button that picks the game back up. */
+/* Unfinished games: the row picks the game up, the ✕ resets it. */
+.unfinished-row {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.unfinished-row .statrow.open {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.rowx {
+  flex: 0 0 38px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--dim);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rowx:active {
+  background: var(--error);
+  color: #fff;
+}
+
 .statrow.open {
   width: 100%;
   background: var(--panel-2);

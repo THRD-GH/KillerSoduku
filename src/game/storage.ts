@@ -208,6 +208,15 @@ export function markFinished(
   return history;
 }
 
+/**
+ * Forget a puzzle entirely: it leaves the history and goes back to being
+ * unplayed, so it can turn up again in its pool.
+ */
+export function forgetPuzzle(history: History, id: PuzzleId): History {
+  delete history[formatPuzzleId(id)];
+  return history;
+}
+
 export function releasePuzzle(history: History, id: PuzzleId): History {
   const key = formatPuzzleId(id);
   if (history[key]) history[key] = { ...history[key], released: true };

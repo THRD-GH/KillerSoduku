@@ -1,8 +1,11 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
-import type { Level, Source } from '../core/types.ts';
+import type { Level, PuzzleId, Source } from '../core/types.ts';
 import { formatPuzzleId } from '../core/types.ts';
 import {
+  clearSave,
+  forgetPuzzle,
   levelStats,
+  loadSave,
   releasePuzzle,
   resetLevel,
   saveHistory,
@@ -52,8 +55,38 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         el('span', { class: 'when' }, `${record.hints ?? 0}h ${record.checks ?? 0}c`),
       );
       row.addEventListener('click', () => ctx.playPuzzle(id));
-      rows.append(row);
+
+      const drop = el(
+        'button',
+        {
+          class: 'rowx',
+          'aria-label': `Reset ${formatPuzzleId(id)}`,
+          title: 'Reset this puzzle',
+        },
+        '✕',
+      );
+      drop.addEventListener('click', () =>
+        confirmDialog(
+          `Reset ${formatPuzzleId(id)}? Any progress is discarded and it goes back into the pool as unplayed.`,
+          () => {
+            forget(id);
+            draw();
+            toast(`${formatPuzzleId(id)} reset`);
+          },
+          'Reset',
+        ),
+      );
+
+      rows.append(el('div', { class: 'unfinished-row' }, row, drop));
     }
+  };
+
+  /** Drop a puzzle from the history, and its board state if it is the saved one. */
+  const forget = (id: PuzzleId): void => {
+    const saved = loadSave();
+    if (saved && formatPuzzleId(saved.id) === formatPuzzleId(id)) clearSave();
+    ctx.history = forgetPuzzle(ctx.history, id);
+    saveHistory(ctx.history);
   };
 
   const poolSize = (): number =>
@@ -66,6 +99,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     levelTabs.hidden = mode === 'unfinished';
     sourceTabs.hidden = mode === 'unfinished';
     reset.hidden = mode === 'unfinished';
+    resetAll.hidden = mode !== 'unfinished';
 
     if (mode === 'unfinished') {
       drawUnfinished();
@@ -157,6 +191,24 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     ),
   );
 
+  const resetAll = el('button', { class: 'btn wide' }, 'Reset all unfinished');
+  resetAll.addEventListener('click', () => {
+    const games = unfinishedGames(ctx.history);
+    if (games.length === 0) {
+      toast('Nothing to reset');
+      return;
+    }
+    confirmDialog(
+      `Reset all ${games.length} unfinished games? Progress is discarded and they go back into their pools.`,
+      () => {
+        for (const { id } of games) forget(id);
+        draw();
+        toast(`${games.length} games reset`);
+      },
+      'Reset all',
+    );
+  });
+
   const done = el('button', { class: 'btn wide' }, 'Back to levels');
   done.addEventListener('click', () => ctx.goMenu());
 
@@ -173,7 +225,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     sourceTabs,
     summary,
     rows,
-    el('div', { class: 'actions', style: 'margin-top: 10px' }, reset, done),
+    el('div', { class: 'actions', style: 'margin-top: 10px' }, reset, resetAll, done),
   );
   return screen;
 }

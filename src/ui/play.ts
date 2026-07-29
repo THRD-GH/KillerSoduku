@@ -45,8 +45,12 @@ export class PlayScreen {
   private adderTotal = 0;
   private adderCages = new Set<number>();
 
-  /** Numpad taps kept briefly so a double-click can roll them back. */
-  private recentTaps: { digit: number; at: number }[] = [];
+  /**
+   * Numpad taps kept briefly so a double-click can roll them back. The cell is
+   * recorded too: the same digit tapped into a different cell moments earlier
+   * is a separate move and must not be undone.
+   */
+  private recentTaps: { digit: number; cell: number; at: number }[] = [];
 
   constructor(ctx: AppContext, game: Game) {
     this.ctx = ctx;
@@ -223,7 +227,7 @@ export class PlayScreen {
       toast('Choose a cell first');
       return;
     }
-    this.recentTaps.push({ digit, at: performance.now() });
+    this.recentTaps.push({ digit, cell: this.game.selected, at: performance.now() });
     this.game.tapDigit(this.game.selected, digit, this.ctx.settings);
     this.afterMove();
   }
@@ -234,10 +238,11 @@ export class PlayScreen {
    */
   private doubleDigit(digit: number): void {
     const now = performance.now();
+    const cell = this.game.selected;
     let rollback = 0;
     for (let i = this.recentTaps.length - 1; i >= 0; i--) {
       const tap = this.recentTaps[i];
-      if (tap.digit !== digit || now - tap.at > 600) break;
+      if (tap.digit !== digit || tap.cell !== cell || now - tap.at > 600) break;
       rollback++;
     }
     for (let i = 0; i < rollback; i++) this.game.undo();
