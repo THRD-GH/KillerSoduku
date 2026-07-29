@@ -11,7 +11,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * drawn in a cell sits inside this (see .sum and .marks in style.css), so the
  * dashes never cut through a digit.
  */
-const CAGE_INSET = 0.06;
+const CAGE_INSET = 0.05;
 
 interface CellNodes {
   root: HTMLDivElement;

@@ -237,7 +237,7 @@ body {
 .cages path {
   fill: none;
   stroke: var(--cage);
-  stroke-width: 0.042;
+  stroke-width: 0.038;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -246,9 +246,9 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 8%;
-  left: 10%;
-  font-size: 0.42em;
+  top: 11%;
+  left: 12%;
+  font-size: 0.38em;
   font-weight: 700;
   line-height: 1;
   color: var(--sum);
@@ -271,11 +271,11 @@ body {
   position: absolute;
   /* Tucked in from the sides so the 3x3 reads as one compact block in the
      middle of the cell, and low enough to clear the cage total above it. */
-  inset: 35% 15% 9%;
+  inset: 36% 17% 12%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  font-size: 0.33em;
+  font-size: 0.31em;
   line-height: 1;
   color: var(--mark);
   font-weight: 700;
