@@ -21,14 +21,37 @@ export function closeTopOverlay(): boolean {
   return true;
 }
 
+/**
+ * How long a panel ignores taps after opening.
+ *
+ * A panel usually appears because of a tap, and it appears *under the finger
+ * that made it*. Finishing a puzzle with a double-press is the plain case: the
+ * first press completes the grid and the win panel opens, and the second press
+ * — already on its way — lands on whichever button has just moved into that
+ * spot. On a phone that is Main menu, Next puzzle, or the backdrop, none of
+ * which the player asked for, and the win screen is gone before it was read.
+ *
+ * Matched to the double-tap window in pointer.ts: within it, a second tap
+ * belongs to the gesture that just happened, not to what is now on screen.
+ */
+const TAP_GUARD_MS = 400;
+
 export function openOverlay(
   build: (close: () => void) => HTMLElement,
   opts: { dismissable?: boolean; overlayClass?: string } = {},
 ): () => void {
   const dismissable = opts.dismissable ?? true;
   const backdrop = el('div', {
-    class: `overlay${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
+    class: `overlay guarded${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
   });
+
+  // The panel is inert to begin with; the backdrop still swallows the tap, so
+  // it cannot fall through to the game either.
+  let guarded = true;
+  window.setTimeout(() => {
+    guarded = false;
+    backdrop.classList.remove('guarded');
+  }, TAP_GUARD_MS);
 
   const entry = { close: (): void => undefined };
   const close = (): void => {
@@ -51,6 +74,7 @@ export function openOverlay(
   backdrop.append(build(close));
   if (dismissable) {
     backdrop.addEventListener('pointerdown', (e) => {
+      if (guarded) return;
       if (e.target === backdrop) close();
     });
   }

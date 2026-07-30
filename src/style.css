@@ -922,6 +922,13 @@ body {
   z-index: 50;
 }
 
+/* Just opened, and still ignoring the tail of the gesture that opened it — see
+   TAP_GUARD_MS. The backdrop keeps taking pointer events, so nothing falls
+   through to the game underneath; only the panel's own controls are inert. */
+.overlay.guarded > * {
+  pointer-events: none;
+}
+
 /* The sum calculator is read against the board, so the board can be made
    visible through it. --glass is driven by the slider in its footer, and
    starts solid every time the panel is opened. */
