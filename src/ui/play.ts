@@ -101,8 +101,11 @@ export class PlayScreen {
         // Long-press any cell pauses, exactly as the reference app does.
         onLong: () => this.pause(),
         onDouble: () => undefined,
-        // A hurried tap that lands half in the next cell still means "select".
+        // A hurried tap that lands half in the next cell still means "select",
+        // and the cursor moves on touch-down so a cancelled pointer — the
+        // browser guessing at a scroll — cannot swallow the move.
         forgiveDrift: true,
+        tapOnDown: true,
       },
       (e) => this.board.indexOf(e),
     );
@@ -251,6 +254,8 @@ export class PlayScreen {
       return;
     }
     this.recentTaps.push({ digit, cell: this.game.selected, at: performance.now() });
+    // Only the last couple matter, and a game runs to hundreds of taps.
+    if (this.recentTaps.length > 4) this.recentTaps.shift();
     this.game.tapDigit(this.game.selected, digit, this.ctx.settings);
     this.afterMove();
   }
@@ -268,6 +273,16 @@ export class PlayScreen {
       if (tap.digit !== digit || tap.cell !== cell || now - tap.at > 600) break;
       rollback++;
     }
+
+    /*
+     * Both taps have to have gone into this cell. Typing the same digit into
+     * two cells in quick succession is two taps on one key, which is a
+     * double-click as far as the key is concerned — but it is plainly not one
+     * gesture, and forcing the second entry would strip candidates across the
+     * grid on the strength of a misread. Leave it as the tap it was.
+     */
+    if (rollback < 2) return;
+
     for (let i = 0; i < rollback; i++) this.game.undo();
     this.recentTaps.length = 0;
     this.forceDigit(digit);

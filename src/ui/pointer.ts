@@ -13,6 +13,20 @@ export interface TapOptions {
    * Wrong for buttons, where sliding off is how you take an action back.
    */
   forgiveDrift?: boolean;
+  /**
+   * Fire the tap the moment the finger lands, rather than when it lifts.
+   *
+   * For the grid, where the tap only moves the cursor: nothing is committed, so
+   * there is nothing to want back, and waiting for the lift is where selections
+   * get lost. A pointer can be cancelled between down and up — the browser
+   * deciding a slight movement was a scroll is enough — and a cancelled pointer
+   * sends no pointerup at all, so the tap simply never arrives and the next
+   * digit lands in the previous cell. Pressing cannot be taken away.
+   *
+   * Wrong for the keypad, where a tap enters a digit and lifting elsewhere is
+   * the way out of a mistake.
+   */
+  tapOnDown?: boolean;
 }
 
 const DEFAULT_LONG_MS = 450;
@@ -71,6 +85,7 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
       timer = undefined;
       opts.onLong?.(downIndex);
     }, longMs);
+    if (opts.tapOnDown) opts.onTap?.(downIndex);
   });
 
   target.addEventListener('pointerup', (e) => {
@@ -88,6 +103,13 @@ export function bindTap(target: HTMLElement, opts: TapOptions, indexOf?: (e: Eve
     const i = lifted >= 0 ? lifted : downIndex;
     if (i < 0) return;
     if (i !== downIndex && !opts.forgiveDrift) return;
+
+    // Already delivered on the way down. Landing somewhere else on the way up
+    // still counts, so the cursor follows a finger that slid.
+    if (opts.tapOnDown) {
+      if (i !== downIndex) opts.onTap?.(i);
+      return;
+    }
 
     const previous = recentTaps[recentTaps.length - 1];
     const isDouble =

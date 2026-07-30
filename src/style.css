@@ -296,7 +296,10 @@ body {
   width: 100%;
   border: 2px solid var(--line-strong);
   background: var(--cell);
-  touch-action: manipulation;
+  /* `none`, not `manipulation`: manipulation still leaves panning on the table,
+     so a tap with the smallest drag can be reinterpreted as a scroll, and the
+     pointer is cancelled mid-gesture. There is nothing to scroll here. */
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
