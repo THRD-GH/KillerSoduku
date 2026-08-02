@@ -180,7 +180,14 @@ export class PlayScreen {
       onDouble: () => this.doClear(),
     });
 
-    bindTap(this.tallyBox, { onTap: () => this.addCage(), onLong: () => this.resetTally() });
+    bindTap(this.tallyBox, {
+      onTap: () => this.addCage(),
+      onLong: () => this.resetTally(),
+      // Counting two cages in quick succession is two taps here, and without
+      // this the second would fall through to the long-press action and wipe
+      // the running total. Holding is the only way to clear it.
+      onDouble: () => undefined,
+    });
     bindTap(this.timerBox, {
       onTap: () => {
         this.ctx.settings.showTimer = !this.ctx.settings.showTimer;
@@ -556,13 +563,21 @@ export class PlayScreen {
       toast('Choose a cell first');
       return;
     }
+    /*
+     * Counting a cage toggles it. Innie/outie sums are built up a cage at a
+     * time and it is easy to add one you did not mean to; without this the only
+     * way back was to clear the whole tally and start the arithmetic again.
+     */
     const idx = this.game.cageIndexAt(sel);
+    const cage = this.game.cageAt(sel);
     if (this.tallyCages.has(idx)) {
-      toast('That cage is already counted');
-      return;
+      this.tallyCages.delete(idx);
+      this.tallyTotal -= cage.sum;
+      toast(`Took ${cage.sum} back off the tally`);
+    } else {
+      this.tallyCages.add(idx);
+      this.tallyTotal += cage.sum;
     }
-    this.tallyCages.add(idx);
-    this.tallyTotal += this.game.cageAt(sel).sum;
     this.renderTally();
     this.board.render();
   }
@@ -637,7 +652,8 @@ export class PlayScreen {
         this.techniqueReport(),
         el('div', { class: 'actions', style: 'grid-template-columns: 1fr 1fr' }, menu, again),
       );
-    });
+      // Low on the screen: the grid you have just finished is worth a look.
+    }, { overlayClass: 'bottom-sheet' });
   }
 
   /**

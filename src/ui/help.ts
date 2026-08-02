@@ -32,7 +32,7 @@ const SECTIONS: [string, string[]][] = [
       'New — leave for a fresh puzzle at the same level.',
       'Undo and redo — the two arrow buttons. Undo winds back move by move, as far as the empty grid. Redo goes forward again, until you make a new move, which abandons it.',
       'Pause — stop the clock. You can also long-click any cell.',
-      'The tally adds up cage totals for innie/outie arithmetic: tap it to count the selected cage, hold to clear. Each cage counts once, and counted cages are tinted on the grid so a gap in a run is easy to spot.',
+      'The tally adds up cage totals for innie/outie arithmetic: tap it to count the selected cage, tap again on a cage already counted to take it back off, and hold to clear the lot. Each cage counts once, and counted cages are tinted on the grid so a gap in a run is easy to spot.',
       'The white box is the clock. Tap it to hide or show the time; it keeps running.',
     ],
   ],

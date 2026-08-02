@@ -42,8 +42,9 @@ Keyboard: arrows move, `1`–`9` toggle, `Shift`+digit forces, `Backspace` clear
 mistake first if there is one), Sum (combination calculator), Restart, New, Undo
 and the undo/redo arrows. Undo winds back as far as the empty grid; redo goes
 forward until a new move abandons it. The tally totals cage sums for
-innie/outie arithmetic: tap to count the selected cage, hold to clear, each
-cage counts once, and counted cages are tinted on the grid. The white box
+innie/outie arithmetic: tap to count the selected cage, tap a counted cage
+again to take it back off, hold to clear the lot; each cage counts once, and
+counted cages are tinted on the grid. The white box
 is the clock; tap to hide it, it keeps running.
 
 Hint names the technique that cracks the position, says why it works and

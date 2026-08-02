@@ -268,5 +268,5 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     // Now that it is on screen it can be measured, and held at that height.
     queueMicrotask(holdHeight);
     return panel;
-  }, { overlayClass: 'see-through calc-overlay' });
+  }, { overlayClass: 'see-through bottom-sheet' });
 }

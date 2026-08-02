@@ -1462,14 +1462,17 @@ body {
 }
 
 /*
- * Sat on the bottom edge rather than centred. Two reasons, both about the
- * footer: its buttons stay solid whatever the transparency slider says, so they
- * must not sit over the grid — down here they cover the keypad instead, which
- * is not in use while the calculator is open. And an anchored bottom keeps the
- * buttons still while the list of combinations above them changes, as well as
- * within reach of a thumb.
+ * Sits on the bottom edge rather than centred, so the grid above it stays in
+ * view and the buttons stay in reach.
+ *
+ * The calculator needs it because its footer buttons stay solid whatever the
+ * transparency slider says — over the grid they would be in the way, whereas
+ * down here they cover the keypad, which is not in use anyway — and because an
+ * anchored bottom keeps them still while the list above them changes. The win
+ * panel needs it because the first thing you want at the end of a puzzle is to
+ * look at the puzzle.
  */
-.overlay.calc-overlay {
+.overlay.bottom-sheet {
   align-items: end;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
 }
