@@ -22,12 +22,12 @@ const LEVEL_GUIDE: Record<Level, { lead: string; techniques: string[] }> = {
     techniques: ['Innies and outies across three rows or columns', 'X-wing patterns'],
   },
   5: {
-    lead: 'Logic alone may not finish these puzzles.',
-    techniques: ['All techniques from earlier levels', 'A small amount of trial and error when logic runs out'],
+    lead: 'Extends beyond the named technique stack.',
+    techniques: ['All techniques from earlier levels', 'Occasional enhanced logical deduction for the remaining cells'],
   },
   6: {
     lead: 'The most resistant puzzles in the collection.',
-    techniques: ['All techniques from earlier levels', 'Deeper trial and error after the logical techniques are exhausted'],
+    techniques: ['All techniques from earlier levels', 'Sustained enhanced logical deduction for the remaining cells'],
   },
 };
 
@@ -45,7 +45,9 @@ export function openLevelInfo(level: Level): void {
       el('h2', {}, `Level ${level} · ${LEVEL_NAMES[level]}`),
       el('p', { class: 'level-info-lead' }, guide.lead),
       list,
-      el('p', { class: 'summary' }, 'Each level can also require techniques introduced below it. The rating reflects the hardest step needed.'),
+      level > 1
+        ? el('p', { class: 'summary' }, 'Each level can also require techniques introduced below it. The rating reflects the hardest step needed.')
+        : null,
       el('div', { class: 'panel-footer' }, done),
     );
   });

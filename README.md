@@ -186,7 +186,8 @@ rated by how far up the stack it had to go:
 | 7 | X-wing |
 
 Levels 1–4 are cut on that hardest-technique figure; levels 5 and 6 are puzzles
-where the stack runs out entirely, split by how much trial and error remains.
+where the named technique stack runs out, split by how much enhanced logical
+deduction remains.
 
 An earlier version rated puzzles purely on 45-rule usage. That was wrong — it
 fixated on one technique, and with no given digits nearly every killer grid
