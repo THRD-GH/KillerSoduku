@@ -8,6 +8,7 @@ import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
 import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
+import { openLevelInfo } from './level-info.ts';
 
 /**
  * Choose Level. Each level offers curated Classic grids and freshly
@@ -66,12 +67,20 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     'div',
     { class: 'level' },
     el(
-      'div',
-      { class: 'level-head' },
+      'button',
+      {
+        class: 'level-head',
+        'aria-label': `Explain level ${level}, ${LEVEL_NAMES[level]}`,
+        title: `What level ${level} involves`,
+      },
       stars(level, 10),
       el('span', { class: 'name' }, LEVEL_NAMES[level]),
+      el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
     ),
   );
+
+  const levelHead = row.querySelector<HTMLButtonElement>('.level-head');
+  levelHead?.addEventListener('click', () => openLevelInfo(level));
 
   for (const source of SOURCES) {
     const size = poolSize(ctx, level, source);

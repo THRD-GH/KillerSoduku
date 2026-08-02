@@ -795,11 +795,41 @@ body {
 }
 
 .level-head {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 3px;
   min-width: 0;
+  padding: 2px 18px 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.level-head:hover,
+.level-head:focus-visible {
+  background: var(--accent-dim);
+  outline: 1px solid var(--accent);
+}
+
+.level-info-badge {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  translate: 0 -50%;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dim);
+  border-radius: 50%;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .level .stars {
@@ -951,6 +981,13 @@ body {
 .overlay.see-through .results {
   background: rgb(var(--panel-2-rgb) / calc(var(--glass) * 0.88));
 }
+
+.level-info-panel { max-width: 390px; }
+.level-info-stars { display: flex; gap: 2px; color: var(--accent); }
+.level-info-panel h2 { margin-top: 5px; }
+.level-info-lead { margin: 0 0 10px; color: var(--text); font-weight: 650; }
+.level-techniques { margin: 0 0 13px; padding-left: 20px; color: var(--text); }
+.level-techniques li { margin: 6px 0; }
 
 .glass-slider {
   display: flex;
@@ -1361,7 +1398,7 @@ body {
    the panel is a fixed size whatever the list is doing. */
 .calc-body {
   display: grid;
-  grid-template-columns: 146px minmax(0, 1fr);
+  grid-template-columns: 150px minmax(0, 1fr);
   gap: 8px;
   align-items: stretch;
 }
@@ -1370,7 +1407,7 @@ body {
    placed explicitly rather than by direction, so the 3x3 pad inside is not
    itself mirrored. */
 :root[data-keypad='right'] .calc-body {
-  grid-template-columns: minmax(0, 1fr) 146px;
+  grid-template-columns: minmax(0, 1fr) 150px;
 }
 
 :root[data-keypad='right'] .calc-body > .calc-left {
@@ -1395,34 +1432,33 @@ body {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 5px;
-  height: 180px;
+  height: 168px;
 }
 
 /* Sum and cell count live under the keypad, leaving the combinations the
    full height of the panel. */
 .calc-fields {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 5px;
 }
 
 .calc-fields label {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 40px;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  font-size: 12px;
+  gap: 3px;
+  font-size: 11px;
   color: var(--dim);
 }
 
 /* Two digits at most, so no wider than that. The spinners are dropped: they
    would take more room than the number does. */
 .calc-fields input[type='number'] {
-  flex: 0 0 54px;
-  width: 54px;
+  width: 40px;
   min-width: 0;
-  padding: 6px 3px;
-  font-size: 17px;
+  padding: 5px 2px;
+  font-size: 16px;
   font-weight: 750;
   background: var(--k-aid);
   border-color: var(--k-aid-line);
