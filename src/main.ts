@@ -12,7 +12,6 @@ import {
   clearPuzzleLink,
   linkedPuzzle,
   loadHistory,
-  latestSave,
   loadSaveFor,
   loadSettings,
   unplayedNumbers,
@@ -150,15 +149,7 @@ class App implements AppContext {
       history.back();
       return;
     }
-    const saved = latestSave();
-    const resume =
-      saved === null
-        ? undefined
-        : {
-            label: `Resume ${formatPuzzleId(saved.id)}`,
-            run: () => this.resume(saved),
-          };
-    this.mount(buildMenu(this, resume));
+    this.mount(buildMenu(this));
   }
 
   goStats(level: Level): void {

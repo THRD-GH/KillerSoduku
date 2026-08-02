@@ -1368,6 +1368,11 @@ body {
 
 /* ---------- sum calculator ---------- */
 
+.panel.calc {
+  /* 150px keypad + gap + enough room for all nine candidate digits. */
+  width: min(100%, 336px);
+}
+
 .calc .row {
   display: flex;
   align-items: center;
@@ -1398,7 +1403,7 @@ body {
    the panel is a fixed size whatever the list is doing. */
 .calc-body {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
+  grid-template-columns: 150px 148px;
   gap: 8px;
   align-items: stretch;
 }
@@ -1407,7 +1412,7 @@ body {
    placed explicitly rather than by direction, so the 3x3 pad inside is not
    itself mirrored. */
 :root[data-keypad='right'] .calc-body {
-  grid-template-columns: minmax(0, 1fr) 150px;
+  grid-template-columns: 148px 150px;
 }
 
 :root[data-keypad='right'] .calc-body > .calc-left {
@@ -1441,6 +1446,22 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 5px;
+}
+
+.unfinished-picker {
+  max-height: min(52dvh, 420px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.unfinished-picker .statrow.open {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.resume-label {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 750;
 }
 
 .calc-fields label {
