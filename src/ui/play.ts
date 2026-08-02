@@ -21,6 +21,7 @@ import type { Step } from '../core/techniques.ts';
 import { bindTap } from './pointer.ts';
 import { openSumCalculator } from './sumcalc.ts';
 import type { AppContext } from './app-context.ts';
+import { openActionMenu } from './action-menu.ts';
 
 const CLEAR_KEY = 0;
 
@@ -821,39 +822,19 @@ export class PlayScreen {
   // ------------------------------------------------------------------- menus
 
   private openMenu(): void {
-    openOverlay((close) => {
-      const item = (label: string, run: () => void): HTMLButtonElement => {
-        const b = el('button', { class: 'btn' }, label);
-        b.addEventListener('click', () => {
-          close();
-          run();
-        });
-        return b;
-      };
-      return el(
-        'div',
-        { class: 'panel' },
-        el('h2', {}, 'Menu'),
-        el(
-          'div',
-          { class: 'menu-list' },
-          item('Fill all candidates', () => this.doFillCandidates()),
-          item('Rewind to before a mistake', () => {
-            if (this.game.wrongCount() === 0) toast('Nothing wrong on the board');
-            else this.offerRewind('Rewind');
-          }),
-          item('Share this puzzle', () => this.shareLink()),
-          item('Pause', () => this.pause()),
-          item('Settings', () => this.ctx.openSettings()),
-          item('Stats', () => this.ctx.goStats(this.game.puzzle.difficulty as Level)),
-          item('Help', () => this.ctx.openHelp()),
-          item('Main menu', () => {
-            this.stop();
-            this.ctx.goMenu();
-          }),
-        ),
-      );
-    });
+    openActionMenu('Menu', [
+      { label: 'Fill all candidates', run: () => this.doFillCandidates() },
+      { label: 'Rewind to before a mistake', run: () => {
+        if (this.game.wrongCount() === 0) toast('Nothing wrong on the board');
+        else this.offerRewind('Rewind');
+      } },
+      { label: 'Share this puzzle', run: () => this.shareLink() },
+      { label: 'Pause', run: () => this.pause() },
+      { label: 'Settings', run: () => this.ctx.openSettings() },
+      { label: 'Stats', run: () => this.ctx.goStats(this.game.puzzle.difficulty as Level) },
+      { label: 'Help', run: () => this.ctx.openHelp() },
+      { label: 'Main menu', run: () => { this.stop(); this.ctx.goMenu(); } },
+    ]);
   }
 
   // ---------------------------------------------------------------- keyboard

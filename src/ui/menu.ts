@@ -7,6 +7,7 @@ import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { stars } from './stars.ts';
 import type { AppContext } from './app-context.ts';
+import { openActionMenu } from './action-menu.ts';
 
 /**
  * Choose Level. Each level offers the reference app's shipped grids and freshly
@@ -26,7 +27,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'div',
       { class: 'hero' },
       el('h1', {}, 'Choose ', el('span', {}, 'Level')),
-      el('p', {}, 'Tap a pool to play · # to choose a puzzle number'),
+      el('p', {}, 'Pick a difficulty, then choose Classic or New'),
     ),
   );
 
@@ -45,8 +46,8 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'p',
       { class: 'hint-line' },
       ctx.packCounts
-        ? 'Classic plays the original shipped grids, New generates one. Either way the number always gives the same puzzle.'
-        : 'No puzzle packs installed, so only New is available. See tools/import-packs.ts.',
+        ? 'Classic uses the shipped puzzle collection. New creates a repeatable puzzle on your device.'
+        : 'No Classic puzzle collection is installed, so New puzzles are available.',
     ),
     el('p', { class: 'build-stamp' }, buildStamp()),
   );
@@ -56,6 +57,8 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
 function poolSize(ctx: AppContext, level: Level, source: Source): number {
   return source === 'classic' ? (ctx.packCounts?.[level] ?? 0) : ctx.newPoolSize;
 }
+
+const poolLabel = (source: Source): string => sourceLabel(source);
 
 /** One level as three columns: the difficulty, then each of its two pools. */
 function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
@@ -78,7 +81,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     const button = el(
       'button',
       { class: `source ${source}`, disabled: size === 0 },
-      el('span', { class: 'source-name' }, sourceLabel(source)),
+      el('span', { class: 'source-name' }, poolLabel(source)),
       el(
         'span',
         { class: 'source-meta' },
@@ -99,10 +102,10 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     const pick = el('button', {
       class: 'pick',
       disabled: size === 0,
-      title: `Choose a ${source} puzzle number`,
-      'aria-label': `Choose a ${source} puzzle number for level ${level}`,
+      title: `Choose ${poolLabel(source).toLowerCase()} puzzle number`,
+      'aria-label': `Choose ${poolLabel(source).toLowerCase()} puzzle number for level ${level}`,
     });
-    pick.textContent = '#';
+    pick.textContent = 'Choose';
     if (size > 0) pick.addEventListener('click', () => openPicker(ctx, level, source));
 
     // Each pool is its own grid column, so it goes straight onto the row.
@@ -221,7 +224,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
     return el(
       'div',
       { class: 'panel' },
-      el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`),
+      el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${poolLabel(source)}`),
       el('div', { class: 'picker-jump' }, el('label', {}, 'Go to'), jump, go),
       tabs,
       summary,
@@ -232,27 +235,10 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
 }
 
 export function openMainMenu(ctx: AppContext): void {
-  openOverlay((close) => {
-    const item = (label: string, run: () => void): HTMLButtonElement => {
-      const b = el('button', { class: 'btn' }, label);
-      b.addEventListener('click', () => {
-        close();
-        run();
-      });
-      return b;
-    };
-    return el(
-      'div',
-      { class: 'panel' },
-      el('h2', {}, 'Menu'),
-      el(
-        'div',
-        { class: 'menu-list' },
-        item('Settings', () => ctx.openSettings()),
-        item('Stats', () => ctx.goStats(1)),
-        item('Help', () => ctx.openHelp()),
-        item('About', () => toast('Killer Sudoku — a personal build')),
-      ),
-    );
-  });
+  openActionMenu('Menu', [
+    { label: 'Settings', run: () => ctx.openSettings() },
+    { label: 'Stats', run: () => ctx.goStats(1) },
+    { label: 'Help', run: () => ctx.openHelp() },
+    { label: 'About', run: () => toast('Killer Sudoku — a personal build') },
+  ]);
 }

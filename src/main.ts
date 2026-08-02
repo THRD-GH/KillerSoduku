@@ -1,4 +1,5 @@
 import './style.css';
+import './styles/responsive.css';
 import type { Level, PuzzleId, Source } from './core/types.ts';
 import { formatPuzzleId } from './core/types.ts';
 import { getPuzzle, prefetch } from './game/generate.ts';
@@ -25,6 +26,7 @@ import { PlayScreen } from './ui/play.ts';
 import { openSettings } from './ui/settings.ts';
 import { buildStats } from './ui/stats.ts';
 import type { AppContext } from './ui/app-context.ts';
+import { openFirstGameTutorial } from './ui/tutorial.ts';
 
 /** The browser chrome colour that matches each board, for the PWA title bar. */
 const THEME_COLOUR: Record<Theme, string> = {
@@ -248,10 +250,23 @@ class App implements AppContext {
     const screen = new PlayScreen(this, game);
     this.play = screen;
     this.root.append(screen.root);
+    openFirstGameTutorial();
   }
 }
 
 const host = document.querySelector<HTMLElement>('#app');
 if (host) new App(host);
 
-registerServiceWorker();
+registerServiceWorker(() => {
+  if (document.querySelector('.update-notice')) return;
+  const reload = el('button', { class: 'btn primary' }, 'Reload');
+  reload.addEventListener('click', () => location.reload());
+  document.body.append(
+    el(
+      'div',
+      { class: 'update-notice', role: 'status' },
+      el('span', {}, 'A new version is ready.'),
+      reload,
+    ),
+  );
+});

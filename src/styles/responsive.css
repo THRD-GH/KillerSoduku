@@ -1,0 +1,43 @@
+@media (max-width: 380px) {
+  .btn { font-size: 13.5px; }
+  .key { font-size: 18px; padding: 9px 4px; }
+}
+
+/* Landscape phones, tablets and ordinary laptops use the empty side space. */
+@media (orientation: landscape) and (min-width: 760px),
+       (orientation: landscape) and (max-height: 560px) {
+  #app { align-items: flex-start; }
+  .screen.play {
+    --board: min(calc(100dvh - 64px), calc(100vw - 330px), 720px);
+    max-width: none;
+    width: min(100%, 1120px);
+    height: 100dvh;
+    padding: 8px;
+    gap: 8px;
+    display: grid;
+    grid-template-columns: var(--board) minmax(270px, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .screen.play > .titlebar { grid-column: 1 / -1; min-height: 40px; padding: 4px 8px; }
+  :root[data-keypad='left'] .screen.play { grid-template-columns: minmax(270px, 1fr) var(--board); }
+  :root[data-keypad='left'] .screen.play > .board { grid-column: 2; }
+  :root[data-keypad='left'] .screen.play > .controls { grid-column: 1; grid-row: 2; }
+  .screen.play > .board { width: var(--board); height: var(--board); font-size: min(3.4vh, 26px); }
+  .screen.play > .controls { height: 100%; }
+  .controls-left { flex: 0 0 52%; }
+  .numpad { flex: 1 1 auto; grid-auto-rows: minmax(0, 1fr); }
+  .controls .actions { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .key, .btn { padding: 2px 4px; font-size: 17px; }
+  .key.clear { padding: 2px 4px; }
+  .controls .actions .btn { font-size: 12.5px; }
+  .under-keys, .under-actions { flex: 0 0 40px; }
+  .pause-btn { flex: 0 0 44px; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 759px) {
+  .screen.play { --board: min(calc(100dvh - 56px), calc(100vw - 236px)); grid-template-columns: var(--board) minmax(0, 1fr); padding: 6px; gap: 6px; }
+  :root[data-keypad='left'] .screen.play { grid-template-columns: minmax(0, 1fr) var(--board); }
+  .screen.play > .titlebar { min-height: 34px; padding: 3px 8px; }
+  .under-keys, .under-actions { flex-basis: 34px; }
+  .pause-btn { flex-basis: 40px; }
+}
