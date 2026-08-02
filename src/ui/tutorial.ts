@@ -7,7 +7,9 @@ const STEPS = [
   ['Choose a cell', 'Tap any square on the board. Its row, column, box and cage light up to keep your place.', '①  Tap a square'],
   ['Write candidates', 'Tap number keys to toggle small candidate marks. Tap more than one number to keep your possibilities visible.', '②  Tap 1–9 for notes'],
   ['Commit an answer', 'Hold or double-tap a number to enter it as the answer. Related candidates are removed for you.', '③  Hold a number to answer'],
-  ['You are ready', 'CLEAR removes marks, Undo takes back a move, and Hint explains a solving step. The full guide is in Menu → Help.', '④  Solve at your pace'],
+  ['Use the Sum calculator', 'Select a cage, then tap Sum to list every distinct-digit combination that fits its total and size. Tap digits to rule them out or require them.', '④  Explore cage combinations'],
+  ['Keep a cage tally', 'Select a cage and tap Tally to add its total. Tap an already-counted cage to subtract it, or hold Tally to clear everything. Counted cages are tinted on the board.', '⑤  Add and subtract cage totals'],
+  ['You are ready', 'CLEAR removes marks, Undo takes back a move, and Hint explains a solving step. The full guide is in Menu → Help.', '⑥  Solve at your pace'],
 ] as const;
 
 function tutorialComplete(): boolean {
