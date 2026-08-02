@@ -105,7 +105,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
       title: `Choose ${poolLabel(source).toLowerCase()} puzzle number`,
       'aria-label': `Choose ${poolLabel(source).toLowerCase()} puzzle number for level ${level}`,
     });
-    pick.textContent = 'Choose';
+    pick.textContent = '#';
     if (size > 0) pick.addEventListener('click', () => openPicker(ctx, level, source));
 
     // Each pool is its own grid column, so it goes straight onto the row.

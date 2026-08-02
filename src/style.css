@@ -840,14 +840,13 @@ body {
 
 /* Opens the puzzle-number picker for that pool. */
 .pick {
-  flex: 0 0 auto;
+  flex: 0 0 26px;
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
   color: var(--dim);
-  font-size: 10.5px;
-  font-weight: 650;
-  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
 }
