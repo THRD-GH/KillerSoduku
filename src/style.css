@@ -1,4 +1,4 @@
-/* Night is the default, matching the reference app's dark scheme; the Theme
+/* Night is the default; the Theme
    setting swaps in the day or high-contrast palette. */
 :root {
   --bg: #0a0d10;
@@ -473,7 +473,7 @@ body {
 /*
  * Keypad on the right: the digits go under a right thumb and the action
  * buttons cross to the other side. Left is the default and the layout the
- * reference app uses. One flip covers both orientations — in landscape the
+ * original control layout uses. One flip covers both orientations — in landscape the
  * controls sit beside the board, so reversing them lands the keypad out at
  * the edge on the same side.
  */
@@ -948,9 +948,7 @@ body {
 
 /* Every surface inside follows the slider: the results, the keys, and the
    sum and cell-count fields. */
-.overlay.see-through .results,
-.overlay.see-through .calc-keys .btn:not(.inc):not(.exc),
-.overlay.see-through .calc input[type='number'] {
+.overlay.see-through .results {
   background: rgb(var(--panel-2-rgb) / calc(var(--glass) * 0.88));
 }
 
@@ -1363,7 +1361,7 @@ body {
    the panel is a fixed size whatever the list is doing. */
 .calc-body {
   display: grid;
-  grid-template-columns: 126px minmax(0, 1fr);
+  grid-template-columns: 146px minmax(0, 1fr);
   gap: 8px;
   align-items: stretch;
 }
@@ -1372,7 +1370,7 @@ body {
    placed explicitly rather than by direction, so the 3x3 pad inside is not
    itself mirrored. */
 :root[data-keypad='right'] .calc-body {
-  grid-template-columns: minmax(0, 1fr) 126px;
+  grid-template-columns: minmax(0, 1fr) 146px;
 }
 
 :root[data-keypad='right'] .calc-body > .calc-left {
@@ -1396,8 +1394,8 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 4px;
-  height: 156px;
+  gap: 5px;
+  height: 180px;
 }
 
 /* Sum and cell count live under the keypad, leaving the combinations the
@@ -1420,11 +1418,15 @@ body {
 /* Two digits at most, so no wider than that. The spinners are dropped: they
    would take more room than the number does. */
 .calc-fields input[type='number'] {
-  flex: 0 0 46px;
-  width: 46px;
+  flex: 0 0 54px;
+  width: 54px;
   min-width: 0;
-  padding: 4px 2px;
-  font-size: 14px;
+  padding: 6px 3px;
+  font-size: 17px;
+  font-weight: 750;
+  background: var(--k-aid);
+  border-color: var(--k-aid-line);
+  color: var(--k-aid-text);
   text-align: center;
   appearance: textfield;
   -moz-appearance: textfield;
@@ -1438,7 +1440,10 @@ body {
 
 .calc-keys button {
   padding: 0;
-  font-size: 17px;
+  font-size: 21px;
+  background: var(--k-digit);
+  border-color: var(--k-digit-line);
+  color: var(--k-digit-text);
 }
 
 /* Required and ruled-out keys. They fade with everything else, so the colour

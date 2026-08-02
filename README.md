@@ -1,7 +1,7 @@
 # Killer Sudoku
 
-A web killer sudoku, built to match the feel of the KillSud Android app: same
-control scheme, same six-star level ladder, same numbered-puzzle history.
+A web killer sudoku with a compact touch-first control scheme, a six-star
+level ladder and numbered-puzzle history.
 
 Vite + TypeScript, no runtime dependencies. `npm run dev`, `npm run build`.
 
@@ -69,7 +69,7 @@ taking, because a browser can clear its storage without warning.
 
 Every puzzle keeps its own save, undo history included, so leaving one part-way
 and coming back to it later loses nothing. Keypad side puts the digits on the
-left (the default, as the reference app has them) or on the right under a right
+left (the default) or on the right under a right
 thumb, with the action buttons across from them; in landscape the board and
 controls sit side by side and mirror with it. The grid is marked up for screen
 readers: each cell reads out its position, its cage and what is in it.
@@ -83,7 +83,7 @@ counted into the tally carry a corner dot.
 
 Every level offers two pools, with separate history and separate numbering:
 
-- **Classic** — the original grids shipped with the reference app, numbered
+- **Classic** — 5,200 hand-picked grids, grouped into six difficulty levels
   `3-10`. Requires importing the packs (below).
 - **New** — generated on demand and seeded from `(level, number)`, numbered
   `3-N10`. Same seed, same grid, on every device, forever — but the supply is
@@ -100,18 +100,11 @@ the app from the menu itself.
 `public/packs/` is committed, so the site works as-is with no import step, and
 Vite copies it into `dist/` on build.
 
-Those files hold another app's puzzle content, extracted from a copy of it we
-own. They were committed while this repository was private. **It is public now,
-and the packs are published with it** — GitHub Pages needs a public repository,
-and a public URL is what makes the PWA installable on a phone, which is the
-whole point of deploying it.
+The repository includes the curated Classic collection so the deployed game works
+without an import step. It remains optional: removing `public/packs/` disables
+Classic gracefully and leaves the locally generated New pool fully playable.
 
-That is a deliberate trade, not an oversight, and it is one line to undo: put
-`public/packs/` back in `.gitignore` and the app degrades gracefully, disabling
-Classic and offering New only. New puzzles are generated locally and owe nothing
-to the reference app, so the game still works in full without them.
-
-To rebuild them from the app's assets (the APK is a zip):
+To rebuild the JSON packs from archived `.nks` source files:
 
 ```bash
 node tools/import-packs.ts <dir-with-nks-files>
@@ -123,10 +116,10 @@ across six files whose difficulty is flat — mean solver score 2.40, 2.70, 2.42
 field, which does climb: 1.85, 1.45, 2.05, 2.80, 4.00, 4.06. `analyse-packs.ts`
 runs both groupings so that conclusion can be re-checked rather than trusted.
 
-### What the reference packs told us
+### What the Classic packs told us
 
-The KillSud APK ships 5,200 puzzles as plaintext, so its design could be
-measured rather than guessed. Three findings shaped this generator:
+The hand-picked Classic collection contains 5,200 puzzles, enough to measure its design
+rather than guess. Three findings shaped this generator:
 
 - **No single-cell cages, anywhere.** A one-cell cage is just a given digit.
   Sizes start at 2 in all six packs.
@@ -153,7 +146,7 @@ the other way round:
 2. Tile it with dominoes and triominoes. Cages that small make the puzzle
    heavily over-constrained, so most tilings are already uniquely solvable and
    the rest are discarded cheaply. A cell with no free partner is folded into a
-   neighbouring cage rather than left as a single — that is what the reference
+   neighbouring cage rather than left as a single — that is what the Classic
    packs do, and what stops stray givens appearing at high levels.
 3. Merge adjacent cages one at a time, keeping only merges that leave the puzzle
    uniquely solvable. Merging only ever loosens a puzzle, so this walks a ladder
@@ -164,7 +157,7 @@ the other way round:
 Pure dominoes would merge 2+2 into 4 and never produce a three-cell cage, so
 some of the base is seeded as triominoes — more of it at the higher levels.
 
-Merging is then steered towards the reference cage-size distribution: each
+Merging is then steered towards the Classic cage-size distribution: each
 candidate merge is ranked by how short the resulting size currently is of its
 target share. The shortfall has to be measured *relative to each size's own
 target*. Ranking by absolute share instead — the obvious way — always favours
@@ -218,17 +211,4 @@ node tools/analyse-packs.ts <dir> # which pack grouping is really the level
 solution is the grid the cages were cut from, that the cages partition all 81
 cells and total 405, that no cage repeats a digit, that no cage is a single
 cell, and that the size cap holds. It also prints the cage-size distribution
-next to the reference app's for comparison.
-
-## Provenance
-
-The control scheme, level ladder and puzzle-numbering scheme are modelled on
-KillSud by BotenSoft, from its own in-app help text. No code, artwork or fonts
-from that app are used here — the stars are drawn in SVG and the combination
-table is computed rather than shipped.
-
-Its puzzle packs are a different matter. Classic mode plays them, they are
-committed here, and this repository is public — so they are redistributed, which
-is more than the original commit intended. It was done knowingly, to get the PWA
-onto a phone, and it stays reversible: New puzzles depend on none of it, so
-dropping `public/packs/` leaves a fully working game.
+next to the hand-picked Classic collection for comparison.

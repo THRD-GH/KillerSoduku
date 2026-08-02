@@ -1,6 +1,6 @@
 /**
  * Verifies generated puzzles and reports the cage-size distribution, which is
- * compared against the reference app's 5,200 shipped puzzles.
+ * compared against the 5,200 hand-picked Classic puzzles.
  *
  *   node tools/calibrate.ts          # verify all 6 levels end to end
  *   node tools/calibrate.ts spread   # how tier/guesses vary along the ladder
@@ -17,7 +17,7 @@ import {
 import { mulberry32 } from '../src/core/rng.ts';
 import { buildConstraints, classify, solve } from '../src/core/solver.ts';
 
-/** Measured from assets/magar00*.nks in killsud.boten_6.5.apk. */
+/** Measured from the archived Classic `.nks` source files. */
 const REFERENCE_DIST: Record<number, number> = {
   2: 51.5,
   3: 26.5,

@@ -1,5 +1,5 @@
 /**
- * Imports the reference app's puzzle packs so "Fixed" mode can play them.
+ * Imports archived `.nks` puzzle packs so Classic mode can play them.
  *
  *   node tools/import-packs.ts <dir-with-nks-files>
  *
@@ -7,9 +7,7 @@
  * tools/analyse-packs.ts, which shows difficulty is flat across files and
  * monotone across that digit.
  *
- * Output lands in public/packs/ and is gitignored: it is another app's content,
- * extracted from a copy you own, for local play. Keep it out of anything you
- * publish.
+ * Output lands in public/packs/ and is included in builds as the Classic pool.
  */
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

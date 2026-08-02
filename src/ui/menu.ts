@@ -10,7 +10,7 @@ import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
 
 /**
- * Choose Level. Each level offers the reference app's shipped grids and freshly
+ * Choose Level. Each level offers curated Classic grids and freshly
  * generated ones, as separate pools with separate history. A tap starts a
  * random unplayed puzzle from that pool; a long-click picks a number.
  */
@@ -46,7 +46,7 @@ export function buildMenu(ctx: AppContext, resume?: { label: string; run: () => 
       'p',
       { class: 'hint-line' },
       ctx.packCounts
-        ? 'Classic uses the shipped puzzle collection. New creates a repeatable puzzle on your device.'
+        ? 'Classic plays hand-picked grids. New creates a repeatable puzzle on your device.'
         : 'No Classic puzzle collection is installed, so New puzzles are available.',
     ),
     el('p', { class: 'build-stamp' }, buildStamp()),

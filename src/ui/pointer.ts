@@ -1,6 +1,6 @@
 export interface TapOptions {
   onTap?: (index: number) => void;
-  /** Long-press. The reference app treats double-click as the same gesture. */
+  /** Long-press. Double-click is treated as the same gesture. */
   onLong?: (index: number) => void;
   /** Fired on double-click when a tap has already been delivered for it. */
   onDouble?: (index: number) => void;
@@ -45,7 +45,7 @@ const DOUBLE_WINDOW_MS = 900;
 const DOUBLE_TAP_MS = 400;
 
 /**
- * Binds the tap / long-press / double-click trio the reference app uses.
+ * Binds the tap / long-press / double-click gesture trio used by the game.
  *
  * A tap fires immediately — waiting to see whether a double-click follows would
  * make every digit entry feel laggy. So on a double-click the caller gets

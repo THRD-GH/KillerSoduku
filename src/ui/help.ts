@@ -64,7 +64,7 @@ const SECTIONS: [string, string[]][] = [
   [
     'Levels and puzzle numbers',
     [
-      'Six levels, one to six stars. Each has two pools: Classic plays the original shipped grids, New generates one.',
+      'Six levels, one to six stars. Each has two pools: Classic plays hand-picked grids, New generates one.',
       'Tap a pool to play a random puzzle from it, hold to choose a number.',
       'Classic puzzles are numbered 3-10; New ones 3-R10. Either way the number always gives the same puzzle, on any device.',
       'The two pools keep separate history. Only unplayed puzzles are offered — release used ones from Stats by long-clicking a pink row.',

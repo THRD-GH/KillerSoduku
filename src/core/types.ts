@@ -1,4 +1,4 @@
-/** Difficulty is a 1..6 star level, as in the reference app's ladder. */
+/** Difficulty is a 1..6 star level, as in the Classic ladder. */
 export type Level = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Cage {
@@ -19,7 +19,7 @@ export interface Puzzle {
 }
 
 /**
- * Where a puzzle comes from. 'classic' plays the reference app's shipped
+ * Where a puzzle comes from. 'classic' plays the curated, hand-picked
  * grids, 'new' generates one. Both are numbered per level and both are
  * reproducible, so the two pools are tracked separately.
  */

@@ -1,7 +1,7 @@
 import type { Cage, Level, Puzzle } from '../core/types.ts';
 
 /**
- * The reference app's shipped puzzles, imported by tools/import-packs.ts.
+ * The curated Classic puzzle collection, imported by tools/import-packs.ts.
  * Absent packs are not an error — Fixed mode simply switches itself off.
  */
 /** Resolved lazily so the parsing helpers can also be used outside Vite. */

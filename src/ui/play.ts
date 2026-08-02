@@ -99,7 +99,7 @@ export class PlayScreen {
           this.game.selected = i;
           this.render();
         },
-        // Long-press any cell pauses, exactly as the reference app does.
+        // Long-press any cell pauses, matching the original control scheme.
         onLong: () => this.pause(),
         onDouble: () => undefined,
         // A hurried tap that lands half in the next cell still means "select",

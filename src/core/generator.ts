@@ -4,7 +4,7 @@ import { buildConstraints, classify, isUnique } from './solver.ts';
 import type { Classification } from './solver.ts';
 import type { Cage, Level, Puzzle } from './types.ts';
 
-/** Six levels, one to six stars, matching the reference app's ladder. */
+/** Six levels, one to six stars, matching the Classic collection's ladder. */
 export const LEVELS: Level[] = [1, 2, 3, 4, 5, 6];
 
 export const LEVEL_NAMES: Record<Level, string> = {
@@ -24,7 +24,7 @@ interface LevelConfig {
 }
 
 /**
- * Cages may run to nine cells, as they do in the reference app's packs. What
+ * Cages may run to nine cells, as they do in the Classic packs. What
  * they may never be is one cell: that is a free given, and those packs contain
  * none at any level.
  */
@@ -32,7 +32,7 @@ export const MAX_CAGE_SIZE = 9;
 export const MIN_CAGE_SIZE = 2;
 
 /**
- * Measuring the reference app's 5,200 shipped puzzles settled how difficulty
+ * Measuring the 5,200 Classic puzzles settled how difficulty
  * actually works there: mean cage size is ~2.85 at *every* level, so the ladder
  * is not built from bigger cages. Grouped by the packs' own internal rating the
  * mean drifts only 2.54 → 3.30, so cage size is texture with a slight lean.
@@ -99,7 +99,7 @@ export function randomSolution(rnd: () => number): number[] {
  *
  * A cell with no free partner is folded into an adjacent cage rather than left
  * as a one-cell cage. A single-cell cage is just a given digit, and the
- * reference app's puzzle packs contain none at any level. Returns null when the
+ * Classic puzzle packs contain none at any level. Returns null when the
  * tiling paints itself into a corner, which is cheaper to retry than repair.
  */
 export function seedPartition(
@@ -192,7 +192,7 @@ function mergeablePairs(groups: number[][], solution: number[], maxSize: number)
 const MERGE_NODE_LIMIT = 4000;
 
 /**
- * Cage-size shares measured across the reference app's 5,200 puzzles.
+ * Cage-size shares measured across the 5,200 Classic puzzles.
  * Merging steers towards this shape rather than towards "big" or "small":
  * a plain size bias either starves the middle sizes or never reaches the tail.
  */

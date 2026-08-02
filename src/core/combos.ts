@@ -2,7 +2,7 @@ import { popcount } from './grid.ts';
 
 /**
  * Every set of distinct digits 1..9, indexed by [size][sum] as 9-bit masks.
- * This is the same table the reference app ships as combs.txt, computed instead
+ * This is the standard killer-sudoku combination table, computed at runtime
  * of shipped — 502 entries for sizes 2..8.
  */
 const TABLE: number[][][] = (() => {
