@@ -10,6 +10,7 @@ import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
 import { openLevelInfo } from './level-info.ts';
 import { openUnfinishedPicker } from './unfinished-picker.ts';
+import { openTutorial } from './tutorial.ts';
 
 /**
  * Choose Level. Each level offers curated Classic grids and freshly
@@ -258,6 +259,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
 
 export function openMainMenu(ctx: AppContext): void {
   openActionMenu('Menu', [
+    { label: 'How to play walkthrough', run: () => openTutorial() },
     { label: 'Settings', run: () => ctx.openSettings() },
     { label: 'Stats', run: () => ctx.goStats(1) },
     { label: 'Help', run: () => ctx.openHelp() },

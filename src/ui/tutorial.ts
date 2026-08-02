@@ -18,9 +18,9 @@ function rememberTutorial(): void {
   try { localStorage.setItem(TUTORIAL_KEY, '1'); } catch { /* Storage is optional. */ }
 }
 
-/** Show once, immediately after the player's first puzzle reaches the screen. */
-export function openFirstGameTutorial(): void {
-  if (tutorialComplete()) return;
+/** Open the walkthrough. First-run callers can ask it to respect completion. */
+export function openTutorial(onlyIfNew = false): void {
+  if (onlyIfNew && tutorialComplete()) return;
   openOverlay((close) => {
     let current = 0;
     const title = el('h2');
@@ -47,3 +47,6 @@ export function openFirstGameTutorial(): void {
     return el('div', { class: 'panel tutorial' }, el('div', { class: 'eyebrow' }, 'QUICK START'), title, demo, body, progress, el('div', { class: 'tutorial-actions' }, back, next), skip);
   }, { dismissable: false });
 }
+
+/** Show once, immediately after the player's first puzzle reaches the screen. */
+export const openFirstGameTutorial = (): void => openTutorial(true);
