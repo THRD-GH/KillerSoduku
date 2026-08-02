@@ -571,9 +571,10 @@ export class PlayScreen {
     const idx = this.game.cageIndexAt(sel);
     const cage = this.game.cageAt(sel);
     if (this.tallyCages.has(idx)) {
+      // No message: the total changes and the cage loses its tint, which says
+      // it better than words do.
       this.tallyCages.delete(idx);
       this.tallyTotal -= cage.sum;
-      toast(`Took ${cage.sum} back off the tally`);
     } else {
       this.tallyCages.add(idx);
       this.tallyTotal += cage.sum;
