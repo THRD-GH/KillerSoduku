@@ -61,7 +61,7 @@ export function buildMenu(ctx: AppContext): HTMLElement {
       'p',
       { class: 'hint-line' },
       ctx.packCounts
-        ? 'Classic plays hand-picked grids. New creates a repeatable puzzle on your device.'
+        ? 'Classic plays hand-picked grids. Each New puzzle number creates the same grid on every device.'
         : 'No Classic puzzle collection is installed, so New puzzles are available.',
     ),
     el('p', { class: 'build-stamp' }, buildStamp()),
