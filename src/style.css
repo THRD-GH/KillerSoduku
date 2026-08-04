@@ -431,7 +431,7 @@ body {
   position: absolute;
   /* Tucked in from the sides so the 3x3 reads as one compact block in the
      middle of the cell, and low enough to clear the cage total above it. */
-  inset: 35% 17% 19%;
+  inset: 38% 23% 24%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
