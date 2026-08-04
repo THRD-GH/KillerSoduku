@@ -408,7 +408,7 @@ body {
   position: absolute;
   top: 10%;
   left: 12%;
-  font-size: 0.36em;
+  font-size: 0.42em;
   font-weight: 700;
   line-height: 1;
   color: var(--sum);
@@ -435,7 +435,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  font-size: 0.29em;
+  font-size: 0.34em;
   line-height: 1;
   color: var(--mark);
   font-weight: 700;
