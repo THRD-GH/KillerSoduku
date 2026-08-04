@@ -406,9 +406,9 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 10%;
-  left: 12%;
-  font-size: 0.42em;
+  top: 14%;
+  left: 16%;
+  font-size: 0.4em;
   font-weight: 700;
   line-height: 1;
   color: var(--sum);
