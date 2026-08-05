@@ -456,7 +456,7 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 8%;
+  top: 7.5%;
   left: 14%;
   /*
    * Sized against the candidates below it rather than on its own. Measured on
@@ -466,7 +466,7 @@ body {
    * the total used to be. The leading is squeezed out so its box is the height
    * of the figures and nothing more.
    */
-  font-size: 0.4em;
+  font-size: 0.38em;
   font-weight: 800;
   line-height: 0.85;
   color: var(--sum);
@@ -501,7 +501,7 @@ body {
    * the block can rise past it, so the candidates read as belonging to the
    * cell instead of hanging off its bottom edge.
    */
-  inset: 43% 9% 10%;
+  inset: 39% 9% 14%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(2, 1fr);
