@@ -29,8 +29,15 @@
     padding: 8px;
     gap: 8px;
     display: grid;
-    grid-template-columns: var(--board) minmax(0, 1fr);
+    /*
+     * Both tracks sized to what they hold, and the pair centred on the screen:
+     * a stretchy second column left the keys stranded at the far edge with a
+     * lake of empty space between them and the grid. The gap is the only thing
+     * between the two now.
+     */
+    grid-template-columns: var(--board) minmax(0, 264px);
     grid-template-rows: auto minmax(0, 1fr);
+    justify-content: center;
   }
 
   /* The board spans both rows: nothing sits above or below it. */
@@ -110,7 +117,7 @@
 
   /* Keypad on the left: the board changes sides and the column follows. */
   :root[data-keypad='left'] .screen.play {
-    grid-template-columns: minmax(0, 1fr) var(--board);
+    grid-template-columns: minmax(0, 264px) var(--board);
   }
 
   :root[data-keypad='left'] .screen.play > .board {
