@@ -24,6 +24,17 @@ const CAGE_INSET = 0.095;
  */
 const CAGE_CORNER = 0.05;
 
+/**
+ * How much of the outline is left out at the corner where the cage total is
+ * printed, in cell widths, measured along each edge from that corner.
+ *
+ * The number sits in the gap rather than beside it, which is how puzzle books
+ * set a killer sudoku — and it buys back the space the line and its clearance
+ * were taking, so the total can be half again the size it managed while it had
+ * to fit inside an unbroken corner.
+ */
+const CAGE_NOTCH = 0.36;
+
 interface CellNodes {
   root: HTMLDivElement;
   big: HTMLSpanElement;
@@ -135,7 +146,7 @@ export class Board {
 
     for (const cage of this.game.puzzle.cages) {
       const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET, CAGE_CORNER));
+      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET, CAGE_CORNER, CAGE_NOTCH));
       svg.append(path);
     }
     return svg;

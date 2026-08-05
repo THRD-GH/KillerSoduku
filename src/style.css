@@ -462,14 +462,19 @@ body {
    * font's own leading — so the top offset is the smaller of the two if the
    * number is to look square in the corner rather than pushed down into it.
    */
-  top: 13%;
-  left: 15%;
+  /*
+   * Sat in the notch cut out of the cage outline, so it is bounded by the
+   * sudoku's own grid line rather than by the cage — which is what lets it be
+   * this size in a cell this small.
+   */
+  top: 8%;
+  left: 9%;
   /*
    * Sized against the candidates below it rather than on its own: the cage
    * outline takes the outer 7% of the cell, the total sits inside that corner,
    * and the two rows of candidates start at 42%. That is the whole budget.
    */
-  font-size: 0.3em;
+  font-size: 0.42em;
   font-weight: 800;
   /*
    * A line-height under 1 lets the glyphs spill out of their own box, and by
@@ -512,7 +517,7 @@ body {
    * the block can rise past it, so the candidates read as belonging to the
    * cell instead of hanging off its bottom edge.
    */
-  inset: 40% 13% 13%;
+  inset: 41% 13% 13%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(2, 1fr);

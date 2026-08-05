@@ -98,36 +98,102 @@ const towards = (from: Point, to: Point, by: number): Point => {
 
 const fmt = (n: number): string => String(Math.round(n * 1000) / 1000);
 
-/**
- * The outline of one cage as a single SVG path: one closed, rounded loop per
- * boundary, rather than a dash per cell edge. Corners join properly and the
- * line runs continuously the whole way round.
- */
-export function cageOutlinePath(cells: number[], inset: number, radius = 0.05): string {
-  const parts: string[] = [];
+/** One rounded corner, as the move that reaches it and the curve through it. */
+const cornerSegment = (
+  prev: Point,
+  here: Point,
+  next: Point,
+  radius: number,
+  first: boolean,
+): string => {
+  // Never round away more than half of either adjacent edge.
+  const r = Math.min(radius, distance(here, prev) / 2, distance(here, next) / 2);
+  const start = towards(here, prev, r);
+  const end = towards(here, next, r);
+  return (
+    `${first ? 'M' : 'L'}${fmt(start[0])} ${fmt(start[1])}` +
+    `Q${fmt(here[0])} ${fmt(here[1])} ${fmt(end[0])} ${fmt(end[1])}`
+  );
+};
 
+const closedLoop = (points: Point[], radius: number): string => {
+  const segments = points.map((here, i) =>
+    cornerSegment(
+      points[(i - 1 + points.length) % points.length],
+      here,
+      points[(i + 1) % points.length],
+      radius,
+      i === 0,
+    ),
+  );
+  return `${segments.join('')}Z`;
+};
+
+/**
+ * The same loop, but stopping short on either side of one corner to leave a
+ * notch — the gap the cage total is printed in, as puzzle books set it.
+ *
+ * The walk runs anticlockwise on screen, so it leaves this corner down the
+ * cage's left edge and comes back to it along the top: those two segments are
+ * the lips of the notch, and the path simply starts and ends on them.
+ */
+const notchedLoop = (points: Point[], at: number, radius: number, notch: number): string => {
+  const corner = points[at];
+  const order: Point[] = [];
+  for (let i = 1; i < points.length; i++) order.push(points[(at + i) % points.length]);
+
+  // A short edge — a one-cell-wide cage, or a step in the boundary — must not
+  // have its whole length eaten by the notch.
+  const lip = (to: Point): number => Math.min(notch, distance(corner, to) * 0.6);
+  const start = towards(corner, order[0], lip(order[0]));
+  const last = order[order.length - 1];
+  const end = towards(corner, last, lip(last));
+
+  const segments = [`M${fmt(start[0])} ${fmt(start[1])}`];
+  for (let i = 0; i < order.length; i++) {
+    segments.push(
+      cornerSegment(
+        i === 0 ? start : order[i - 1],
+        order[i],
+        i === order.length - 1 ? end : order[i + 1],
+        radius,
+        false,
+      ),
+    );
+  }
+  segments.push(`L${fmt(end[0])} ${fmt(end[1])}`);
+  return segments.join('');
+};
+
+/**
+ * The outline of one cage as a single SVG path: one rounded loop per boundary,
+ * rather than a dash per cell edge. Corners join properly and the line runs
+ * continuously the whole way round — except at the corner where the cage total
+ * is printed, if `notch` asks for a gap there.
+ */
+export function cageOutlinePath(
+  cells: number[],
+  inset: number,
+  radius = 0.05,
+  notch = 0,
+): string {
+  /*
+   * The total is printed in the first cell of the cage, which is its lowest
+   * index: the leftmost cell of its topmost row. Both the top and the left of
+   * that cell are therefore outside the cage, so its top-left corner is always
+   * a convex corner of the boundary and always the one to cut.
+   */
+  const anchor = Math.min(...cells);
+  const anchorCorner: Point = [(anchor % 9) + inset, Math.floor(anchor / 9) + inset];
+  const near = (p: Point): boolean =>
+    Math.abs(p[0] - anchorCorner[0]) < 1e-6 && Math.abs(p[1] - anchorCorner[1]) < 1e-6;
+
+  const parts: string[] = [];
   for (const loop of boundaryLoops(cells)) {
     const points = insetLoop(loop, inset);
     if (points.length < 3) continue;
-
-    const segments: string[] = [];
-    for (let i = 0; i < points.length; i++) {
-      const prev = points[(i - 1 + points.length) % points.length];
-      const here = points[i];
-      const next = points[(i + 1) % points.length];
-
-      // Never round away more than half of either adjacent edge.
-      const r = Math.min(radius, distance(here, prev) / 2, distance(here, next) / 2);
-      const start = towards(here, prev, r);
-      const end = towards(here, next, r);
-
-      segments.push(
-        `${i === 0 ? 'M' : 'L'}${fmt(start[0])} ${fmt(start[1])}` +
-          `Q${fmt(here[0])} ${fmt(here[1])} ${fmt(end[0])} ${fmt(end[1])}`,
-      );
-    }
-    parts.push(`${segments.join('')}Z`);
+    const at = notch > 0 ? points.findIndex(near) : -1;
+    parts.push(at >= 0 ? notchedLoop(points, at, radius, notch) : closedLoop(points, radius));
   }
-
   return parts.join('');
 }
