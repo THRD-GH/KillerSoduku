@@ -3,9 +3,15 @@
   .key { font-size: 18px; padding: 9px 4px; }
 }
 
-/* Landscape phones, tablets and ordinary laptops use the empty side space. */
-@media (orientation: landscape) and (min-width: 760px),
-       (orientation: landscape) and (max-height: 560px) {
+/*
+ * Side by side only when the window is genuinely short — a phone or a tablet
+ * held landscape, where stacking would push the controls off the bottom of the
+ * screen. A desktop window is landscape too, but it has height to spare, and
+ * there the board belongs above the controls exactly as it does in portrait:
+ * a 9x9 grid pinned to one side of a wide screen with the keypad marooned
+ * beside it is not what anyone opens a puzzle expecting.
+ */
+@media (orientation: landscape) and (max-height: 560px) {
   #app { align-items: flex-start; }
   .screen.play {
     --board: min(calc(100dvh - 64px), calc(100vw - 330px), 720px);
@@ -40,53 +46,4 @@
   .screen.play > .titlebar { min-height: 34px; padding: 3px 8px; }
   .under-keys, .under-actions { flex-basis: 34px; }
   .pause-btn { flex-basis: 40px; }
-}
-
-/*
- * A landscape window on a desktop is not a landscape phone. The side-by-side
- * layout above sizes the controls to the height of the row, which on a screen a
- * thousand pixels tall stretched nine keys into playing cards. Here there is
- * width to spare instead, so the controls stack at their natural size: the
- * digits with CLEAR and undo beneath them, then the solving aids under that.
- */
-@media (orientation: landscape) and (min-width: 760px) {
-  /* The keypad-side rule sets a row direction, and it has to be outranked. */
-  .screen.play > .controls,
-  :root[data-keypad='right'] .screen.play > .controls {
-    flex-direction: column;
-    align-self: start;
-    height: auto;
-    max-width: 360px;
-  }
-
-  /* Nothing grows to fill the row any more. */
-  .controls-left,
-  .controls-right,
-  .under-keys,
-  .under-actions {
-    flex: 0 0 auto;
-  }
-
-  .numpad {
-    flex: 0 0 auto;
-    grid-auto-rows: auto;
-  }
-
-  .controls .actions {
-    grid-template-rows: repeat(3, auto);
-  }
-
-  .key,
-  .btn {
-    padding: 9px 4px;
-    font-size: 18px;
-  }
-
-  .controls .actions .btn {
-    font-size: 13px;
-  }
-
-  .pause-btn {
-    flex: 0 0 44px;
-  }
 }
