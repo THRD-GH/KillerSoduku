@@ -4,46 +4,115 @@
 }
 
 /*
- * Side by side only when the window is genuinely short — a phone or a tablet
+ * Side by side only when the window is genuinely short: a phone or a tablet
  * held landscape, where stacking would push the controls off the bottom of the
  * screen. A desktop window is landscape too, but it has height to spare, and
- * there the board belongs above the controls exactly as it does in portrait:
- * a 9x9 grid pinned to one side of a wide screen with the keypad marooned
- * beside it is not what anyone opens a puzzle expecting.
+ * there the board belongs above the controls exactly as it does in portrait.
+ *
+ * Height is the scarce thing here, so the board takes the full height of the
+ * screen and the title bar moves into the column beside it, above the keys —
+ * every pixel the bar would have taken across the top is a pixel the grid gets
+ * instead. And the controls are capped: given a free run they grew wider than
+ * the board they serve, which is the wrong way round.
  */
 @media (orientation: landscape) and (max-height: 560px) {
-  #app { align-items: flex-start; }
+  #app {
+    align-items: flex-start;
+  }
+
   .screen.play {
-    --board: min(calc(100dvh - 64px), calc(100vw - 330px), 720px);
+    /* 16px is the page padding; 336px reserves the controls column and gap. */
+    --board: min(calc(100dvh - 16px), calc(100vw - 336px), 720px);
     max-width: none;
-    width: min(100%, 1120px);
+    width: 100%;
     height: 100dvh;
     padding: 8px;
     gap: 8px;
     display: grid;
-    grid-template-columns: var(--board) minmax(270px, 1fr);
+    grid-template-columns: var(--board) minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-  .screen.play > .titlebar { grid-column: 1 / -1; min-height: 40px; padding: 4px 8px; }
-  :root[data-keypad='left'] .screen.play { grid-template-columns: minmax(270px, 1fr) var(--board); }
-  :root[data-keypad='left'] .screen.play > .board { grid-column: 2; }
-  :root[data-keypad='left'] .screen.play > .controls { grid-column: 1; grid-row: 2; }
-  .screen.play > .board { width: var(--board); height: var(--board); font-size: min(3.4vh, 26px); }
-  .screen.play > .controls { height: 100%; }
-  .controls-left { flex: 0 0 52%; }
-  .numpad { flex: 1 1 auto; grid-auto-rows: minmax(0, 1fr); }
-  .controls .actions { grid-template-rows: repeat(3, minmax(0, 1fr)); }
-  .key, .btn { padding: 2px 4px; font-size: 17px; }
-  .key.clear { padding: 2px 4px; }
-  .controls .actions .btn { font-size: 12.5px; }
-  .under-keys, .under-actions { flex: 0 0 40px; }
-  .pause-btn { flex: 0 0 44px; }
-}
 
-@media (orientation: landscape) and (max-height: 560px) and (max-width: 759px) {
-  .screen.play { --board: min(calc(100dvh - 56px), calc(100vw - 236px)); grid-template-columns: var(--board) minmax(0, 1fr); padding: 6px; gap: 6px; }
-  :root[data-keypad='left'] .screen.play { grid-template-columns: minmax(0, 1fr) var(--board); }
-  .screen.play > .titlebar { min-height: 34px; padding: 3px 8px; }
-  .under-keys, .under-actions { flex-basis: 34px; }
-  .pause-btn { flex-basis: 40px; }
+  /* The board spans both rows: nothing sits above or below it. */
+  .screen.play > .board {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: var(--board);
+    height: var(--board);
+  }
+
+  .screen.play > .titlebar {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 34px;
+    padding: 3px 8px;
+  }
+
+  .screen.play > .controls {
+    grid-column: 2;
+    grid-row: 2;
+    height: 100%;
+  }
+
+  /*
+   * Wide enough to work a keypad with, never wider than that. The width is
+   * explicit as well as capped: in a grid cell these shrink to their contents
+   * otherwise, which left the keys a third of the width they had room for.
+   */
+  .screen.play > .titlebar,
+  .screen.play > .controls {
+    width: 100%;
+    max-width: 320px;
+    justify-self: center;
+  }
+
+  /* Keypad on the left: the board changes sides and the column follows. */
+  :root[data-keypad='left'] .screen.play {
+    grid-template-columns: minmax(0, 1fr) var(--board);
+  }
+
+  :root[data-keypad='left'] .screen.play > .board {
+    grid-column: 2;
+  }
+
+  :root[data-keypad='left'] .screen.play > .titlebar,
+  :root[data-keypad='left'] .screen.play > .controls {
+    grid-column: 1;
+  }
+
+  .controls-left {
+    flex: 0 0 52%;
+  }
+
+  .numpad {
+    flex: 1 1 auto;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .controls .actions {
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  .key,
+  .btn {
+    padding: 2px 4px;
+    font-size: 17px;
+  }
+
+  .key.clear {
+    padding: 2px 4px;
+  }
+
+  .controls .actions .btn {
+    font-size: 12.5px;
+  }
+
+  .under-keys,
+  .under-actions {
+    flex: 0 0 36px;
+  }
+
+  .pause-btn {
+    flex: 0 0 42px;
+  }
 }
