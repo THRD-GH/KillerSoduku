@@ -329,7 +329,7 @@ body {
    * the cage outlines can sit between the hairlines and the boxes without ever
    * being mistaken for structure.
    */
-  border: 3px solid var(--line-strong);
+  border: 2px solid var(--line-strong);
   background: var(--cell);
   /* Lifts the grid off the page: it reads as a sheet laid on the screen. */
   box-shadow: 0 6px 22px var(--shadow);
@@ -378,11 +378,11 @@ body {
 }
 
 .cell.box-l {
-  border-left: 3px solid var(--line-strong);
+  border-left: 2px solid var(--line-strong);
 }
 
 .cell.box-t {
-  border-top: 3px solid var(--line-strong);
+  border-top: 2px solid var(--line-strong);
 }
 
 .cell.peer {
@@ -447,7 +447,7 @@ body {
 .cages path {
   fill: none;
   stroke: var(--cage);
-  stroke-width: 0.038;
+  stroke-width: 0.028;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -462,14 +462,14 @@ body {
    * font's own leading — so the top offset is the smaller of the two if the
    * number is to look square in the corner rather than pushed down into it.
    */
-  top: 9%;
-  left: 11%;
+  top: 13%;
+  left: 15%;
   /*
    * Sized against the candidates below it rather than on its own: the cage
    * outline takes the outer 7% of the cell, the total sits inside that corner,
    * and the two rows of candidates start at 42%. That is the whole budget.
    */
-  font-size: 0.34em;
+  font-size: 0.3em;
   font-weight: 800;
   /*
    * A line-height under 1 lets the glyphs spill out of their own box, and by
@@ -512,7 +512,7 @@ body {
    * the block can rise past it, so the candidates read as belonging to the
    * cell instead of hanging off its bottom edge.
    */
-  inset: 39% 9% 14%;
+  inset: 40% 13% 13%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(2, 1fr);

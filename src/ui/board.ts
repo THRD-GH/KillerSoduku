@@ -7,11 +7,16 @@ import { el } from './dom.ts';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Distance from the cell edge to the cage outline, in cell widths. Everything
- * drawn in a cell sits inside this (see .sum and .marks in style.css), so the
- * dashes never cut through a digit.
+ * Distance from the cell edge to the cage outline, in cell widths.
+ *
+ * Two systems of lines share the grid, and they have to be told apart at a
+ * glance: the sudoku's own boxes are drawn as cell borders, which sit *inside*
+ * the cell, so a 2px box division occupies the first 2px of it. The cage
+ * outline has to start beyond that with daylight in between, or the two read
+ * as one thick line. Everything else in the cell — the total, the candidates —
+ * then sits inside the cage outline in turn (see .sum and .marks in style.css).
  */
-const CAGE_INSET = 0.05;
+const CAGE_INSET = 0.095;
 
 /**
  * Corner rounding, in cell widths. Small enough to read as a crisp corner —
