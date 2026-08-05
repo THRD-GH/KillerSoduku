@@ -1,5 +1,17 @@
 type Point = [number, number];
 
+/**
+ * How far the cage outline stops short of its top-left corner, in cell widths,
+ * measured along each of the two edges that meet there. The two differ: the gap
+ * along the top has to clear the width of the total printed in it, which is
+ * wider for 16 than for 6, while the gap down the left only has to clear the
+ * height of the figures, which is the same either way.
+ */
+export interface Notch {
+  along: number;
+  down: number;
+}
+
 /** Key a lattice point so edges can be chained by their endpoints. */
 const key = (p: Point): string => `${p[0]},${p[1]}`;
 
@@ -137,17 +149,17 @@ const closedLoop = (points: Point[], radius: number): string => {
  * cage's left edge and comes back to it along the top: those two segments are
  * the lips of the notch, and the path simply starts and ends on them.
  */
-const notchedLoop = (points: Point[], at: number, radius: number, notch: number): string => {
+const notchedLoop = (points: Point[], at: number, radius: number, notch: Notch): string => {
   const corner = points[at];
   const order: Point[] = [];
   for (let i = 1; i < points.length; i++) order.push(points[(at + i) % points.length]);
 
   // A short edge — a one-cell-wide cage, or a step in the boundary — must not
   // have its whole length eaten by the notch.
-  const lip = (to: Point): number => Math.min(notch, distance(corner, to) * 0.6);
-  const start = towards(corner, order[0], lip(order[0]));
+  const lip = (to: Point, want: number): number => Math.min(want, distance(corner, to) * 0.6);
+  const start = towards(corner, order[0], lip(order[0], notch.down));
   const last = order[order.length - 1];
-  const end = towards(corner, last, lip(last));
+  const end = towards(corner, last, lip(last, notch.along));
 
   const segments = [`M${fmt(start[0])} ${fmt(start[1])}`];
   for (let i = 0; i < order.length; i++) {
@@ -175,7 +187,7 @@ export function cageOutlinePath(
   cells: number[],
   inset: number,
   radius = 0.05,
-  notch = 0,
+  notch?: Notch,
 ): string {
   /*
    * The total is printed in the first cell of the cage, which is its lowest
@@ -192,8 +204,8 @@ export function cageOutlinePath(
   for (const loop of boundaryLoops(cells)) {
     const points = insetLoop(loop, inset);
     if (points.length < 3) continue;
-    const at = notch > 0 ? points.findIndex(near) : -1;
-    parts.push(at >= 0 ? notchedLoop(points, at, radius, notch) : closedLoop(points, radius));
+    const at = notch ? points.findIndex(near) : -1;
+    parts.push(at >= 0 ? notchedLoop(points, at, radius, notch!) : closedLoop(points, radius));
   }
   return parts.join('');
 }

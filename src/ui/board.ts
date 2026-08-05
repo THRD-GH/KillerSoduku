@@ -2,6 +2,7 @@ import { CELLS, boxOf, colOf, maskToDigits, popcount, rowOf } from '../core/grid
 import type { Game } from '../game/state.ts';
 import type { Settings } from '../game/storage.ts';
 import { cageOutlinePath } from './cage-outline.ts';
+import type { Notch } from './cage-outline.ts';
 import { el } from './dom.ts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -32,8 +33,14 @@ const CAGE_CORNER = 0.05;
  * set a killer sudoku — and it buys back the space the line and its clearance
  * were taking, so the total can be half again the size it managed while it had
  * to fit inside an unbroken corner.
+ *
+ * Cut to the number that goes in it: a gap wide enough for 16 leaves a 6
+ * sitting in open space with the line restarting a long way to its right.
  */
-const CAGE_NOTCH = 0.36;
+const notchFor = (sum: number): Notch => ({
+  along: String(sum).length > 1 ? 0.36 : 0.23,
+  down: 0.3,
+});
 
 interface CellNodes {
   root: HTMLDivElement;
@@ -146,7 +153,7 @@ export class Board {
 
     for (const cage of this.game.puzzle.cages) {
       const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET, CAGE_CORNER, CAGE_NOTCH));
+      path.setAttribute('d', cageOutlinePath(cage.cells, CAGE_INSET, CAGE_CORNER, notchFor(cage.sum)));
       svg.append(path);
     }
     return svg;
