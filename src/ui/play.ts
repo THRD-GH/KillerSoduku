@@ -40,6 +40,19 @@ export class PlayScreen {
   private keys = new Map<number, HTMLButtonElement>();
   /** Undo and redo share a cell; built here so the controls can place them. */
   private undoPair = el('div', { class: 'undo-pair' });
+  private titlebar = el('div', { class: 'titlebar' });
+  private pauseBtn = el('button', { class: 'pause-btn', 'aria-label': 'Pause', title: 'Pause' });
+  /** Where the clock and the pause button live when the bar is not holding them. */
+  private actionsBox: HTMLElement | null = null;
+  private underActions: HTMLElement | null = null;
+
+  /**
+   * Landscape on a phone: the one layout where the title bar sits beside the
+   * board rather than over it, and where a row of screen is worth more than
+   * tidiness.
+   */
+  private compact = window.matchMedia('(orientation: landscape) and (max-height: 560px)');
+  private onCompactChange = (): void => this.placeClockAndPause();
 
   private ticker: number | undefined;
   private lastTick = 0;
@@ -86,11 +99,11 @@ export class PlayScreen {
 
     this.idLabel.textContent = formatPuzzleId(this.game.id);
 
-    this.root.append(
-      el('div', { class: 'titlebar' }, menuBtn, this.idLabel, this.candidateLine),
-      this.board.root,
-      this.buildControls(),
-    );
+    this.titlebar.append(menuBtn, this.idLabel, this.candidateLine);
+    this.root.append(this.titlebar, this.board.root, this.buildControls());
+
+    this.placeClockAndPause();
+    this.compact.addEventListener('change', this.onCompactChange);
 
     bindTap(
       this.board.root,
@@ -135,9 +148,8 @@ export class PlayScreen {
       return raw === 'clear' ? CLEAR_KEY : Number(raw);
     };
 
-    const pause = el('button', { class: 'pause-btn', 'aria-label': 'Pause', title: 'Pause' });
-    pause.append(el('i'), el('i'));
-    pause.addEventListener('click', () => this.pause());
+    this.pauseBtn.append(el('i'), el('i'));
+    this.pauseBtn.addEventListener('click', () => this.pause());
 
     /*
      * Two columns, each with its own strip underneath (in source order — with
@@ -159,8 +171,8 @@ export class PlayScreen {
       el(
         'div',
         { class: 'controls-right' },
-        this.buildActions(),
-        el('div', { class: 'under-actions' }, this.tallyBox, pause),
+        (this.actionsBox = this.buildActions()),
+        (this.underActions = el('div', { class: 'under-actions' }, this.tallyBox, this.pauseBtn)),
       ),
     );
 
@@ -199,6 +211,31 @@ export class PlayScreen {
 
     this.resetTally(true);
     return controls;
+  }
+
+  /**
+   * The clock and the pause button move into the title bar when the board is
+   * beside it rather than under it. Held landscape a phone has height to spare
+   * nowhere and width to spare everywhere, and those two are the only controls
+   * that read as well in a bar as they do in a grid — so the buttons that are
+   * actually pressed get the room they leave behind.
+   */
+  private placeClockAndPause(): void {
+    if (this.compact.matches) {
+      this.titlebar.append(this.timerBox, this.pauseBtn);
+      this.titlebar.classList.add('with-clock');
+      /*
+       * With those two gone the strip under the buttons holds only the tally,
+       * and a whole row of a short screen to hold one control is a poor trade.
+       * The tally takes the cell the clock has just left, the strip goes away,
+       * and every button grows by the height it was using.
+       */
+      this.actionsBox?.append(this.tallyBox);
+    } else {
+      this.actionsBox?.append(this.timerBox);
+      this.underActions?.append(this.tallyBox, this.pauseBtn);
+      this.titlebar.classList.remove('with-clock');
+    }
   }
 
   private buildActions(): HTMLElement {
@@ -765,6 +802,7 @@ export class PlayScreen {
   }
 
   destroy(): void {
+    this.compact.removeEventListener('change', this.onCompactChange);
     this.stop();
     this.pauseNode?.remove();
   }

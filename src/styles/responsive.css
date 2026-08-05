@@ -45,7 +45,49 @@
     grid-column: 2;
     grid-row: 1;
     min-height: 34px;
-    padding: 3px 8px;
+    padding: 3px 6px;
+    gap: 6px;
+  }
+
+  /*
+   * The clock and Pause ride in the bar here (play.ts moves them). They are the
+   * two controls that read as well in a strip as in a grid, and handing their
+   * cells back to the buttons that are actually pressed is worth more than
+   * keeping every control in one place.
+   */
+  .titlebar.with-clock .timer {
+    margin-left: auto;
+    min-width: 56px;
+    padding: 2px 6px;
+    font-size: 13px;
+    border-radius: 7px;
+  }
+
+  .titlebar.with-clock .pause-btn {
+    flex: 0 0 32px;
+    height: 26px;
+    border-radius: 7px;
+  }
+
+  .titlebar.with-clock .pause-btn i {
+    height: 12px;
+    width: 3px;
+  }
+
+  /* The candidates line gives up its auto margin to the clock. */
+  .titlebar.with-clock .candidates {
+    margin-left: 0;
+  }
+
+  /* Empty once the tally moves up into the grid. */
+  .under-actions {
+    display: none;
+  }
+
+  /* In the grid it is a control like the others, not a wide bar. */
+  .controls .actions .tally {
+    margin: 0;
+    border-radius: 9px;
   }
 
   .screen.play > .controls {
@@ -62,7 +104,7 @@
   .screen.play > .titlebar,
   .screen.play > .controls {
     width: 100%;
-    max-width: 320px;
+    max-width: 264px;
     justify-self: center;
   }
 
@@ -80,8 +122,32 @@
     grid-column: 1;
   }
 
+  /*
+   * Numbers on top, the aids underneath, rather than two columns side by side.
+   * The column beside the board is tall and narrow, which suits a 3x3 keypad
+   * above a pair of button columns far better than it suits both of them
+   * squeezed in next to each other. The keypad-side rule sets a row direction,
+   * so it has to be outranked here.
+   */
+  .screen.play > .controls,
+  :root[data-keypad='right'] .screen.play > .controls {
+    flex-direction: column;
+  }
+
+  /* In a column this is a share of the height. The digits get the larger part:
+     they are tapped on every move, the aids a handful of times a puzzle. */
   .controls-left {
-    flex: 0 0 52%;
+    flex: 0 0 56%;
+  }
+
+  /*
+   * Both halves have to be allowed to shrink past their contents. A flex item
+   * will not go below min-content on its own, so on a short screen the lower
+   * block kept its full height and pushed the tally off the bottom instead.
+   */
+  .controls-left,
+  .controls-right {
+    min-height: 0;
   }
 
   .numpad {
@@ -89,7 +155,11 @@
     grid-auto-rows: minmax(0, 1fr);
   }
 
-  .controls .actions {
+  .controls .actions,
+  .numpad {
+    /* Same reason as the halves above: without this they hold their
+       min-content height and push the strip below them off the screen. */
+    min-height: 0;
     grid-template-rows: repeat(3, minmax(0, 1fr));
   }
 
@@ -109,7 +179,18 @@
 
   .under-keys,
   .under-actions {
-    flex: 0 0 36px;
+    flex: 0 0 34px;
+  }
+
+  /* The tally is two lines of text and will happily overrun its strip, which
+     pushes the whole column past the bottom of the screen. */
+  .under-actions .tally {
+    padding: 2px 4px;
+    line-height: 1.05;
+  }
+
+  .under-actions .tally small {
+    font-size: 8px;
   }
 
   .pause-btn {
