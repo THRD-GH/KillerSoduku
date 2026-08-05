@@ -491,7 +491,7 @@ export class PlayScreen {
     const link = puzzleLink(this.game.id);
     const share = navigator.share?.bind(navigator);
     if (share) {
-      void share({ title: `Killer Sudoku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
+      void share({ title: `Killer Soduku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
         () => undefined,
       );
       return;

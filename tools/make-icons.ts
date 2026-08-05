@@ -282,13 +282,6 @@ interface Ink {
 }
 
 const DAY: Ink = { stock: STOCK, ink: INK, rule: RULE, cage: CAGE, wash: WASH };
-const NIGHT: Ink = {
-  stock: [20, 18, 15, 255],
-  ink: [239, 231, 216, 255],
-  rule: [74, 66, 56, 255],
-  cage: [150, 140, 122, 255],
-  wash: [214, 178, 94, 70],
-};
 
 /** The frame every design sits in: heavy ink around the cells. */
 const frameRect = (c: Canvas, x: number, y: number, side: number, t: number, colour: RGBA): void => {
@@ -324,121 +317,69 @@ const total = (c: Canvas, x: number, y: number, h: number, t: number, colour: RG
   figure(c, '5', x + w * 1.3, y, w, h, t, colour);
 };
 
-type Design = (c: Canvas, S: number, pad: number, ink: Ink) => void;
-
 /**
- * Each design draws inside a square already filled with the stock colour.
+ * The icon: a corner of the board. Cream stock, a hairline between the cells
+ * and heavy ink at the frame, a cage over the top two with the notch cut for
+ * its total, and one answer written in on the cursor's wash.
+ *
+ * Two cells across rather than three. At 48px — the size in a task bar, and
+ * the one that decides whether an icon works — a 3x3 put five things on screen
+ * and none of them could be read.
+ *
  * `pad` is the share of the canvas left as margin: bigger for maskable icons,
  * whose corners get cropped to whatever shape the launcher wants.
  */
-const DESIGNS: Record<string, Design> = {
-  /* A: two cells, a cage over the top pair, one answer written in. */
-  corner: (c, S, pad, ink) => {
-    const margin = S * pad;
-    const grid = S - margin * 2;
-    const cell = grid / 2;
-    const frame = Math.max(2, S * 0.03);
-    const hair = Math.max(1, S * 0.012);
+function corner(c: Canvas, S: number, pad: number, ink: Ink): void {
+  const margin = S * pad;
+  const grid = S - margin * 2;
+  const cell = grid / 2;
+  const frame = Math.max(2, S * 0.03);
+  const hair = Math.max(1, S * 0.012);
 
-    c.rect(margin, margin + cell, cell, cell, ink.wash);
-    c.rect(margin + cell - hair / 2, margin, hair, grid, ink.rule);
-    c.rect(margin, margin + cell - hair / 2, grid, hair, ink.rule);
-    frameRect(c, margin, margin, grid, frame, ink.ink);
+  c.rect(margin, margin + cell, cell, cell, ink.wash);
+  c.rect(margin + cell - hair / 2, margin, hair, grid, ink.rule);
+  c.rect(margin, margin + cell - hair / 2, grid, hair, ink.rule);
+  frameRect(c, margin, margin, grid, frame, ink.ink);
 
-    const inset = cell * 0.14;
-    notchedCage(
-      c,
-      margin + inset,
-      margin + inset,
-      grid - inset * 2,
-      cell - inset * 2,
-      cell * 0.5,
-      Math.max(2, S * 0.018),
-      ink.cage,
-    );
-    total(c, margin + inset + cell * 0.02, margin + inset - cell * 0.02, cell * 0.3, Math.max(2, S * 0.02), ink.ink);
+  const inset = cell * 0.14;
+  notchedCage(
+    c,
+    margin + inset,
+    margin + inset,
+    grid - inset * 2,
+    cell - inset * 2,
+    cell * 0.5,
+    Math.max(2, S * 0.018),
+    ink.cage,
+  );
+  total(
+    c,
+    margin + inset + cell * 0.02,
+    margin + inset - cell * 0.02,
+    cell * 0.3,
+    Math.max(2, S * 0.02),
+    ink.ink,
+  );
 
-    const h = cell * 0.56;
-    figure(c, '7', margin + (cell - h * 0.62) / 2, margin + cell + (cell - h) / 2, h * 0.62, h, Math.max(3, S * 0.042), ink.ink);
-  },
+  const h = cell * 0.56;
+  figure(
+    c,
+    '7',
+    margin + (cell - h * 0.62) / 2,
+    margin + cell + (cell - h) / 2,
+    h * 0.62,
+    h,
+    Math.max(3, S * 0.042),
+    ink.ink,
+  );
+}
 
-  /* B: the cage total alone, big, in a cage that fills the tile. */
-  total: (c, S, pad, ink) => {
-    const margin = S * pad;
-    const side = S - margin * 2;
-    frameRect(c, margin, margin, side, Math.max(2, S * 0.03), ink.ink);
-    const inset = side * 0.13;
-    notchedCage(
-      c,
-      margin + inset,
-      margin + inset,
-      side - inset * 2,
-      side - inset * 2,
-      side * 0.34,
-      Math.max(3, S * 0.028),
-      ink.cage,
-    );
-    const h = side * 0.46;
-    total(c, margin + side * 0.29, margin + side * 0.28, h, Math.max(4, S * 0.055), ink.ink);
-  },
-
-  /* C: nine cells, one cage, no figures at all. */
-  grid: (c, S, pad, ink) => {
-    const margin = S * pad;
-    const grid = S - margin * 2;
-    const cell = grid / 3;
-    const hair = Math.max(1, S * 0.01);
-
-    c.rect(margin + cell, margin, cell, cell, ink.wash);
-    for (let i = 1; i < 3; i++) {
-      c.rect(margin + i * cell - hair / 2, margin, hair, grid, ink.rule);
-      c.rect(margin, margin + i * cell - hair / 2, grid, hair, ink.rule);
-    }
-    frameRect(c, margin, margin, grid, Math.max(2, S * 0.028), ink.ink);
-
-    const inset = cell * 0.16;
-    notchedCage(
-      c,
-      margin + inset,
-      margin + cell + inset,
-      cell * 2 - inset * 2,
-      cell * 2 - inset * 2,
-      cell * 0.55,
-      Math.max(2, S * 0.016),
-      ink.cage,
-    );
-    total(c, margin + inset + cell * 0.04, margin + cell + inset - cell * 0.04, cell * 0.34, Math.max(2, S * 0.022), ink.ink);
-  },
-
-  /* D: one figure, as large as the tile allows, with a cage bracket. */
-  digit: (c, S, pad, ink) => {
-    const margin = S * pad;
-    const side = S - margin * 2;
-    frameRect(c, margin, margin, side, Math.max(2, S * 0.03), ink.ink);
-    const inset = side * 0.12;
-    const t = Math.max(2, S * 0.022);
-    // Just the corner of a cage, top-left, with its total.
-    c.line(margin + inset + side * 0.3, margin + inset, margin + inset + side * 0.62, margin + inset, t, ink.cage);
-    c.line(margin + inset, margin + inset + side * 0.22, margin + inset, margin + inset + side * 0.55, t, ink.cage);
-    total(c, margin + inset + side * 0.02, margin + inset - side * 0.03, side * 0.24, Math.max(3, S * 0.026), ink.ink);
-
-    const h = side * 0.62;
-    figure(c, '7', margin + side * 0.42 - (h * 0.62) / 2, margin + side * 0.36, h * 0.62, h, Math.max(4, S * 0.06), ink.ink);
-  },
-};
-
-function drawIcon(
-  size: number,
-  pad: number,
-  rounded: boolean,
-  design = 'corner',
-  ink: Ink = DAY,
-): Canvas {
+function drawIcon(size: number, pad: number, rounded: boolean, ink: Ink = DAY): Canvas {
   const c = new Canvas(size * SS, size * SS);
   const S = size * SS;
   if (rounded) c.roundedRect(0, 0, S, S, S * 0.22, ink.stock);
   else c.rect(0, 0, S, S, ink.stock);
-  DESIGNS[design](c, S, pad, ink);
+  corner(c, S, pad, ink);
   return c.downsample(SS);
 }
 
@@ -484,26 +425,4 @@ if (process.argv.includes('--preview')) {
     console.log(`\n--- ${size}px ---`);
     preview(drawIcon(size, 0.14, true));
   }
-}
-
-/*
- * `node tools/make-icons.ts --options <dir>` renders every design at the sizes
- * that matter, for choosing between them.
- */
-const optionsAt = process.argv.indexOf('--options');
-if (optionsAt >= 0) {
-  const dir = process.argv[optionsAt + 1];
-  mkdirSync(dir, { recursive: true });
-  for (const design of Object.keys(DESIGNS)) {
-    for (const [suffix, ink] of [
-      ['', DAY],
-      ['-night', NIGHT],
-    ] as const) {
-      for (const size of [48, 96, 192]) {
-        const png = encodePNG(drawIcon(size, 0.14, true, design, ink));
-        writeFileSync(join(dir, `${design}${suffix}-${size}.png`), png);
-      }
-    }
-  }
-  console.log(`wrote option sheets to ${dir}`);
 }
