@@ -41,3 +41,52 @@
   .under-keys, .under-actions { flex-basis: 34px; }
   .pause-btn { flex-basis: 40px; }
 }
+
+/*
+ * A landscape window on a desktop is not a landscape phone. The side-by-side
+ * layout above sizes the controls to the height of the row, which on a screen a
+ * thousand pixels tall stretched nine keys into playing cards. Here there is
+ * width to spare instead, so the controls stack at their natural size: the
+ * digits with CLEAR and undo beneath them, then the solving aids under that.
+ */
+@media (orientation: landscape) and (min-width: 760px) {
+  /* The keypad-side rule sets a row direction, and it has to be outranked. */
+  .screen.play > .controls,
+  :root[data-keypad='right'] .screen.play > .controls {
+    flex-direction: column;
+    align-self: start;
+    height: auto;
+    max-width: 360px;
+  }
+
+  /* Nothing grows to fill the row any more. */
+  .controls-left,
+  .controls-right,
+  .under-keys,
+  .under-actions {
+    flex: 0 0 auto;
+  }
+
+  .numpad {
+    flex: 0 0 auto;
+    grid-auto-rows: auto;
+  }
+
+  .controls .actions {
+    grid-template-rows: repeat(3, auto);
+  }
+
+  .key,
+  .btn {
+    padding: 9px 4px;
+    font-size: 18px;
+  }
+
+  .controls .actions .btn {
+    font-size: 13px;
+  }
+
+  .pause-btn {
+    flex: 0 0 44px;
+  }
+}
