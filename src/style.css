@@ -456,19 +456,30 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 7.5%;
-  left: 14%;
   /*
-   * Sized against the candidates below it rather than on its own. Measured on
-   * the actual glyph ink at a 43px cell: the total needs 21% of the cell's
-   * height, three rows of marks need 56%, and the cage outline eats the outer
-   * 7% all round — which leaves about 86% to divide and no room for the 0.4em
-   * the total used to be. The leading is squeezed out so its box is the height
-   * of the figures and nothing more.
+   * Offsets from the cell's corner, which is where the cage outline turns. The
+   * figures carry more empty space above them than beside them — that is the
+   * font's own leading — so the top offset is the smaller of the two if the
+   * number is to look square in the corner rather than pushed down into it.
    */
-  font-size: 0.38em;
+  top: 9%;
+  left: 11%;
+  /*
+   * Sized against the candidates below it rather than on its own: the cage
+   * outline takes the outer 7% of the cell, the total sits inside that corner,
+   * and the two rows of candidates start at 42%. That is the whole budget.
+   */
+  font-size: 0.34em;
   font-weight: 800;
-  line-height: 0.85;
+  /*
+   * A line-height under 1 lets the glyphs spill out of their own box, and by
+   * how much depends on the font's internal metrics — which differ by device.
+   * Tuned against one font it looked clear; on another it sat on the cage
+   * outline. At 1 the box is the em box, so the figures cannot start above it
+   * wherever this runs, and the offsets below are then honest distances from
+   * the corner rather than a guess about leading.
+   */
+  line-height: 1;
   color: var(--sum);
   z-index: 2;
   font-variant-numeric: tabular-nums;
