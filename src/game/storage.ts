@@ -368,7 +368,7 @@ export function exportBackup(): Backup {
 export function importBackup(raw: unknown): { history: number; saves: number } {
   const data = raw as Partial<Backup> | null;
   if (!data || data.app !== 'killer-sudoku' || typeof data.history !== 'object') {
-    throw new Error('That is not a Killer Soduku backup');
+    throw new Error('That is not a Killer Sudoku backup');
   }
   const saves = Array.isArray(data.saves) ? data.saves : [];
   for (const game of saves) {

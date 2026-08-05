@@ -25,7 +25,7 @@ export function buildMenu(ctx: AppContext): HTMLElement {
   menuBtn.addEventListener('click', () => openMainMenu(ctx));
 
   screen.append(
-    el('div', { class: 'titlebar' }, menuBtn, el('span', { class: 'id' }, 'KILLER SODUKU')),
+    el('div', { class: 'titlebar' }, menuBtn, el('span', { class: 'id' }, 'KILLER SUDOKU')),
     el(
       'div',
       { class: 'hero' },
@@ -263,6 +263,6 @@ export function openMainMenu(ctx: AppContext): void {
     { label: 'Settings', run: () => ctx.openSettings() },
     { label: 'Stats', run: () => ctx.goStats(1) },
     { label: 'Help', run: () => ctx.openHelp() },
-    { label: 'About', run: () => toast('Killer Soduku — a personal build') },
+    { label: 'About', run: () => toast('Killer Sudoku — a personal build') },
   ]);
 }

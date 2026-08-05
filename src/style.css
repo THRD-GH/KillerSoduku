@@ -1036,6 +1036,17 @@ body {
   z-index: 50;
 }
 
+/*
+ * No scrim. The panel has its own surface and a shadow, so it reads perfectly
+ * well without dimming what is behind it — and behind the win panel is the
+ * finished board, which is the point of finishing. The backdrop still fills the
+ * screen and still takes the taps, so dismissing and the guard below are
+ * unaffected.
+ */
+.overlay.undimmed {
+  background: transparent;
+}
+
 /* Just opened, and still ignoring the tail of the gesture that opened it — see
    TAP_GUARD_MS. The backdrop keeps taking pointer events, so nothing falls
    through to the game underneath; only the panel's own controls are inert. */

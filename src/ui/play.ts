@@ -491,7 +491,7 @@ export class PlayScreen {
     const link = puzzleLink(this.game.id);
     const share = navigator.share?.bind(navigator);
     if (share) {
-      void share({ title: `Killer Soduku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
+      void share({ title: `Killer Sudoku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
         () => undefined,
       );
       return;
@@ -691,8 +691,10 @@ export class PlayScreen {
         this.techniqueReport(),
         el('div', { class: 'actions', style: 'grid-template-columns: 1fr 1fr' }, menu, again),
       );
-      // Low on the screen: the grid you have just finished is worth a look.
-    }, { overlayClass: 'bottom-sheet' });
+      // Low on the screen and over a clear backdrop: the grid you have just
+      // finished is worth a look, and dimming it to announce that you finished
+      // it hides the one thing you want to see.
+    }, { overlayClass: 'bottom-sheet undimmed' });
   }
 
   /**

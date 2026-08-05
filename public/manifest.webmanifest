@@ -1,6 +1,6 @@
 {
-  "name": "Killer Soduku",
-  "short_name": "Killer Soduku",
+  "name": "Killer Sudoku",
+  "short_name": "Killer Sudoku",
   "description": "Killer sudoku with pencil marks, a sum calculator, six levels and offline play.",
   "start_url": ".",
   "scope": ".",
