@@ -1,11 +1,11 @@
 /*
- * Two typefaces doing two jobs. The board is a printed puzzle — a serif, ink on
- * stock, hairline rules — and the controls around it are an interface, so they
- * stay a plain sans. Both are fonts every device already has: nothing is
- * downloaded, which is also why the game works offline from the first run.
+ * One face throughout. A serif was tried on the board, to go with the printed
+ * look of the cream stock and the hairline rules, and it was harder to read at
+ * cell size — which on a grid of digits is the only thing that matters. Ships
+ * with every device, so nothing is downloaded and the game works offline from
+ * the first run.
  */
 :root {
-  --font-board: Georgia, 'Times New Roman', 'Nimbus Roman', serif;
   --font-ui: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
 }
 
@@ -322,8 +322,9 @@ body {
   /* The heavy outer rule and the box dividers are the same weight, as they are
      in print, with the cell hairlines much lighter between them. */
   border: 2.5px solid var(--line-strong);
-  font-family: var(--font-board);
   background: var(--cell);
+  /* Lifts the grid off the page: it reads as a sheet laid on the screen. */
+  box-shadow: 0 6px 22px var(--shadow);
   /* `none`, not `manipulation`: manipulation still leaves panning on the table,
      so a tap with the smallest drag can be reinterpreted as a scroll, and the
      pointer is cancelled mid-gesture. There is nothing to scroll here. */
@@ -434,23 +435,27 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 14%;
-  left: 16%;
-  font-size: 0.4em;
-  /* Italic and light, the way a cage total is set in a puzzle book: it labels
-     the cage, it is not one of the digits you are placing. */
-  font-style: italic;
-  font-weight: 500;
-  line-height: 1;
+  top: 11%;
+  left: 13%;
+  /*
+   * Sized against the candidates below it rather than on its own. Measured on
+   * the actual glyph ink at a 43px cell: the total needs 21% of the cell's
+   * height, three rows of marks need 56%, and the cage outline eats the outer
+   * 7% all round — which leaves about 86% to divide and no room for the 0.4em
+   * the total used to be. The leading is squeezed out so its box is the height
+   * of the figures and nothing more.
+   */
+  font-size: 0.36em;
+  font-weight: 700;
+  line-height: 0.85;
   color: var(--sum);
   z-index: 2;
   font-variant-numeric: tabular-nums;
 }
 
-/* The answer should read at a glance and clearly outrank the pencil marks. A
-   serif carries that at 600; at 700 it turns into a blot. */
+/* The answer should read at a glance and clearly outrank the pencil marks. */
 .big {
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   color: var(--text);
   z-index: 2;
@@ -463,14 +468,21 @@ body {
   position: absolute;
   /* Tucked in from the sides so the 3x3 reads as one compact block in the
      middle of the cell, and low enough to clear the cage total above it. */
-  inset: 38% 23% 24%;
+  /*
+   * Three rows of marks and a two-digit cage total do not both fit in a 43px
+   * cell at any size you would call generous — one of them has to give. The
+   * total keeps the top of the cell to itself and the marks take the rest,
+   * sized so three rows of ink land between the total and the cage outline
+   * rather than through either.
+   */
+  inset: 40% 22% 8%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  font-size: 0.34em;
+  font-size: 0.32em;
   line-height: 1;
   color: var(--mark);
-  font-weight: 600;
+  font-weight: 700;
   z-index: 1;
 }
 
