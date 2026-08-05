@@ -1,106 +1,128 @@
-/* Night is the default; the Theme
-   setting swaps in the day or high-contrast palette. */
+/*
+ * Two typefaces doing two jobs. The board is a printed puzzle — a serif, ink on
+ * stock, hairline rules — and the controls around it are an interface, so they
+ * stay a plain sans. Both are fonts every device already has: nothing is
+ * downloaded, which is also why the game works offline from the first run.
+ */
 :root {
-  --bg: #0a0d10;
-  --panel: #161c22;
-  --panel-2: #1e262e;
-  --line: #3a464f;
-  --line-strong: #7b8b98;
-  --cell: #12181d;
-  --text: #e6edf3;
-  --dim: #8fa3b3;
-  --accent: #56d1f5;
-  --accent-dim: #1f6b84;
-  --cage: #9aa8b5;
-  --sum: #f0c674;
-  /* Distinctly blue: at grey it read as another grid line. */
-  --mark: #7cc7ee;
-  /* A cell down to its last candidate. */
-  --single: #7fe6a8;
-  --single-bg: rgba(127, 230, 168, 0.14);
-  /* Cages counted into the tally — violet, a hue nothing else on the board
-     uses, so it cannot be mistaken for a selection or a matching digit. */
-  --tallied: rgba(190, 130, 255, 0.26);
-  /* Cells a hint is pointing at. */
-  --spotlit: rgba(86, 209, 245, 0.3);
-  --error: #ff6b6b;
-  --clash: #a8443f;
-  --sel: rgba(86, 209, 245, 0.26);
-  --peer: rgba(255, 255, 255, 0.05);
-  --cage-peer: rgba(240, 198, 116, 0.09);
-  --same: rgba(86, 209, 245, 0.14);
-  --shadow: rgba(0, 0, 0, 0.5);
-  /* Components for overlays you need to see through, mixed at --glass. */
-  --panel-rgb: 22 28 34;
-  --panel-2-rgb: 30 38 46;
-  /* Required / ruled-out keys, mixed at --glass like every other surface. */
-  --inc-rgb: 18 131 63;
-  --exc-rgb: 179 34 34;
-
-  /* Control groups, so a key's job is readable from its colour. */
-  --k-digit: #1e4d35;
-  --k-digit-line: #4aa878;
-  --k-digit-text: #dff6e8;
-  --k-edit: #4a3a1c;
-  --k-edit-line: #c39c4c;
-  --k-edit-text: #f8eed6;
-  --k-aid: #1d3a54;
-  --k-aid-line: #4f92c4;
-  --k-aid-text: #dcefff;
-  --k-session: #46243a;
-  --k-session-line: #b0648f;
-  --k-session-text: #ffe2f0;
-  /* Matches --tallied, the violet the counted cages are tinted with. */
-  --k-tally: #3a2550;
-  --k-tally-line: #b98bff;
-  --k-tally-text: #f1e4ff;
+  --font-board: Georgia, 'Times New Roman', 'Nimbus Roman', serif;
+  --font-ui: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
 }
 
-:root[data-theme='day'] {
-  --bg: #dfe4e9;
-  --panel: #f7f9fb;
-  --panel-2: #e7ecf1;
-  --line: #9aa7b2;
-  --line-strong: #2f3a44;
-  --cell: #ffffff;
-  --text: #131a20;
-  --dim: #5b6b78;
-  --accent: #0a6f96;
-  --accent-dim: #9fd4e6;
-  --cage: #9ba7b3;
-  --sum: #8a5a00;
-  --mark: #1f6390;
-  --single: #0d7a3d;
-  --single-bg: rgba(13, 122, 61, 0.12);
-  --tallied: rgba(140, 70, 210, 0.18);
-  --spotlit: rgba(10, 111, 150, 0.26);
-  --error: #c62828;
-  --clash: #e59b98;
-  --sel: rgba(10, 111, 150, 0.22);
-  --peer: rgba(0, 0, 0, 0.05);
-  --cage-peer: rgba(138, 90, 0, 0.08);
-  --same: rgba(10, 111, 150, 0.13);
-  --shadow: rgba(0, 0, 0, 0.25);
-  --panel-rgb: 247 249 251;
-  --panel-2-rgb: 231 236 241;
-  --inc-rgb: 15 122 58;
-  --exc-rgb: 176 32 32;
+/* Night is the default; the Theme setting swaps in day or high contrast.
+   Ink and lamplight: the same printed board, read in the dark. */
+:root {
+  --bg: #14120f;
+  --panel: #1d1a16;
+  --panel-2: #262119;
+  /* Interface borders and board hairlines are different weights of the same
+     idea, and want different colours — the grid rule has to be quieter. */
+  --line: #3a342c;
+  --rule: #4a4238;
+  --line-strong: #b9ab93;
+  --cell: #191612;
+  --text: #efe7d8;
+  --dim: #9b917f;
+  --accent: #8fb4d6;
+  --accent-dim: #33465a;
+  --cage: #8a806e;
+  --sum: #a89a80;
+  --mark: #9b917f;
+  /* A cell down to its last candidate. */
+  --single: #7fbf8e;
+  --single-bg: rgba(127, 191, 142, 0.13);
+  /* Cages counted into the tally. Blue against the gold of the cursor: the two
+     marks that can sit on the same cell must not be the same hue. */
+  --tallied: rgba(143, 180, 214, 0.2);
+  /* Cells a hint is pointing at. */
+  --spotlit: rgba(214, 178, 94, 0.3);
+  --error: #e2564b;
+  --clash: #a8564a;
+  --sel: rgba(214, 178, 94, 0.26);
+  --peer: rgba(255, 255, 255, 0.045);
+  --cage-peer: rgba(214, 178, 94, 0.07);
+  --same: rgba(143, 180, 214, 0.13);
+  --shadow: rgba(0, 0, 0, 0.55);
+  /* Components for overlays you need to see through, mixed at --glass. */
+  --panel-rgb: 29 26 22;
+  --panel-2-rgb: 38 33 25;
+  /* Required / ruled-out keys, mixed at --glass like every other surface. */
+  --inc-rgb: 47 107 63;
+  --exc-rgb: 168 55 45;
 
-  --k-digit: #d6f2e1;
-  --k-digit-line: #6fbf95;
-  --k-digit-text: #123723;
-  --k-edit: #fbeccd;
-  --k-edit-line: #d2a75a;
-  --k-edit-text: #4a3305;
-  --k-aid: #d8eafa;
-  --k-aid-line: #6ba6d4;
-  --k-aid-text: #0f3350;
-  --k-session: #f7dcec;
-  --k-session-line: #cd8cb4;
-  --k-session-text: #47102f;
-  --k-tally: #ece0fa;
-  --k-tally-line: #a173d6;
-  --k-tally-text: #37105e;
+  /*
+   * Two tones, not five. The old palette gave every group of keys its own
+   * colour, which is the look of a control panel rather than a puzzle: the
+   * digits are the instrument and everything else is furniture. So the digits
+   * get the lighter surface and the rest share one, distinguished by the
+   * colour of their lettering alone.
+   */
+  --k-digit: #232019;
+  --k-digit-line: #4a4236;
+  --k-digit-text: #efe7d8;
+  --k-edit: #1e1b16;
+  --k-edit-line: #3a342c;
+  --k-edit-text: #cabfa9;
+  --k-aid: #1e1b16;
+  --k-aid-line: #3a342c;
+  --k-aid-text: #8fb4d6;
+  --k-session: #1e1b16;
+  --k-session-line: #3a342c;
+  --k-session-text: #d99a86;
+  --k-tally: #1e2732;
+  --k-tally-line: #3f5871;
+  --k-tally-text: #b9d3ea;
+}
+
+/* Day: the puzzle page of a newspaper — cream stock, black ink, and no accent
+   colour on the board at all. The cursor is a wash of ochre, and the only other
+   colour in the grid is the one red that says an entry is wrong. */
+:root[data-theme='day'] {
+  --bg: #e5dfd2;
+  --panel: #f6f1e6;
+  --panel-2: #ece5d6;
+  --line: #cdc3b1;
+  --rule: #a89e8d;
+  --line-strong: #16120c;
+  --cell: #faf6ec;
+  --text: #16120c;
+  --dim: #6b6357;
+  --accent: #2f4f6f;
+  --accent-dim: #b9cad9;
+  --cage: #4a443a;
+  --sum: #6b6357;
+  --mark: #7a7264;
+  --single: #3f6b46;
+  --single-bg: rgba(63, 107, 70, 0.12);
+  --tallied: rgba(47, 79, 111, 0.16);
+  --spotlit: rgba(190, 150, 60, 0.42);
+  --error: #a8221c;
+  --clash: #b8604f;
+  --sel: rgba(190, 150, 60, 0.32);
+  --peer: rgba(22, 18, 12, 0.045);
+  --cage-peer: rgba(107, 99, 87, 0.08);
+  --same: rgba(47, 79, 111, 0.1);
+  --shadow: rgba(60, 50, 35, 0.22);
+  --panel-rgb: 246 241 230;
+  --panel-2-rgb: 236 229 214;
+  --inc-rgb: 47 107 63;
+  --exc-rgb: 168 34 28;
+
+  --k-digit: #fffdf8;
+  --k-digit-line: #cdc3b1;
+  --k-digit-text: #16120c;
+  --k-edit: #ece5d6;
+  --k-edit-line: #cdc3b1;
+  --k-edit-text: #4a443a;
+  --k-aid: #f6f1e6;
+  --k-aid-line: #cdc3b1;
+  --k-aid-text: #2f4f6f;
+  --k-session: #f6f1e6;
+  --k-session-line: #cdc3b1;
+  --k-session-text: #8a4a3a;
+  --k-tally: #eef2f6;
+  --k-tally-line: #b9cad9;
+  --k-tally-text: #2f4f6f;
 }
 
 /* High contrast: pure black behind white text, and every hue drawn from the
@@ -113,6 +135,7 @@
   --panel: #000000;
   --panel-2: #101014;
   --line: #8a8a8a;
+  --rule: #8a8a8a;
   --line-strong: #ffffff;
   --cell: #000000;
   --text: #ffffff;
@@ -200,7 +223,7 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  font-family: var(--font-ui);
   -webkit-text-size-adjust: 100%;
   overscroll-behavior: none;
 }
@@ -228,7 +251,7 @@ body {
   gap: 8px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 6px 8px;
   min-height: 42px;
 }
@@ -270,7 +293,7 @@ body {
   gap: 3px;
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 7px;
   cursor: pointer;
   padding: 5px 6px;
   flex: 0 0 auto;
@@ -294,7 +317,10 @@ body {
   grid-template-rows: repeat(9, minmax(0, 1fr));
   aspect-ratio: 1;
   width: 100%;
-  border: 2px solid var(--line-strong);
+  /* The heavy outer rule and the box dividers are the same weight, as they are
+     in print, with the cell hairlines much lighter between them. */
+  border: 2.5px solid var(--line-strong);
+  font-family: var(--font-board);
   background: var(--cell);
   /* `none`, not `manipulation`: manipulation still leaves panning on the table,
      so a tap with the smallest drag can be reinterpreted as a scroll, and the
@@ -309,8 +335,8 @@ body {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
   background: var(--cell);
   display: grid;
   place-items: center;
@@ -341,11 +367,11 @@ body {
 }
 
 .cell.box-l {
-  border-left: 2px solid var(--line-strong);
+  border-left: 2.5px solid var(--line-strong);
 }
 
 .cell.box-t {
-  border-top: 2px solid var(--line-strong);
+  border-top: 2.5px solid var(--line-strong);
 }
 
 .cell.peer {
@@ -409,16 +435,20 @@ body {
   top: 14%;
   left: 16%;
   font-size: 0.4em;
-  font-weight: 700;
+  /* Italic and light, the way a cage total is set in a puzzle book: it labels
+     the cage, it is not one of the digits you are placing. */
+  font-style: italic;
+  font-weight: 500;
   line-height: 1;
   color: var(--sum);
   z-index: 2;
   font-variant-numeric: tabular-nums;
 }
 
-/* The answer should read at a glance and clearly outrank the pencil marks. */
+/* The answer should read at a glance and clearly outrank the pencil marks. A
+   serif carries that at 600; at 700 it turns into a blot. */
 .big {
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   color: var(--text);
   z-index: 2;
@@ -438,7 +468,7 @@ body {
   font-size: 0.34em;
   line-height: 1;
   color: var(--mark);
-  font-weight: 700;
+  font-weight: 600;
   z-index: 1;
 }
 
@@ -586,7 +616,7 @@ body {
   flex: 0 0 48px;
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 9px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -612,7 +642,8 @@ body {
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 9px;
+  font-family: var(--font-ui);
   font-size: 20px;
   font-weight: 600;
   padding: 10px 4px;
@@ -1020,7 +1051,7 @@ body {
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 14px;
   width: 100%;
   max-width: 480px;
