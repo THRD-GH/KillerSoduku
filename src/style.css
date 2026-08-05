@@ -27,7 +27,7 @@
   --dim: #9b917f;
   --accent: #8fb4d6;
   --accent-dim: #33465a;
-  --cage: #8a806e;
+  --cage: #6d6456;
   --sum: #d7cbb2;
   --mark: #9b917f;
   /* A cell down to its last candidate. */
@@ -94,7 +94,7 @@
   --dim: #6b6357;
   --accent: #2f4f6f;
   --accent-dim: #b9cad9;
-  --cage: #4a443a;
+  --cage: #8a8072;
   --sum: #2f2921;
   --mark: #7a7264;
   --single: #3f6b46;
@@ -322,9 +322,14 @@ body {
   grid-template-rows: repeat(9, minmax(0, 1fr));
   aspect-ratio: 1;
   width: 100%;
-  /* The heavy outer rule and the box dividers are the same weight, as they are
-     in print, with the cell hairlines much lighter between them. */
-  border: 2.5px solid var(--line-strong);
+  /*
+   * Two systems of lines share this grid and they must not be confused: the
+   * sudoku's own boxes, and the cages laid over them. The boxes get the weight
+   * and the strongest colour — outer rule and box divisions at 3px of ink — so
+   * the cage outlines can sit between the hairlines and the boxes without ever
+   * being mistaken for structure.
+   */
+  border: 3px solid var(--line-strong);
   background: var(--cell);
   /* Lifts the grid off the page: it reads as a sheet laid on the screen. */
   box-shadow: 0 6px 22px var(--shadow);
@@ -373,11 +378,11 @@ body {
 }
 
 .cell.box-l {
-  border-left: 2.5px solid var(--line-strong);
+  border-left: 3px solid var(--line-strong);
 }
 
 .cell.box-t {
-  border-top: 2.5px solid var(--line-strong);
+  border-top: 3px solid var(--line-strong);
 }
 
 .cell.peer {
@@ -451,8 +456,8 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 7%;
-  left: 13%;
+  top: 5%;
+  left: 12%;
   /*
    * Sized against the candidates below it rather than on its own. Measured on
    * the actual glyph ink at a 43px cell: the total needs 21% of the cell's
@@ -461,7 +466,7 @@ body {
    * the total used to be. The leading is squeezed out so its box is the height
    * of the figures and nothing more.
    */
-  font-size: 0.32em;
+  font-size: 0.4em;
   font-weight: 800;
   line-height: 0.85;
   color: var(--sum);
@@ -496,7 +501,7 @@ body {
    * the block can rise past it, so the candidates read as belonging to the
    * cell instead of hanging off its bottom edge.
    */
-  inset: 34% 9% 19%;
+  inset: 39% 9% 14%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(2, 1fr);
