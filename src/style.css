@@ -33,9 +33,11 @@
   /* A cell down to its last candidate. */
   --single: #7fbf8e;
   --single-bg: rgba(127, 191, 142, 0.13);
-  /* Cages counted into the tally. Blue against the gold of the cursor: the two
-     marks that can sit on the same cell must not be the same hue. */
-  --tallied: rgba(143, 180, 214, 0.2);
+  /* Cages counted into the tally. Violet: the board already spends gold on the
+     cursor, blue on matching digits and green on a solved cell, so this is the
+     one hue left that cannot be mistaken for any of them — and a pale blue on
+     warm stock only ever came out as grey. */
+  --tallied: rgba(178, 124, 224, 0.3);
   /* Cells a hint is pointing at. */
   --spotlit: rgba(214, 178, 94, 0.3);
   --error: #e2564b;
@@ -71,9 +73,10 @@
   --k-session: #1e1b16;
   --k-session-line: #3a342c;
   --k-session-text: #d99a86;
-  --k-tally: #1e2732;
-  --k-tally-line: #3f5871;
-  --k-tally-text: #b9d3ea;
+  /* The tally button wears the colour it paints the board with. */
+  --k-tally: #2a2034;
+  --k-tally-line: #6b4d85;
+  --k-tally-text: #d9c2ee;
 }
 
 /* Day: the puzzle page of a newspaper — cream stock, black ink, and no accent
@@ -96,7 +99,7 @@
   --mark: #7a7264;
   --single: #3f6b46;
   --single-bg: rgba(63, 107, 70, 0.12);
-  --tallied: rgba(47, 79, 111, 0.16);
+  --tallied: rgba(124, 70, 176, 0.2);
   --spotlit: rgba(190, 150, 60, 0.42);
   --error: #a8221c;
   --clash: #b8604f;
@@ -122,9 +125,9 @@
   --k-session: #f6f1e6;
   --k-session-line: #cdc3b1;
   --k-session-text: #8a4a3a;
-  --k-tally: #eef2f6;
-  --k-tally-line: #b9cad9;
-  --k-tally-text: #2f4f6f;
+  --k-tally: #f3ecf9;
+  --k-tally-line: #cdb4e0;
+  --k-tally-text: #6b3f96;
 }
 
 /* High contrast: pure black behind white text, and every hue drawn from the
@@ -389,8 +392,21 @@ body {
   background: var(--same);
 }
 
-/* Counted into the tally. Sits above the peer and matching-digit tints but
-   below the selection and error colours, which are the transient states. */
+/*
+ * Down to one candidate: the cell is answered, it just has not been written in.
+ * Declared before the tally and the cursor deliberately — these all set the
+ * same property, so the order here is the priority. A derived hint must not
+ * paint over a mark the player put there on purpose, which is what happened
+ * while this sat at the end of the file: a counted cage whose cells had one
+ * candidate left came out green rather than violet, and so did the cursor.
+ */
+.cell.single {
+  background: var(--single-bg);
+}
+
+/* Counted into the tally. Sits above the peer, matching-digit and
+   one-candidate tints but below the selection and error colours, which are the
+   transient states. */
 .cell.tallied {
   background: var(--tallied);
 }
@@ -502,11 +518,6 @@ body {
 .cell.spotlit {
   background: var(--spotlit);
   box-shadow: inset 0 0 0 2px var(--accent);
-}
-
-/* Down to one candidate: the cell is answered, it just has not been written in. */
-.cell.single {
-  background: var(--single-bg);
 }
 
 .cell.single .marks {
