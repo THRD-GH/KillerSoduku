@@ -456,8 +456,8 @@ body {
    on a phone, where a cell is only about 40px across. */
 .sum {
   position: absolute;
-  top: 5%;
-  left: 12%;
+  top: 8%;
+  left: 14%;
   /*
    * Sized against the candidates below it rather than on its own. Measured on
    * the actual glyph ink at a 43px cell: the total needs 21% of the cell's
@@ -501,7 +501,7 @@ body {
    * the block can rise past it, so the candidates read as belonging to the
    * cell instead of hanging off its bottom edge.
    */
-  inset: 39% 9% 14%;
+  inset: 43% 9% 10%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(2, 1fr);
