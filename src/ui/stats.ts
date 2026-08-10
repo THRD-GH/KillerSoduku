@@ -99,7 +99,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     unfinishedSummary.textContent =
       games.length === 0
         ? 'No unfinished games — every puzzle you have opened is solved.'
-        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, last played first. Hold one to pick it up.`;
+        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}. Hold one to pick it up.`;
 
     clear(unfinishedRows);
     for (const { id, record } of games) {
@@ -112,7 +112,8 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         el(
           'span',
           {
-            class: 'when',
+            // Bold: this is the column the list is scanned by.
+            class: 'when since',
             // The exact date is a hover away, for when "3 weeks ago" is not enough.
             title: touched === undefined ? undefined : formatDate(touched),
           },

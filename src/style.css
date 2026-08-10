@@ -1446,6 +1446,12 @@ body {
   font-size: 11.5px;
 }
 
+/* How long since it was last played — the column these lists are read by. */
+.statrow .when.since {
+  color: var(--text);
+  font-weight: 700;
+}
+
 .tabs {
   display: flex;
   gap: 5px;

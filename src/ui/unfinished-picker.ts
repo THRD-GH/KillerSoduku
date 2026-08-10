@@ -15,8 +15,9 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
     const draw = (): void => {
       const saves = allSaves();
       // What a row does belongs in the description, not repeated down the list.
+      // The ordering does not: the times are right there in the rows.
       summary.textContent =
-        `${saves.length} unfinished ${saves.length === 1 ? 'game' : 'games'}, last played first. ` +
+        `${saves.length} unfinished ${saves.length === 1 ? 'game' : 'games'}. ` +
         'Tap one to pick it up again, or the bin to reset it to unplayed.';
       clear(rows);
 
@@ -34,7 +35,8 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
           el(
             'span',
             {
-              class: 'when',
+              // Bold: this is the column the list is scanned by.
+              class: 'when since',
               title: saved.savedAt === undefined ? undefined : formatDate(saved.savedAt),
             },
             saved.savedAt === undefined ? '' : timeAgo(saved.savedAt),
