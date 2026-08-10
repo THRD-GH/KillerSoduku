@@ -1,17 +1,19 @@
 import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
+import type { PuzzleRecord } from '../game/storage.ts';
 import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import {
   clearSaveFor,
   forgetPuzzle,
   levelStats,
+  allSaves,
   releasePuzzle,
   resetLevel,
   saveHistory,
   totalStats,
   unfinishedGames,
 } from '../game/storage.ts';
-import { clear, el, formatDate, formatTime } from './dom.ts';
+import { clear, el, formatDate, formatTime, timeAgo } from './dom.ts';
 import { confirmDialog, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import type { AppContext } from './app-context.ts';
@@ -79,20 +81,42 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
 
   /** Every puzzle started and not solved, whatever its level or pool. */
   const drawUnfinished = (): void => {
-    const games = unfinishedGames(ctx.history);
+    /*
+     * When each was last touched. The history only records when a puzzle was
+     * first opened; the save beside it is rewritten on every move, so its
+     * timestamp is the one that answers "which was I in the middle of". A
+     * puzzle opened and abandoned before a single move has no save, and falls
+     * back to when it was started.
+     */
+    const lastPlayed = new Map(allSaves().map((game) => [formatPuzzleId(game.id), game.savedAt]));
+    const touchedAt = ({ id, record }: { id: PuzzleId; record: PuzzleRecord }): number =>
+      lastPlayed.get(formatPuzzleId(id)) ?? record.startedAt ?? 0;
+
+    // Ordered by the same clock the rows show, or the order and the column
+    // would tell different stories: storage sorts these by when they began.
+    const games = unfinishedGames(ctx.history).sort((a, b) => touchedAt(b) - touchedAt(a));
     unfinishedSummary.textContent =
       games.length === 0
         ? 'No unfinished games — every puzzle you have opened is solved.'
-        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, newest first. Hold one to pick it up.`;
+        : `${games.length} unfinished ${games.length === 1 ? 'game' : 'games'}, last played first. Hold one to pick it up.`;
 
     clear(unfinishedRows);
     for (const { id, record } of games) {
+      const touched = lastPlayed.get(formatPuzzleId(id)) ?? record.startedAt;
       const row = el(
         'button',
         { class: 'statrow open', 'aria-label': `Resume ${formatPuzzleId(id)}` },
         el('span', {}, formatPuzzleId(id)),
         el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
-        el('span', { class: 'when' }, record.startedAt ? formatDate(record.startedAt) : ''),
+        el(
+          'span',
+          {
+            class: 'when',
+            // The exact date is a hover away, for when "3 weeks ago" is not enough.
+            title: touched === undefined ? undefined : formatDate(touched),
+          },
+          touched === undefined ? '' : timeAgo(touched),
+        ),
         el('span', { class: 'when' }, `${record.hints ?? 0}h ${record.checks ?? 0}c`),
         el('span', { class: 'hold' }, 'hold'),
       );

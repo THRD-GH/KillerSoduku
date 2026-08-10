@@ -55,6 +55,32 @@ export function buildStamp(): string {
   return `build ${__BUILD_COMMIT__} · ${stamp}`;
 }
 
+/**
+ * How long ago, in the coarsest unit that still says something useful. A list
+ * of parked games is read to answer "which was I in the middle of", and "3
+ * hours ago" answers that where a date does not.
+ */
+export function timeAgo(epochMs: number, now = Date.now()): string {
+  const seconds = Math.max(0, Math.round((now - epochMs) / 1000));
+  if (seconds < 90) return 'just now';
+
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+
+  const weeks = Math.round(days / 7);
+  if (weeks < 5) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+
+  const months = Math.round(days / 30);
+  return months < 12 ? `${months} month${months === 1 ? '' : 's'} ago` : formatDate(epochMs);
+}
+
 export function formatDate(epochMs: number): string {
   const d = new Date(epochMs);
   const pad = (n: number) => String(n).padStart(2, '0');
