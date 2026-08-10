@@ -47,12 +47,18 @@ export function openSumCalculator(opts: SumCalcOptions): void {
     // A digit in the cage is the stronger fact, so it wins where both apply.
     const blocked = (opts.blocked ?? 0) & ~placed;
 
+    /*
+     * `enterkeyhint` labels the phone keypad's action key "Done" rather than
+     * "Go", which is what it does here — there is nowhere to go, the list
+     * behind the keyboard has already updated on every keystroke.
+     */
     const sumInput = el('input', {
       type: 'number',
       min: 1,
       max: 45,
       value: String(opts.sum),
       inputmode: 'numeric',
+      enterkeyhint: 'done',
     });
     const sizeInput = el('input', {
       type: 'number',
@@ -60,7 +66,36 @@ export function openSumCalculator(opts: SumCalcOptions): void {
       max: 9,
       value: String(opts.size),
       inputmode: 'numeric',
+      enterkeyhint: 'done',
     });
+
+    /*
+     * Both are wrapped in a form, and the form does nothing but close the
+     * keyboard. A phone's keypad only offers to dismiss itself if the field it
+     * is attached to has somewhere to submit to; with the fields loose in a
+     * div, pressing Done did nothing at all and the keyboard stayed up over
+     * the game until it was tapped away.
+     */
+    const fields = el(
+      'form',
+      { class: 'calc-fields' },
+      el('label', {}, 'Sum', sumInput),
+      el('label', {}, 'Cells', sizeInput),
+    );
+    fields.addEventListener('submit', (e) => {
+      e.preventDefault();
+      sumInput.blur();
+      sizeInput.blur();
+    });
+    // Not every keypad submits; some just send the key.
+    for (const input of [sumInput, sizeInput]) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+    }
 
     const results = el('div', { class: 'results' });
     const digitRow = el('div', { class: 'calc-keys' });
@@ -242,12 +277,7 @@ export function openSumCalculator(opts: SumCalcOptions): void {
           'div',
           { class: 'calc-left' },
           digitRow,
-          el(
-            'div',
-            { class: 'calc-fields' },
-            el('label', {}, 'Sum', sumInput),
-            el('label', {}, 'Cells', sizeInput),
-          ),
+          fields,
         ),
         results,
       ),
