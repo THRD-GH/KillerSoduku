@@ -1047,12 +1047,10 @@ body {
   background: transparent;
 }
 
-/* Just opened, and still ignoring the tail of the gesture that opened it — see
-   TAP_GUARD_MS. The backdrop keeps taking pointer events, so nothing falls
-   through to the game underneath; only the panel's own controls are inert. */
-.overlay.guarded > * {
-  pointer-events: none;
-}
+/* A panel just opened still ignores the tail of the gesture that opened it, but
+   that is now judged press by press in overlay.ts rather than by making the
+   whole panel inert for a moment — inert could not tell a stray press from a
+   deliberate one, and threw both away. */
 
 /* The sum calculator is read against the board, so the board can be made
    visible through it. --glass is driven by the slider in its footer, and

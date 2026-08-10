@@ -31,6 +31,24 @@ export interface TapOptions {
 
 const DEFAULT_LONG_MS = 450;
 
+/**
+ * Where the finger last landed, anywhere in the app.
+ *
+ * A panel that opens under the finger needs to know what the finger was doing a
+ * moment ago, so it can tell the tail of that gesture from a fresh tap on
+ * itself — see the guard in overlay.ts.
+ */
+let lastDown: { x: number; y: number; at: number } | null = null;
+window.addEventListener(
+  'pointerdown',
+  (e) => {
+    lastDown = { x: e.clientX, y: e.clientY, at: performance.now() };
+  },
+  { capture: true, passive: true },
+);
+
+export const lastPress = (): { x: number; y: number; at: number } | null => lastDown;
+
 /** How stale the first of two taps may be and still count as a double-click. */
 const DOUBLE_WINDOW_MS = 900;
 

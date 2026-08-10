@@ -1,4 +1,5 @@
 import { el } from './dom.ts';
+import { lastPress } from './pointer.ts';
 
 /**
  * Opens a modal panel. `build` receives a close callback so the content can
@@ -31,7 +32,7 @@ export function closeTopOverlay(): boolean {
 }
 
 /**
- * How long a panel ignores taps after opening.
+ * How long a panel watches for the tail of the gesture that opened it.
  *
  * A panel usually appears because of a tap, and it appears *under the finger
  * that made it*. Finishing a puzzle with a double-press is the plain case: the
@@ -45,6 +46,20 @@ export function closeTopOverlay(): boolean {
  */
 const TAP_GUARD_MS = 400;
 
+/**
+ * And how far from that gesture a press still counts as part of it.
+ *
+ * Time alone is not enough to tell the two apart, and guessing by time alone
+ * meant a deliberate tap made straight after a win — the eager ones, taken
+ * before the panel has settled — was thrown away with the stray one, leaving a
+ * panel that ignored the first press and answered the second.
+ *
+ * The stray press is the second half of a double-press: same finger, same key,
+ * a few pixels at most from the first. A press anywhere else is somebody
+ * reading the panel and choosing, however quickly they did it.
+ */
+const STRAY_RADIUS_PX = 48;
+
 export function openOverlay(
   build: (close: () => void) => HTMLElement,
   opts: {
@@ -56,16 +71,58 @@ export function openOverlay(
 ): () => void {
   const dismissable = opts.dismissable ?? true;
   const backdrop = el('div', {
-    class: `overlay guarded${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
+    class: `overlay${opts.overlayClass ? ` ${opts.overlayClass}` : ''}`,
   });
 
-  // The panel is inert to begin with; the backdrop still swallows the tap, so
-  // it cannot fall through to the game either.
+  /*
+   * The gesture that brought this panel up, and how long it has to finish
+   * arriving. A press is taken away only if it lands where that gesture was;
+   * everything else reaches the panel at once, however soon after it opened.
+   */
+  const opened = performance.now();
+  const origin = lastPress();
   let guarded = true;
   window.setTimeout(() => {
     guarded = false;
-    backdrop.classList.remove('guarded');
   }, TAP_GUARD_MS);
+
+  const belongsToOpeningGesture = (e: PointerEvent): boolean => {
+    if (origin === null) return false;
+    // The panel was opened by something other than a tap — a keystroke, or the
+    // last move of a puzzle typed in. Nothing is in flight to swallow.
+    if (opened - origin.at > TAP_GUARD_MS) return false;
+    return Math.hypot(e.clientX - origin.x, e.clientY - origin.y) <= STRAY_RADIUS_PX;
+  };
+
+  /*
+   * Swallowed on the way down, before it reaches a button or the backdrop's own
+   * dismissal — and the click the browser makes of it afterwards is swallowed
+   * too, since preventDefault on a pointer event is not everywhere enough to
+   * stop it.
+   */
+  backdrop.addEventListener(
+    'pointerdown',
+    (e) => {
+      // Judged press by press for as long as the window lasts, rather than
+      // spent on the first one: a nervous triple-press puts three of them on
+      // the panel, and all three belong to the gesture, not to the panel.
+      if (!guarded) return;
+      if (!belongsToOpeningGesture(e)) return;
+      e.preventDefault();
+      // Immediate: a press that lands on the backdrop has the backdrop's own
+      // dismissal listener waiting on the very same node, which plain
+      // stopPropagation does nothing about.
+      e.stopImmediatePropagation();
+      const eatClick = (click: Event): void => {
+        click.preventDefault();
+        click.stopPropagation();
+        window.removeEventListener('click', eatClick, true);
+      };
+      window.addEventListener('click', eatClick, true);
+      window.setTimeout(() => window.removeEventListener('click', eatClick, true), TAP_GUARD_MS);
+    },
+    true,
+  );
 
   const entry = { close: (): void => undefined };
   const close = (): void => {
@@ -90,8 +147,10 @@ export function openOverlay(
 
   backdrop.append(build(close));
   if (dismissable) {
+    // No guard check here: a press belonging to the gesture that opened this
+    // panel never gets this far, and anything that does is a deliberate tap
+    // outside it — which means what it means, however soon it came.
     backdrop.addEventListener('pointerdown', (e) => {
-      if (guarded) return;
       if (e.target === backdrop) close();
     });
   }
