@@ -20,7 +20,14 @@ import type { History, SavedGame, Settings, Theme } from './game/storage.ts';
 import { clear, el } from './ui/dom.ts';
 import { buildMenu } from './ui/menu.ts';
 import { openHelp } from './ui/help.ts';
-import { closeTopOverlay, onOverlayOpen, openOverlay, toast } from './ui/overlay.ts';
+import {
+  closeTopOverlay,
+  onOverlayClose,
+  onOverlayOpen,
+  openOverlay,
+  overlaysOpen,
+  toast,
+} from './ui/overlay.ts';
 import { PlayScreen } from './ui/play.ts';
 import { openSettings } from './ui/settings.ts';
 import { buildStats } from './ui/stats.ts';
@@ -74,10 +81,15 @@ class App implements AppContext {
   /**
    * Installed as a PWA there is no browser chrome, so the phone's back gesture
    * is the only back there is — and by default it leaves the app entirely,
-   * mid-puzzle. One history entry is kept while anything other than the menu
-   * is on screen, and going back spends it: the top panel closes, or the menu
-   * comes back. Only from the bare menu does back leave, which is what it
-   * should do there.
+   * mid-puzzle. One history entry is kept while anything other than the bare
+   * menu is on screen, and going back spends it: the top panel closes, or the
+   * menu comes back. Only from the bare menu does back leave.
+   *
+   * "While", not "since": the entry is let go the moment it stops being wanted,
+   * however that happened. A panel closed by its own Back button used to leave
+   * the entry standing, and the press that should have left the app was spent
+   * redrawing the menu over itself — no visible answer to the press, so it read
+   * as the app refusing to close until you pressed again.
    */
   private guarded = false;
 
@@ -88,8 +100,12 @@ class App implements AppContext {
    */
   private spending = false;
 
+  /** The bare menu wants no entry; every other screen does. */
+  private onMenu = false;
+
   private guardBackButton(): void {
     onOverlayOpen(() => this.armBack());
+    onOverlayClose(() => this.syncGuard());
     window.addEventListener('popstate', () => {
       // Our own doing, and already acted on before it was asked for.
       if (this.spending) {
@@ -97,14 +113,15 @@ class App implements AppContext {
         return;
       }
       if (closeTopOverlay()) {
-        // The panel took the press; arm another for what is underneath.
+        // The panel took the press. Whether another entry is wanted for what is
+        // underneath depends on what that is, and the close hook has just asked.
         this.guarded = false;
-        this.armBack();
         return;
       }
       if (!this.guarded) return;
+      // The press spent the entry; the menu wants none, so nothing to settle.
       this.guarded = false;
-      this.goMenu(true);
+      this.goMenu();
     });
   }
 
@@ -116,6 +133,35 @@ class App implements AppContext {
     this.spending = false;
     history.pushState({ ks: 'back' }, '');
     this.guarded = true;
+  }
+
+  private guardWanted(): boolean {
+    return !this.onMenu || overlaysOpen() > 0;
+  }
+
+  /**
+   * Match the entry we hold to the screen, once the dust has settled.
+   *
+   * Deferred by a microtask because closing a panel is so often the first half
+   * of going somewhere: the picker closes and then opens a puzzle, the win
+   * panel closes and then deals the next one. Judged at the moment of the close
+   * every one of those would spend the entry and immediately push another —
+   * and since back() only takes effect on the next turn of the loop, the pop
+   * would land on the entry we had just pushed and quietly take it away.
+   */
+  private syncQueued = false;
+  private syncGuard(): void {
+    if (this.syncQueued) return;
+    this.syncQueued = true;
+    queueMicrotask(() => {
+      this.syncQueued = false;
+      if (this.guardWanted()) this.armBack();
+      else if (this.guarded) {
+        this.guarded = false;
+        this.spending = true;
+        history.back();
+      }
+    });
   }
 
   applyTheme(): void {
@@ -153,26 +199,21 @@ class App implements AppContext {
     this.root.append(node);
   }
 
-  goMenu(fromBack = false): void {
-    /*
-     * Leaving by a button rather than by the back gesture: spend the entry we
-     * are holding instead of stacking another.
-     *
-     * The menu is mounted here and now, and the popstate that follows is
-     * ignored. Waiting for it to do the mounting made the button only as
-     * reliable as the back() underneath it — and a browser that declines to go
-     * back, as an installed PWA sitting on its first entry does, leaves the
-     * button looking dead with nothing to show for the press.
-     */
-    if (!fromBack && this.guarded) {
-      this.guarded = false;
-      this.spending = true;
-      history.back();
-    }
+  /*
+   * The menu is mounted here and now, whoever asked for it, and the entry is
+   * settled afterwards. Waiting for a popstate to do the mounting made the
+   * button only as reliable as the back() underneath it — and a browser that
+   * declines to go back, as an installed PWA sitting on its first entry does,
+   * leaves the button looking dead with nothing to show for the press.
+   */
+  goMenu(): void {
+    this.onMenu = true;
     this.mount(buildMenu(this));
+    this.syncGuard();
   }
 
   goStats(level: Level): void {
+    this.onMenu = false;
     this.armBack();
     this.mount(buildStats(this, level));
   }
@@ -255,6 +296,7 @@ class App implements AppContext {
   }
 
   private startGame(game: Game): void {
+    this.onMenu = false;
     this.armBack();
     this.play?.destroy();
     clear(this.root);

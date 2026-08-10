@@ -13,6 +13,15 @@ export const onOverlayOpen = (fn: () => void): void => {
   onOpen = fn;
 };
 
+/** And when one closes, so it can let the entry go again. */
+let onClose: (() => void) | null = null;
+export const onOverlayClose = (fn: () => void): void => {
+  onClose = fn;
+};
+
+/** How many panels are open, innermost included. */
+export const overlaysOpen = (): number => stack.length;
+
 /** Close the innermost open panel. True if there was one. */
 export function closeTopOverlay(): boolean {
   const top = stack[stack.length - 1];
@@ -58,7 +67,9 @@ export function openOverlay(
     backdrop.remove();
     document.removeEventListener('keydown', onKey, true);
     const at = stack.indexOf(entry);
-    if (at >= 0) stack.splice(at, 1);
+    if (at < 0) return;
+    stack.splice(at, 1);
+    onClose?.();
   };
   entry.close = close;
   stack.push(entry);
