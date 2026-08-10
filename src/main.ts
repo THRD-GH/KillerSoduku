@@ -81,9 +81,21 @@ class App implements AppContext {
    */
   private guarded = false;
 
+  /**
+   * A back() this app asked for itself, to spend the entry it was holding. The
+   * popstate it causes is not somebody pressing back, and must not be read as
+   * one.
+   */
+  private spending = false;
+
   private guardBackButton(): void {
     onOverlayOpen(() => this.armBack());
     window.addEventListener('popstate', () => {
+      // Our own doing, and already acted on before it was asked for.
+      if (this.spending) {
+        this.spending = false;
+        return;
+      }
       if (closeTopOverlay()) {
         // The panel took the press; arm another for what is underneath.
         this.guarded = false;
@@ -98,6 +110,10 @@ class App implements AppContext {
 
   private armBack(): void {
     if (this.guarded) return;
+    // Whatever became of the last back() we asked for, this is a fresh entry
+    // and the next popstate belongs to whoever presses back — a browser that
+    // quietly refused that back cannot leave the flag standing and swallow it.
+    this.spending = false;
     history.pushState({ ks: 'back' }, '');
     this.guarded = true;
   }
@@ -140,14 +156,18 @@ class App implements AppContext {
   goMenu(fromBack = false): void {
     /*
      * Leaving by a button rather than by the back gesture: spend the entry we
-     * are holding instead of stacking another. The popstate that follows comes
-     * straight back here with fromBack set, and that is what mounts the menu —
-     * so the flag has to stay up until then, or the handler ignores it and the
-     * screen never changes.
+     * are holding instead of stacking another.
+     *
+     * The menu is mounted here and now, and the popstate that follows is
+     * ignored. Waiting for it to do the mounting made the button only as
+     * reliable as the back() underneath it — and a browser that declines to go
+     * back, as an installed PWA sitting on its first entry does, leaves the
+     * button looking dead with nothing to show for the press.
      */
     if (!fromBack && this.guarded) {
+      this.guarded = false;
+      this.spending = true;
       history.back();
-      return;
     }
     this.mount(buildMenu(this));
   }
