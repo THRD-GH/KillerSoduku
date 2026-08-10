@@ -15,6 +15,7 @@ import {
 } from '../game/storage.ts';
 import { clear, el, formatDate, formatTime, timeAgo } from './dom.ts';
 import { confirmDialog, toast } from './overlay.ts';
+import { binIcon } from './icons.ts';
 import { bindTap } from './pointer.ts';
 import type { AppContext } from './app-context.ts';
 
@@ -145,7 +146,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
           'aria-label': `Reset ${formatPuzzleId(id)}`,
           title: 'Reset this puzzle',
         },
-        '✕',
+        binIcon(),
       );
       drop.addEventListener('click', () =>
         confirmDialog(

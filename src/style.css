@@ -1384,10 +1384,18 @@ body {
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 4px;
-  color: var(--dim);
+  /* Red: it throws a game away, and it sits a thumb's width from the row that
+     opens one. Colour and shape both have to say so. */
+  color: var(--error);
   font-size: 14px;
   cursor: pointer;
   touch-action: manipulation;
+  display: grid;
+  place-items: center;
+}
+
+.rowx svg {
+  display: block;
 }
 
 .rowx:active {

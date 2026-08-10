@@ -2,7 +2,8 @@ import { LEVEL_NAMES } from '../core/generator.ts';
 import { formatPuzzleId, sourceLabel } from '../core/types.ts';
 import { allSaves, clearSaveFor, forgetPuzzle, saveHistory } from '../game/storage.ts';
 import type { AppContext } from './app-context.ts';
-import { clear, el, formatTime } from './dom.ts';
+import { clear, el, formatDate, formatTime, timeAgo } from './dom.ts';
+import { binIcon } from './icons.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 
 /** Pick up or discard any parked game without going through Stats. */
@@ -23,6 +24,18 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
           { class: 'statrow open', 'aria-label': `Resume ${formatPuzzleId(id)}` },
           el('span', {}, formatPuzzleId(id)),
           el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
+          /*
+           * Two different clocks, and both are worth knowing: how long ago you
+           * put it down, and how long you had spent on it when you did.
+           */
+          el(
+            'span',
+            {
+              class: 'when',
+              title: saved.savedAt === undefined ? undefined : formatDate(saved.savedAt),
+            },
+            saved.savedAt === undefined ? '' : timeAgo(saved.savedAt),
+          ),
           el('span', { class: 'when' }, formatTime(saved.elapsedMs)),
           el('span', { class: 'resume-label' }, 'Resume'),
         );
@@ -34,7 +47,7 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
         const reset = el(
           'button',
           { class: 'rowx', 'aria-label': `Reset ${formatPuzzleId(id)} to unplayed`, title: 'Reset to unplayed' },
-          '×',
+          binIcon(),
         );
         reset.addEventListener('click', () => {
           confirmDialog(

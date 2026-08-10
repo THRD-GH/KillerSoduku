@@ -105,3 +105,36 @@ export function undoArrow(mirrored = false): SVGSVGElement {
   svg.append(group);
   return svg;
 }
+
+/**
+ * A waste bin, for the control that throws a parked game away. A cross reads
+ * as "close" or "dismiss" more than it reads as "delete", and this sits beside
+ * a row that opens the puzzle — the two need to be unmistakable.
+ */
+export function binIcon(size = 17): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.9');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const add = (d: string): void => {
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', d);
+    svg.append(path);
+  };
+
+  // Lid, with the handle above it, then the tapering body and two ribs.
+  add('M4 7h16');
+  add('M10 4h4');
+  add('M6.5 7l1 12.2a1.8 1.8 0 0 0 1.8 1.8h5.4a1.8 1.8 0 0 0 1.8-1.8L17.5 7');
+  add('M10.2 10.6v6.6');
+  add('M13.8 10.6v6.6');
+
+  return svg;
+}
