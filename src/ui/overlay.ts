@@ -47,7 +47,12 @@ const TAP_GUARD_MS = 400;
 
 export function openOverlay(
   build: (close: () => void) => HTMLElement,
-  opts: { dismissable?: boolean; overlayClass?: string } = {},
+  opts: {
+    dismissable?: boolean;
+    overlayClass?: string;
+    /** Run once this panel has gone, however it went. */
+    onClosed?: () => void;
+  } = {},
 ): () => void {
   const dismissable = opts.dismissable ?? true;
   const backdrop = el('div', {
@@ -69,6 +74,7 @@ export function openOverlay(
     const at = stack.indexOf(entry);
     if (at < 0) return;
     stack.splice(at, 1);
+    opts.onClosed?.();
     onClose?.();
   };
   entry.close = close;

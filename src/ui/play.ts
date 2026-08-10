@@ -652,7 +652,14 @@ export class PlayScreen {
 
   private win(): void {
     this.game.completed = true;
-    this.stop();
+    /*
+     * The clock stops; the screen must not. Letting the lock go here starts the
+     * phone's idle timeout at the exact moment a panel appears that is meant to
+     * be read — and a phone that has dimmed does not simply come back on a
+     * touch: the touch that wakes it is spent waking it, and never reaches the
+     * button under the finger. Held until the panel goes.
+     */
+    this.stop({ awake: this.ctx.settings.keepAwake });
     const ms = this.game.elapsedMs;
     this.ctx.history = markFinished(
       this.ctx.history,
@@ -694,7 +701,12 @@ export class PlayScreen {
       // Low on the screen and over a clear backdrop: the grid you have just
       // finished is worth a look, and dimming it to announce that you finished
       // it hides the one thing you want to see.
-    }, { overlayClass: 'bottom-sheet undimmed' });
+    }, {
+      overlayClass: 'bottom-sheet undimmed',
+      // Whichever way it went — a button, the backdrop, the back gesture — the
+      // reading is over. A puzzle started from here takes the lock back.
+      onClosed: () => keepScreenAwake(false),
+    });
   }
 
   /**
@@ -750,12 +762,16 @@ export class PlayScreen {
     keepScreenAwake(this.ctx.settings.keepAwake);
   }
 
-  stop(): void {
+  /**
+   * Stops the clock, and lets the screen go with it — unless the caller still
+   * has something on screen worth reading, which the win panel does.
+   */
+  stop({ awake = false } = {}): void {
     if (this.ticker !== undefined) {
       clearInterval(this.ticker);
       this.ticker = undefined;
     }
-    keepScreenAwake(false);
+    if (!awake) keepScreenAwake(false);
   }
 
   private tick(): void {

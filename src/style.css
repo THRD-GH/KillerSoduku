@@ -1639,7 +1639,12 @@ body {
  */
 .overlay.bottom-sheet {
   align-items: end;
-  padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+  /* Never right against the bottom edge. The page is laid out under the system
+     bars (viewport-fit=cover), and a phone keeps the last strip of the screen
+     for its own back/home gesture — a button sitting in it can have a tap taken
+     away before the page ever sees it. The safe-area inset covers that where it
+     is reported, and 20px stands in where it comes back as zero. */
+  padding: 8px 16px max(20px, calc(8px + env(safe-area-inset-bottom, 0px)));
 }
 
 .calc .results {
