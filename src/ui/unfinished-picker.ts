@@ -14,7 +14,10 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
 
     const draw = (): void => {
       const saves = allSaves();
-      summary.textContent = `${saves.length} unfinished ${saves.length === 1 ? 'game' : 'games'}. Resume one or reset it to unplayed.`;
+      // What a row does belongs in the description, not repeated down the list.
+      summary.textContent =
+        `${saves.length} unfinished ${saves.length === 1 ? 'game' : 'games'}, last played first. ` +
+        'Tap one to pick it up again, or the bin to reset it to unplayed.';
       clear(rows);
 
       for (const saved of saves) {
@@ -36,8 +39,9 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
             },
             saved.savedAt === undefined ? '' : timeAgo(saved.savedAt),
           ),
-          el('span', { class: 'when' }, formatTime(saved.elapsedMs)),
-          el('span', { class: 'resume-label' }, 'Resume'),
+          // Bracketed, so it does not read as another point in time next to
+          // the one beside it: this is how long the puzzle has taken so far.
+          el('span', { class: 'when' }, `(${formatTime(saved.elapsedMs)})`),
         );
         resume.addEventListener('click', () => {
           close();
