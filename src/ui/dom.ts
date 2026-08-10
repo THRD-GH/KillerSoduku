@@ -57,15 +57,13 @@ export function buildStamp(): string {
 
 /**
  * How long ago, in the coarsest unit that still says something useful. A list
- * of parked games is read to answer "which was I in the middle of", and "3
- * hours ago" answers that where a date does not.
+ * of parked games is read to answer "which was I in the middle of", and hours
+ * and days answer that — the difference between 37 and 41 minutes is not
+ * something anyone is deciding on, so the minutes are left out entirely.
  */
 export function timeAgo(epochMs: number, now = Date.now()): string {
-  const seconds = Math.max(0, Math.round((now - epochMs) / 1000));
-  if (seconds < 90) return 'just now';
-
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  const minutes = Math.max(0, (now - epochMs) / 60_000);
+  if (minutes < 45) return 'just now';
 
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
