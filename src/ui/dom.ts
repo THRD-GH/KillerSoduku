@@ -37,6 +37,16 @@ export function formatTime(ms: number): string {
 }
 
 /**
+ * A gap between two times, read at a glance: seconds while it is seconds, and
+ * m:ss once it is worth counting in minutes. "20s" says more than "00:20".
+ */
+export function shortTime(ms: number): string {
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+/**
  * Which build this is: commit and when it was made, in the reader's own time
  * zone. Worth showing because a PWA can keep serving an older build until the
  * service worker picks up a new one.

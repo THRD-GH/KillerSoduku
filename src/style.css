@@ -1770,9 +1770,47 @@ body {
   text-align: center;
 }
 
-/* What the puzzle needed of you, on the win screen. */
-.summary.techniques {
-  color: var(--mark);
+/* How the run went, beside its thumb. Coloured, because the whole point of a
+   verdict is to be read before the sentence it is made of. */
+.won .verdict {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.won .verdict.up {
+  color: var(--accent);
+}
+
+.won .verdict.down {
+  color: var(--dim);
+}
+
+/* Three buttons across a phone-width sheet. The type used on the other panels
+   wraps "Main menu" at this width, and a wrapped label makes the row taller
+   than the finished grid can spare. */
+.won .actions .btn {
+  font-size: 15px;
+  padding: 11px 6px;
+}
+
+/* Every technique the grid asked for, hardest first and picked out. */
+.technique-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: var(--dim);
+}
+
+.technique-list li {
+  margin: 4px 0;
+}
+
+.technique-list li.hardest {
+  color: var(--text);
+  font-weight: 650;
 }
 
 .won .time {

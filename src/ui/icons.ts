@@ -138,3 +138,42 @@ export function binIcon(size = 17): SVGSVGElement {
 
   return svg;
 }
+
+/**
+ * The verdict on a finished puzzle. One drawing, turned over for the other
+ * answer — a thumb that is the same shape either way up reads as one judgement
+ * with two outcomes, rather than as two unrelated marks.
+ */
+export function thumbIcon(up: boolean, size = 15): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.3');
+  svg.setAttribute('stroke-linejoin', 'round');
+
+  const group = document.createElementNS(SVG_NS, 'g');
+  if (!up) group.setAttribute('transform', 'rotate(180 8 8)');
+
+  // The cuff, and the hand above it.
+  const cuff = document.createElementNS(SVG_NS, 'rect');
+  cuff.setAttribute('x', '1.6');
+  cuff.setAttribute('y', '7.2');
+  cuff.setAttribute('width', '3');
+  cuff.setAttribute('height', '6.6');
+  cuff.setAttribute('rx', '0.8');
+  group.append(cuff);
+
+  const hand = document.createElementNS(SVG_NS, 'path');
+  hand.setAttribute(
+    'd',
+    'M5.6 13.8h5.2c.9 0 1.6-.6 1.8-1.4l1-3.9c.2-.9-.4-1.7-1.4-1.7H9.4l.5-2.9c.2-1-.5-1.9-1.5-1.9L5.6 7.2z',
+  );
+  group.append(hand);
+
+  svg.append(group);
+  return svg;
+}

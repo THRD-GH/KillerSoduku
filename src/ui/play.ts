@@ -1,6 +1,7 @@
 import { PEERS, bit, colOf, maskToDigits, rowOf } from '../core/grid.ts';
 import type { Level, PuzzleId } from '../core/types.ts';
-import { formatPuzzleId } from '../core/types.ts';
+import { formatPuzzleId, sourceLabel } from '../core/types.ts';
+import { LEVEL_NAMES } from '../core/generator.ts';
 import { Game } from '../game/state.ts';
 import {
   clearSaveFor,
@@ -8,15 +9,16 @@ import {
   markFinished,
   markStarted,
   saveGame,
+  levelStats,
   saveHistory,
   saveSettings,
 } from '../game/storage.ts';
 import { keepScreenAwake } from '../game/wakelock.ts';
 import { Board } from './board.ts';
-import { clear, el, formatTime } from './dom.ts';
+import { clear, el, formatTime, shortTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import { cellName, describeTechnique, explainStep } from './explain.ts';
-import { clockIcon, undoArrow } from './icons.ts';
+import { clockIcon, thumbIcon, undoArrow } from './icons.ts';
 import type { Step } from '../core/techniques.ts';
 import { bindTap } from './pointer.ts';
 import { openSumCalculator } from './sumcalc.ts';
@@ -683,6 +685,9 @@ export class PlayScreen {
      */
     this.stop({ awake: this.ctx.settings.keepAwake });
     const ms = this.game.elapsedMs;
+    // Taken before the run is recorded: it is being judged against the form it
+    // arrived with, not against a figure it has just moved.
+    const average = this.poolAverageMs();
     this.ctx.history = markFinished(
       this.ctx.history,
       this.game.id,
@@ -706,19 +711,29 @@ export class PlayScreen {
         close();
         this.ctx.goMenu();
       });
+      // Opens over this panel rather than instead of it: the detail is a second
+      // look, and closing it puts you back at the result.
+      const insights = el('button', { class: 'btn' }, 'Insights');
+      insights.addEventListener('click', () => this.openInsights(ms, average));
       return el(
         'div',
         { class: 'panel won' },
         el('h2', {}, `Puzzle ${formatPuzzleId(this.game.id)} solved`),
         el('div', { class: 'time' }, formatTime(ms)),
+        this.verdict(ms, average),
         el(
           'p',
           { class: 'summary' },
           `${this.game.hints} hint${this.game.hints === 1 ? '' : 's'}, ` +
             `${this.game.checks} check${this.game.checks === 1 ? '' : 's'}`,
         ),
-        this.techniqueReport(),
-        el('div', { class: 'actions', style: 'grid-template-columns: 1fr 1fr' }, menu, again),
+        el(
+          'div',
+          { class: 'actions', style: 'grid-template-columns: repeat(3, 1fr)' },
+          menu,
+          insights,
+          again,
+        ),
       );
       // Low on the screen and over a clear backdrop: the grid you have just
       // finished is worth a look, and dimming it to announce that you finished
@@ -731,29 +746,100 @@ export class PlayScreen {
     });
   }
 
+  /** Your average over this level and pool, or null with nothing to average. */
+  private poolAverageMs(): number | null {
+    const { level, source } = this.game.id;
+    const size = source === 'classic' ? (this.ctx.packCounts?.[level] ?? 0) : this.ctx.newPoolSize;
+    return levelStats(this.ctx.history, level, source, size).averageMs;
+  }
+
   /**
-   * What the puzzle actually asked of you. The solver already knows which
-   * techniques the grid needs — it is worked out for every hint — and until
-   * now that was thrown away the moment the puzzle ended. Naming the hardest
-   * one is how a level stops being a number and starts meaning something.
+   * How the run went, as a share rather than as a stopwatch reading: "10%
+   * faster" is a verdict, "06:12 against 06:52" is arithmetic left for you to
+   * do. The gap follows in brackets, because a percentage of an average you
+   * cannot see means little on its own.
    */
-  private techniqueReport(): HTMLElement | null {
-    const trace = this.game.solveTrace();
-    if (trace.length === 0) return null;
-
-    const hardest = trace[0];
-    // Everything at the top difficulty, not just the first: two techniques of
-    // equal standing both deserve the credit.
-    const peers = trace.filter((t) => t.difficulty === hardest.difficulty);
-    const names = peers.map((t) => describeTechnique(t.technique).toLowerCase());
-    const steps = peers.reduce((n, t) => n + t.count, 0);
-
+  private verdict(ms: number, average: number | null): HTMLElement {
+    const { level, source } = this.game.id;
+    if (average === null) {
+      return el(
+        'p',
+        { class: 'summary verdict' },
+        `First one finished in ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`,
+      );
+    }
+    const gap = average - ms;
+    const percent = Math.round((Math.abs(gap) / average) * 100);
+    if (percent === 0) return el('p', { class: 'summary verdict' }, 'Level with your average');
+    const faster = gap > 0;
     return el(
       'p',
-      { class: 'summary techniques' },
-      `Hardest step: ${names.join(' and ')} — needed ${steps} time${steps === 1 ? '' : 's'}, ` +
-        `out of ${trace.reduce((n, t) => n + t.count, 0)} deductions in all.`,
+      { class: `summary verdict ${faster ? 'up' : 'down'}` },
+      thumbIcon(faster),
+      `${percent}% ${faster ? 'faster' : 'slower'} than average (${shortTime(Math.abs(gap))})`,
     );
+  }
+
+  /**
+   * The long version, for anyone who wants it: where the run sits against the
+   * pool, and every technique the grid asked for rather than only the hardest.
+   */
+  private openInsights(ms: number, average: number | null): void {
+    openOverlay((close) => {
+      const { level, source } = this.game.id;
+      const trace = this.game.solveTrace();
+      const total = trace.reduce((n, t) => n + t.count, 0);
+      const hardest = trace[0]?.difficulty;
+
+      const tile = (value: string, label: string): HTMLElement =>
+        el('div', { class: 'tile' }, el('b', {}, value), el('small', {}, label));
+      const gap = average === null ? null : average - ms;
+
+      const list = el('ul', { class: 'technique-list' });
+      for (const step of trace) {
+        list.append(
+          el(
+            'li',
+            { class: step.difficulty === hardest ? 'hardest' : '' },
+            `${describeTechnique(step.technique)} — ${step.count}`,
+          ),
+        );
+      }
+
+      const back = el('button', { class: 'btn' }, 'Back');
+      back.addEventListener('click', close);
+
+      return el(
+        'div',
+        { class: 'panel insights' },
+        el('h2', {}, 'Game insights'),
+        el(
+          'p',
+          { class: 'summary' },
+          `${formatPuzzleId(this.game.id)} · ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`,
+        ),
+        el(
+          'div',
+          { class: 'totals' },
+          tile(formatTime(ms), 'your time'),
+          tile(average === null ? '—' : formatTime(average), 'pool average'),
+          tile(
+            // formatTime, not the compact form the verdict uses: three times
+            // side by side in one row have to be read against each other.
+            gap === null ? '—' : formatTime(Math.abs(gap)),
+            gap === null ? 'no average yet' : gap > 0 ? 'faster' : 'slower',
+          ),
+        ),
+        el('p', { class: 'section-label' }, `What it took — ${total} deductions`),
+        list,
+        el(
+          'p',
+          { class: 'summary' },
+          `${this.game.hints} hints and ${this.game.checks} checks used`,
+        ),
+        el('div', { class: 'panel-footer' }, back),
+      );
+    });
   }
 
   private scheduleSave(): void {
