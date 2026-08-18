@@ -19,6 +19,10 @@ export interface AppContext {
   refreshBoard(): void;
   goMenu(): void;
   goStats(level: Level): void;
+  /** The puzzle Stats was opened from, if it was opened from one. */
+  statsReturn: PuzzleId | null;
+  /** Leave Stats: back to that puzzle if there is one, otherwise the menu. */
+  leaveStats(): void;
   openHelp(): void;
   openSettings(): void;
   playPuzzle(id: PuzzleId): void;

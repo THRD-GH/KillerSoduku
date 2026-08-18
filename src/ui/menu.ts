@@ -258,11 +258,17 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
 }
 
 export function openMainMenu(ctx: AppContext): void {
+  /*
+   * Stats leads: it is the only way to reach that screen, and it is what
+   * somebody opening this menu between puzzles has come for. The walkthrough
+   * drops down the list — it is a first-run item, and the first game opens it
+   * unasked, so its place here is for the rare second look.
+   */
   openActionMenu('Menu', [
-    { label: 'How to play walkthrough', run: () => openTutorial() },
-    { label: 'Settings', run: () => ctx.openSettings() },
     { label: 'Stats', run: () => ctx.goStats(1) },
+    { label: 'Settings', run: () => ctx.openSettings() },
     { label: 'Help', run: () => ctx.openHelp() },
+    { label: 'How to play walkthrough', run: () => openTutorial() },
     { label: 'About', run: () => toast('Killer Sudoku — a personal build') },
   ]);
 }

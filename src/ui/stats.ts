@@ -28,9 +28,18 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   let level = initial;
   let source: Source = 'classic';
 
-  const back = el('button', { class: 'iconbtn', 'aria-label': 'Back' });
+  /*
+   * Where the way out leads. Opened from a puzzle, both routes hand that
+   * puzzle back and say so — a screen you reach mid-solve should return you to
+   * what you were solving, and a button called "Back to levels" would be
+   * describing the wrong journey.
+   */
+  const returnTo = ctx.statsReturn;
+  const backLabel = returnTo === null ? 'Back to levels' : `Back to ${formatPuzzleId(returnTo)}`;
+
+  const back = el('button', { class: 'iconbtn', 'aria-label': backLabel });
   back.append(el('i'), el('i'), el('i'));
-  back.addEventListener('click', () => ctx.goMenu());
+  back.addEventListener('click', () => ctx.leaveStats());
 
   /*
    * Both halves of the screen are on show at once: the unfinished games and
@@ -290,8 +299,8 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
     );
   });
 
-  const done = el('button', { class: 'btn wide' }, 'Back to levels');
-  done.addEventListener('click', () => ctx.goMenu());
+  const done = el('button', { class: 'btn wide' }, backLabel);
+  done.addEventListener('click', () => ctx.leaveStats());
 
   unfinishedTab.addEventListener('click', () => {
     showUnfinished = !showUnfinished;

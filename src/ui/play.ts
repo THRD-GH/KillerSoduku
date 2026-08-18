@@ -1,5 +1,5 @@
 import { PEERS, bit, colOf, maskToDigits, rowOf } from '../core/grid.ts';
-import type { Level } from '../core/types.ts';
+import type { Level, PuzzleId } from '../core/types.ts';
 import { formatPuzzleId } from '../core/types.ts';
 import { Game } from '../game/state.ts';
 import {
@@ -760,19 +760,39 @@ export class PlayScreen {
     if (this.saveTimer !== undefined) return;
     this.saveTimer = window.setTimeout(() => {
       this.saveTimer = undefined;
-      if (this.game.completed) return;
-      saveGame({
-        id: this.game.id,
-        puzzle: this.game.puzzle,
-        values: this.game.values,
-        pencils: this.game.pencils,
-        elapsedMs: this.game.elapsedMs,
-        hints: this.game.hints,
-        checks: this.game.checks,
-        // Undo and redo travel with the save; only finishing throws them away.
-        ...this.game.exportHistory(),
-      });
+      this.writeSave();
     }, 400);
+  }
+
+  /**
+   * Write a waiting save now rather than in a moment.
+   *
+   * Leaving the screen must not leave the last move sitting in a timer: a trip
+   * to Stats and straight back would rebuild the board from a save written
+   * before that move, and the timer would then land on top of the new screen's
+   * own saving. Called when the screen goes.
+   */
+  private flushSave(): void {
+    if (this.saveTimer === undefined) return;
+    clearTimeout(this.saveTimer);
+    this.saveTimer = undefined;
+    this.writeSave();
+  }
+
+  private writeSave(): void {
+    // A finished puzzle keeps no save; the win cleared it deliberately.
+    if (this.game.completed) return;
+    saveGame({
+      id: this.game.id,
+      puzzle: this.game.puzzle,
+      values: this.game.values,
+      pencils: this.game.pencils,
+      elapsedMs: this.game.elapsedMs,
+      hints: this.game.hints,
+      checks: this.game.checks,
+      // Undo and redo travel with the save; only finishing throws them away.
+      ...this.game.exportHistory(),
+    });
   }
 
   start(): void {
@@ -841,10 +861,16 @@ export class PlayScreen {
     return this.paused;
   }
 
+  /** Which puzzle this screen is showing, for anything that means to come back. */
+  get puzzleId(): PuzzleId {
+    return this.game.id;
+  }
+
   destroy(): void {
     this.compact.removeEventListener('change', this.onCompactChange);
     this.stop();
     this.pauseNode?.remove();
+    this.flushSave();
   }
 
   // ---------------------------------------------------------------- rendering
@@ -900,17 +926,23 @@ export class PlayScreen {
   // ------------------------------------------------------------------- menus
 
   private openMenu(): void {
+    /*
+     * Ordered by what the puzzle in front of you needs: the two aids the
+     * buttons do not carry, then putting it down, then the incidental, then
+     * the panels that hand the grid straight back — and last the two that
+     * leave the board, together, where a slip is least likely.
+     */
     openActionMenu('Menu', [
       { label: 'Fill all candidates', run: () => this.doFillCandidates() },
       { label: 'Rewind to before a mistake', run: () => {
         if (this.game.wrongCount() === 0) toast('Nothing wrong on the board');
         else this.offerRewind('Rewind');
       } },
-      { label: 'Share this puzzle', run: () => this.shareLink() },
       { label: 'Pause', run: () => this.pause() },
+      { label: 'Share this puzzle', run: () => this.shareLink() },
       { label: 'Settings', run: () => this.ctx.openSettings() },
-      { label: 'Stats', run: () => this.ctx.goStats(this.game.puzzle.difficulty as Level) },
       { label: 'Help', run: () => this.ctx.openHelp() },
+      { label: 'Stats', run: () => this.ctx.goStats(this.game.puzzle.difficulty as Level) },
       { label: 'Main menu', run: () => { this.stop(); this.ctx.goMenu(); } },
     ]);
   }

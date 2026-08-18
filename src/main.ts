@@ -103,6 +103,14 @@ class App implements AppContext {
   /** The bare menu wants no entry; every other screen does. */
   private onMenu = false;
 
+  /**
+   * The puzzle Stats was opened from. Stats used to be a one-way trip: it
+   * sat in the in-game menu looking like Settings and Help, which hand the
+   * grid straight back, and instead put you out on the levels with the
+   * puzzle to find again under the unfinished list.
+   */
+  statsReturn: PuzzleId | null = null;
+
   private guardBackButton(): void {
     onOverlayOpen(() => this.armBack());
     onOverlayClose(() => this.syncGuard());
@@ -119,9 +127,11 @@ class App implements AppContext {
         return;
       }
       if (!this.guarded) return;
-      // The press spent the entry; the menu wants none, so nothing to settle.
+      // The press spent the entry; what it lands on wants none, so nothing to
+      // settle. Back out of Stats goes wherever its own Back goes.
       this.guarded = false;
-      this.goMenu();
+      if (this.statsReturn !== null) this.leaveStats();
+      else this.goMenu();
     });
   }
 
@@ -208,14 +218,35 @@ class App implements AppContext {
    */
   goMenu(): void {
     this.onMenu = true;
+    this.statsReturn = null;
     this.mount(buildMenu(this));
     this.syncGuard();
   }
 
   goStats(level: Level): void {
+    // Read before mounting, which is what takes the play screen down. Set
+    // before building, which is what reads it to label its way out.
+    const from = this.play?.puzzleId ?? null;
     this.onMenu = false;
     this.armBack();
+    this.statsReturn = from;
     this.mount(buildStats(this, level));
+  }
+
+  /**
+   * Opened from a puzzle, Stats hands that puzzle back — rebuilt from its save,
+   * which the screen wrote on its way out, so the board is where you left it
+   * and the clock picks up where it stopped. Opened from the menu, back is the
+   * menu.
+   */
+  leaveStats(): void {
+    const id = this.statsReturn;
+    this.statsReturn = null;
+    if (id === null) {
+      this.goMenu();
+      return;
+    }
+    this.playPuzzle(id);
   }
 
   openHelp(): void {
@@ -297,6 +328,7 @@ class App implements AppContext {
 
   private startGame(game: Game): void {
     this.onMenu = false;
+    this.statsReturn = null;
     this.armBack();
     this.play?.destroy();
     clear(this.root);
