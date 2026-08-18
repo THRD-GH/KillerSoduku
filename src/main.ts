@@ -56,6 +56,12 @@ class App implements AppContext {
     this.applyKeypadSide();
 
     this.guardBackButton();
+    /*
+     * The page can go without warning — a phone reclaiming a backgrounded app,
+     * or the reload offered when a new version lands — and the last move must
+     * not be sitting in a save timer when it does.
+     */
+    window.addEventListener('pagehide', () => this.play?.flushSave());
     document.addEventListener('keydown', (e) => this.play?.handleKey(e));
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.play?.pause();
@@ -342,16 +348,29 @@ class App implements AppContext {
 const host = document.querySelector<HTMLElement>('#app');
 if (host) new App(host);
 
+/*
+ * Turned down for this sitting. A new version is not urgent — it is waiting in
+ * the service worker either way and comes up on the next launch — and reloading
+ * mid-puzzle to collect it is the app taking the grid off you over something
+ * that could have waited.
+ */
+let updateTurnedDown = false;
+
 registerServiceWorker(() => {
-  if (document.querySelector('.update-notice')) return;
+  if (updateTurnedDown || document.querySelector('.update-notice')) return;
+  const later = el('button', { class: 'btn' }, 'Later');
   const reload = el('button', { class: 'btn primary' }, 'Reload');
-  reload.addEventListener('click', () => location.reload());
-  document.body.append(
-    el(
-      'div',
-      { class: 'update-notice', role: 'status' },
-      el('span', {}, 'A new version is ready.'),
-      reload,
-    ),
+  const notice = el(
+    'div',
+    { class: 'update-notice', role: 'status' },
+    el('span', {}, 'A new version is ready.'),
+    later,
+    reload,
   );
+  later.addEventListener('click', () => {
+    updateTurnedDown = true;
+    notice.remove();
+  });
+  reload.addEventListener('click', () => location.reload());
+  document.body.append(notice);
 });

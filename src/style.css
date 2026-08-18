@@ -1928,6 +1928,9 @@ body {
   z-index: 80;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  max-width: calc(100vw - 32px);
   gap: 12px;
   padding: 9px 10px 9px 14px;
   border: 1px solid var(--accent);
@@ -1937,7 +1940,18 @@ body {
   box-shadow: 0 6px 20px var(--shadow);
   font-size: 13px;
 }
-.update-notice .btn { padding: 7px 12px; }
+/* Two buttons now, and a phone is 375px wide: cap it, let the pair drop to a
+   second line rather than run off the screen, and use the smaller type the win
+   screen uses for the same reason. */
+.update-notice .btn {
+  padding: 7px 12px;
+  font-size: 15px;
+}
+
+.update-notice span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 
 .spinner {
   width: 34px;

@@ -896,9 +896,9 @@ export class PlayScreen {
    * Leaving the screen must not leave the last move sitting in a timer: a trip
    * to Stats and straight back would rebuild the board from a save written
    * before that move, and the timer would then land on top of the new screen's
-   * own saving. Called when the screen goes.
+   * own saving. Called when the screen goes, and when the page does.
    */
-  private flushSave(): void {
+  flushSave(): void {
     if (this.saveTimer === undefined) return;
     clearTimeout(this.saveTimer);
     this.saveTimer = undefined;
