@@ -35,7 +35,16 @@ export class PlayScreen {
 
   private idLabel = el('span', { class: 'id' });
   private candidateLine = el('span', { class: 'candidates' });
-  private timerBox = el('div', { class: 'timer' }, '00:00');
+  /** The time to beat, beside the puzzle number. Off unless asked for. */
+  private targetBox = el('span', { class: 'target' });
+  /*
+   * The digits live in their own span. The clock is rewritten four times a
+   * second, and writing it straight onto the box would take everything else
+   * in there with it — which in the landscape bar is the target sitting
+   * underneath.
+   */
+  private timerText = el('span', { class: 'digits' }, '00:00');
+  private timerBox = el('div', { class: 'timer' }, this.timerText);
   private tallyBox = el('div', { class: 'tally' });
   private undoBtn = el('button', { class: 'btn icon', 'aria-label': 'Undo', title: 'Undo' });
   private redoBtn = el('button', { class: 'btn icon', 'aria-label': 'Redo', title: 'Redo' });
@@ -101,7 +110,9 @@ export class PlayScreen {
 
     this.idLabel.textContent = formatPuzzleId(this.game.id);
 
-    this.titlebar.append(menuBtn, this.idLabel, this.candidateLine);
+    // Between the puzzle it belongs to and the line about the cell under the
+    // cursor: it is a fact about this game, not about this move.
+    this.titlebar.append(menuBtn, this.idLabel, this.targetBox, this.candidateLine);
     this.root.append(this.titlebar, this.board.root, this.buildControls());
 
     this.placeClockAndPause();
@@ -224,6 +235,14 @@ export class PlayScreen {
    */
   private placeClockAndPause(): void {
     if (this.compact.matches) {
+      /*
+       * The target rides under the clock here rather than beside the puzzle
+       * number. This bar is 264px holding six things, and a chip wide enough to
+       * spell out a target squeezed the puzzle number down to a stub — while
+       * the clock it belongs to is moving into this same bar anyway, where a
+       * smaller number beneath a running one reads as the mark to beat.
+       */
+      this.timerBox.append(this.targetBox);
       this.titlebar.append(this.timerBox, this.pauseBtn);
       this.titlebar.classList.add('with-clock');
       /*
@@ -234,6 +253,7 @@ export class PlayScreen {
        */
       this.actionsBox?.append(this.tallyBox);
     } else {
+      this.idLabel.after(this.targetBox);
       this.actionsBox?.append(this.timerBox);
       this.underActions?.append(this.tallyBox, this.pauseBtn);
       this.titlebar.classList.remove('with-clock');
@@ -746,6 +766,26 @@ export class PlayScreen {
     });
   }
 
+  /**
+   * The time to beat: your average over this level and pool, which is the same
+   * figure the win screen judges the run against. Chasing one number and being
+   * scored on another would be a strange game.
+   *
+   * Nothing is shown until there is an average to show — a first run through a
+   * pool has no target, and an invented one would be worse than none.
+   */
+  private renderTarget(): void {
+    const target = this.ctx.settings.showTarget ? this.poolAverageMs() : null;
+    if (target === null) {
+      this.targetBox.textContent = '';
+      this.targetBox.hidden = true;
+      return;
+    }
+    this.targetBox.hidden = false;
+    this.targetBox.textContent = `target ${formatTime(target)}`;
+    this.targetBox.classList.toggle('past', this.game.elapsedMs > target);
+  }
+
   /** Your average over this level and pool, or null with nothing to average. */
   private poolAverageMs(): number | null {
     const { level, source } = this.game.id;
@@ -962,15 +1002,18 @@ export class PlayScreen {
   // ---------------------------------------------------------------- rendering
 
   private updateTimer(): void {
+    // Rides with the clock: the setting can be turned on mid-game, and passing
+    // the target is something that happens on a tick rather than on a move.
+    this.renderTarget();
     if (this.ctx.settings.showTimer) {
-      this.timerBox.textContent = formatTime(this.game.elapsedMs);
+      this.timerText.textContent = formatTime(this.game.elapsedMs);
       return;
     }
     // A clock face rather than blanked-out digits, so the box still says what
     // it is. Only built once, not on every tick.
-    if (!this.timerBox.querySelector('svg')) {
-      clear(this.timerBox);
-      this.timerBox.append(clockIcon(21));
+    if (!this.timerText.querySelector('svg')) {
+      clear(this.timerText);
+      this.timerText.append(clockIcon(21));
     }
   }
 

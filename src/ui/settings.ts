@@ -76,6 +76,11 @@ const TOGGLES: Toggle[] = [
     title: 'Show the timer',
     detail: 'The clock keeps running either way.',
   },
+  {
+    key: 'showTarget',
+    title: 'Show a target time',
+    detail: 'Your average for that level and pool, in the bar while you play.',
+  },
 ];
 
 const THEMES: { value: Theme; label: string }[] = [

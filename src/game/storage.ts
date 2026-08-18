@@ -47,6 +47,8 @@ export interface Settings {
   undoNeedsLongClick: boolean;
   clearNeedsLongClick: boolean;
   showTimer: boolean;
+  /** Put the time to beat in the bar beside the puzzle, while you play. */
+  showTarget: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -66,6 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   undoNeedsLongClick: false,
   clearNeedsLongClick: true,
   showTimer: true,
+  showTarget: false,
 };
 
 export interface PuzzleRecord {

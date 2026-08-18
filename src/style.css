@@ -261,6 +261,36 @@ body {
   min-height: 42px;
 }
 
+/* The time to beat, beside the puzzle it belongs to. Quiet while you are inside
+   it, and the colour of a wrong entry once you are not — the clock beside it
+   already says how long, so this only has to say which side of it you are on. */
+.titlebar .target {
+  flex: 0 0 auto;
+  color: var(--dim);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.titlebar .target.past {
+  color: var(--error);
+}
+
+/* Riding under the clock, in the landscape bar. Small enough that the box does
+   not grow, and quiet enough that the running time still reads first. */
+.timer .target {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-top: 2px;
+  color: var(--dim);
+}
+
+.timer .target.past {
+  color: var(--error);
+}
+
 .titlebar .id {
   font-weight: 700;
   letter-spacing: 0.5px;
