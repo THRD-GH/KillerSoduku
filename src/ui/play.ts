@@ -242,24 +242,36 @@ export class PlayScreen {
     const check = el('button', { class: 'btn aid' }, 'Check');
     // These can be set to long-click only, to stop stray taps spoiling a run.
     bindTap(check, {
-      onTap: () => (this.ctx.settings.checkNeedsLongClick ? this.nag('Check') : this.doCheck()),
+      onTap: () =>
+        this.ctx.settings.checkNeedsLongClick
+          ? this.nag('Check', 'check the grid')
+          : this.doCheck(),
       onLong: () => this.doCheck(),
     });
 
     const hint = el('button', { class: 'btn aid' }, 'Hint');
     bindTap(hint, {
-      onTap: () => (this.ctx.settings.hintNeedsLongClick ? this.nag('Hint') : this.doHint()),
+      onTap: () =>
+        this.ctx.settings.hintNeedsLongClick
+          ? this.nag('Hint', 'take a hint')
+          : this.doHint(),
       onLong: () => this.doHint(),
     });
 
     this.undoBtn.append(undoArrow());
     this.redoBtn.append(undoArrow(true));
     bindTap(this.undoBtn, {
-      onTap: () => (this.ctx.settings.undoNeedsLongClick ? this.nag('Undo') : this.doUndo()),
+      onTap: () =>
+        this.ctx.settings.undoNeedsLongClick
+          ? this.nag('Undo', 'undo that move')
+          : this.doUndo(),
       onLong: () => this.doUndo(),
     });
     bindTap(this.redoBtn, {
-      onTap: () => (this.ctx.settings.undoNeedsLongClick ? this.nag('Redo') : this.doRedo()),
+      onTap: () =>
+        this.ctx.settings.undoNeedsLongClick
+          ? this.nag('Redo', 'redo that move')
+          : this.doRedo(),
       onLong: () => this.doRedo(),
     });
     this.undoPair.append(this.undoBtn, this.redoBtn);
@@ -292,8 +304,15 @@ export class PlayScreen {
 
   // ------------------------------------------------------------------ input
 
-  private nag(what: string): void {
-    toast(`${what} is set to long-click — hold the button`);
+  /**
+   * One shape for every guarded button, so they read as one rule rather than
+   * four. Naming the button matters when the message appears at the bottom of
+   * the screen and the finger is somewhere else, and the double-click is worth
+   * saying: bindTap sends a double-click to the long-press action, so it works
+   * on all of them, not just CLEAR where it was the only one being mentioned.
+   */
+  private nag(button: string, action: string): void {
+    toast(`Hold ${button} (or double-click) to ${action}`);
   }
 
   private tapDigit(digit: number): void {
@@ -348,7 +367,7 @@ export class PlayScreen {
 
   private tapClear(): void {
     if (this.ctx.settings.clearNeedsLongClick) {
-      toast('Hold (or double-click) CLEAR to empty a cell');
+      this.nag('CLEAR', 'empty a cell');
       return;
     }
     this.doClear();
