@@ -25,7 +25,7 @@ const SECTIONS: [string, string[]][] = [
   [
     'Buttons',
     [
-      'Check — mark entries that disagree with the solution.',
+      'Check — mark entries that disagree with the solution. Hold it: checks are counted, and Settings can put the tap back.',
       'Hint — fill one correct digit, fixing a wrong one first if there is one.',
       'Sum — open the combination calculator.',
       'Restart — clear the grid and start the same puzzle again.',

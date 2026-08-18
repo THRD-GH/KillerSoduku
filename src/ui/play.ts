@@ -240,10 +240,13 @@ export class PlayScreen {
 
   private buildActions(): HTMLElement {
     const check = el('button', { class: 'btn aid' }, 'Check');
-    check.addEventListener('click', () => this.doCheck());
+    // These can be set to long-click only, to stop stray taps spoiling a run.
+    bindTap(check, {
+      onTap: () => (this.ctx.settings.checkNeedsLongClick ? this.nag('Check') : this.doCheck()),
+      onLong: () => this.doCheck(),
+    });
 
     const hint = el('button', { class: 'btn aid' }, 'Hint');
-    // These can be set to long-click only, to stop stray taps spoiling a run.
     bindTap(hint, {
       onTap: () => (this.ctx.settings.hintNeedsLongClick ? this.nag('Hint') : this.doHint()),
       onLong: () => this.doHint(),

@@ -41,6 +41,8 @@ export interface Settings {
   trimBlockedCandidates: boolean;
   /** Hold a wake lock while a puzzle is open, so the screen stops dimming. */
   keepAwake: boolean;
+  /** Check is counted against the puzzle, so it is guarded like CLEAR. */
+  checkNeedsLongClick: boolean;
   hintNeedsLongClick: boolean;
   undoNeedsLongClick: boolean;
   clearNeedsLongClick: boolean;
@@ -59,6 +61,7 @@ export const DEFAULT_SETTINGS: Settings = {
   instantCheck: false,
   trimBlockedCandidates: false,
   keepAwake: true,
+  checkNeedsLongClick: true,
   hintNeedsLongClick: false,
   undoNeedsLongClick: false,
   clearNeedsLongClick: true,

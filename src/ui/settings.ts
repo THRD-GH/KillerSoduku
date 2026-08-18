@@ -59,6 +59,11 @@ const TOGGLES: Toggle[] = [
     title: 'CLEAR needs a long-click',
     detail: 'Guards against wiping a cell by accident.',
   },
+  {
+    key: 'checkNeedsLongClick',
+    title: 'Check needs a long-click',
+    detail: 'Every check is counted, so a stray tap costs you one.',
+  },
   { key: 'hintNeedsLongClick', title: 'Hint needs a long-click', detail: 'Avoids stray hints.' },
   { key: 'undoNeedsLongClick', title: 'Undo needs a long-click', detail: 'Avoids stray undos.' },
   {
