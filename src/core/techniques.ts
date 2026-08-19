@@ -639,6 +639,9 @@ function unitRemainders(cand: Candidates, cons: Constraints): Outcome {
  * Innies and outies across a band or stack. Those cells span several units so
  * digits may repeat — only the total is known, which still bounds each cell.
  */
+/** How far the all-at-once search will go before it settles for what it has. */
+const MAX_UNIT_NODES = 40000;
+
 /** Cages bigger than this are left out of the unit-by-unit comparison. */
 const MAX_PART_CAGE = 5;
 
@@ -736,19 +739,47 @@ function cageInteraction(cand: Candidates, cons: Constraints): Outcome {
     }
     if (!listable) continue;
 
+    /*
+     * All of them at once, not two at a time.
+     *
+     * Taken in pairs, an option survives if some option of each other cage
+     * avoids it — which misses three cages that clash only together. Two cages
+     * that could each take a 5 are fine in isolation; a third that needs the 5
+     * as well is not, and no pair of the three ever notices. So an option is
+     * kept only when the cages beside it can all be filled around it at the
+     * same time, which is the same step from a pair to a triple that a naked
+     * subset makes.
+     *
+     * The search is bounded, and a bound reached means keeping the option: a
+     * technique may fail to spot something, never claim something false.
+     */
+    let nodes = 0;
+    const order = options.map((_, i) => i).sort((a, b) => options[a].length - options[b].length);
+    const roomForTheRest = (fixed: number, taken: number): boolean => {
+      const walk = (at: number, used: number): boolean => {
+        if (++nodes > MAX_UNIT_NODES) return true;
+        if (at === order.length) return true;
+        const i = order[at];
+        if (i === fixed) return walk(at + 1, used);
+        for (const option of options[i]) {
+          if ((option.mask & used) === 0 && walk(at + 1, used | option.mask)) return true;
+        }
+        return false;
+      };
+      return walk(0, taken);
+    };
+
     for (let settled = false; !settled; ) {
       settled = true;
       for (let i = 0; i < group.length; i++) {
-        for (let j = 0; j < group.length; j++) {
-          if (i === j) continue;
-          const kept = options[i].filter((a) => options[j].some((b) => (a.mask & b.mask) === 0));
-          if (kept.length === 0) return -1;
-          if (kept.length !== options[i].length) {
-            options[i] = kept;
-            settled = false;
-          }
+        const kept = options[i].filter((option) => roomForTheRest(i, option.mask));
+        if (kept.length === 0) return -1;
+        if (kept.length !== options[i].length) {
+          options[i] = kept;
+          settled = false;
         }
       }
+      if (nodes > MAX_UNIT_NODES) break;
     }
 
     for (let i = 0; i < group.length; i++) {
@@ -816,9 +847,114 @@ function rangeMask(floor: number, ceiling: number): number {
   return mask;
 }
 
+/** Do these two cells share a row, a column or a box, and so have to differ? */
+function sharesUnit(a: number, b: number): boolean {
+  if (Math.floor(a / 9) === Math.floor(b / 9)) return true;
+  if (a % 9 === b % 9) return true;
+  return (
+    Math.floor(Math.floor(a / 9) / 3) === Math.floor(Math.floor(b / 9) / 3) &&
+    Math.floor((a % 9) / 3) === Math.floor((b % 9) / 3)
+  );
+}
+
+/** Groups wider than this are left to the bounds; the search would not pay. */
+const MAX_EXACT_CELLS = 6;
+/** And the search gives up rather than run away on a wide-open grid. */
+const MAX_EXACT_NODES = 20000;
+
+/**
+ * What a group of cells with a known total can actually be, rather than what
+ * its bounds allow.
+ *
+ * A single unit's leftovers have always been worked out this way — the cells
+ * are all in one unit, so they are distinct and the combinations are short.
+ * Everything spanning two units fell back to arithmetic on the smallest and
+ * largest each cell could be, which cannot tell "these four total 17" from
+ * "these four are 1+3+6+7 or 2+3+5+7". Every deduction that prompted this
+ * work needed the second sentence.
+ *
+ * So the assignments are enumerated outright: each cell takes one of its
+ * candidates, cells that share a row, column or box must differ, and the total
+ * must land. A digit survives in a cell only if some whole assignment puts it
+ * there. Cells outside any shared unit may of course repeat, which is the one
+ * thing that makes this different from filling a cage.
+ *
+ * Returns null when the search runs long, and the caller keeps its bounds.
+ */
+function exactSupport(cand: Candidates, cells: number[], total: number): number[] | null {
+  const options = cells.map((c) => {
+    const list: number[] = [];
+    for (let d = 1; d <= 9; d++) if (cand[c] & bit(d)) list.push(d);
+    return list;
+  });
+  const support = new Array<number>(cells.length).fill(0);
+  const chosen = new Array<number>(cells.length).fill(0);
+
+  // Cheapest cells first, so the sum is pinned down before the search widens.
+  const order = cells.map((_, i) => i).sort((a, b) => options[a].length - options[b].length);
+  const clashes = order.map((i) => order.filter((j) => sharesUnit(cells[i], cells[j])));
+
+  const lowestLeft: number[] = new Array(order.length + 1).fill(0);
+  const highestLeft: number[] = new Array(order.length + 1).fill(0);
+  for (let at = order.length - 1; at >= 0; at--) {
+    const list = options[order[at]];
+    if (list.length === 0) return null;
+    lowestLeft[at] = lowestLeft[at + 1] + list[0];
+    highestLeft[at] = highestLeft[at + 1] + list[list.length - 1];
+  }
+
+  let nodes = 0;
+  let found = false;
+
+  const walk = (at: number, sum: number): boolean => {
+    if (++nodes > MAX_EXACT_NODES) return true;
+    if (at === order.length) {
+      if (sum !== total) return false;
+      found = true;
+      for (let i = 0; i < order.length; i++) support[order[i]] |= bit(chosen[order[i]]);
+      return false;
+    }
+    if (sum + lowestLeft[at] > total || sum + highestLeft[at] < total) return false;
+
+    const i = order[at];
+    for (const d of options[i]) {
+      let clash = false;
+      for (const j of clashes[at]) {
+        if (chosen[j] === d) {
+          clash = true;
+          break;
+        }
+      }
+      if (clash) continue;
+      chosen[i] = d;
+      const abandoned = walk(at + 1, sum + d);
+      chosen[i] = 0;
+      if (abandoned) return true;
+    }
+    return false;
+  };
+
+  const abandoned = walk(0, 0);
+  if (abandoned) return null;
+  return found ? support : [];
+}
+
 function regionRemainders(cand: Candidates, cons: Constraints): Outcome {
   let changed: Outcome = 0;
   for (const { cells, sum } of cons.regionRemainder) {
+    if (cells.length <= MAX_EXACT_CELLS) {
+      const support = exactSupport(cand, cells, sum);
+      if (support !== null) {
+        if (support.length === 0) return -1;
+        for (let i = 0; i < cells.length; i++) {
+          const r = restrict(cand, cells[i], support[i]);
+          if (r === -1) return -1;
+          if (r === 1) changed = 1;
+        }
+        continue;
+      }
+    }
+
     const lo: number[] = [];
     const hi: number[] = [];
     for (const c of cells) {
