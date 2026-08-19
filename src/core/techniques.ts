@@ -27,15 +27,36 @@ export interface Constraints {
 
 const MAX_DISTINCT_REMAINDER = 6;
 
-/** Rows/columns grouped into the bands and stacks used by innies and outies. */
+/**
+ * How many cells a unit's cages may spill before its outies stop being worth
+ * the arithmetic. A handful is where the deduction lives; a dozen loose cells
+ * with only a total between them says nothing.
+ */
+const MAX_SPILL = 6;
+
+/**
+ * Every run of neighbouring rows, and every run of neighbouring columns, for
+ * innies and outies. N lines total 45N whatever N is, so there is nothing
+ * special about a band of three — and stopping at three was costing openings
+ * that a player finds immediately. On 6-4 the whole left-hand five columns come
+ * to 225, the cages sitting inside them come to 216, and the single cell left
+ * over is the middle of the grid: R5C5 = 9, before anything else has been
+ * placed. Pairs and bands alone never look at that region.
+ *
+ * Runs of one are left to unitRemainder, which reasons about them far better —
+ * those cells are all in the same unit, so they are distinct, and it can work
+ * with the combinations rather than only with the total. Runs of nine are the
+ * whole grid, where every cage is inside and nothing is left over.
+ */
 function regions(): number[][][] {
   const rows = Array.from({ length: 9 }, (_, r) => Array.from({ length: 9 }, (_, c) => r * 9 + c));
   const cols = Array.from({ length: 9 }, (_, c) => Array.from({ length: 9 }, (_, r) => r * 9 + c));
   const out: number[][][] = [];
   for (const lines of [rows, cols]) {
-    for (let i = 0; i < 9; i++) {
-      if (i + 1 < 9) out.push([lines[i], lines[i + 1]]);
-      if (i % 3 === 0) out.push([lines[i], lines[i + 1], lines[i + 2]]);
+    for (let start = 0; start < 9; start++) {
+      for (let length = 2; start + length <= 9; length++) {
+        out.push(lines.slice(start, start + length));
+      }
     }
   }
   return out;
@@ -48,6 +69,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
   cages.forEach((cage, i) => cage.cells.forEach((cell) => (owner[cell] = i)));
 
   const unitRemainder: Cage[] = [];
+  const regionRemainder: SumGroup[] = [];
   const locked: { cage: Cage; outside: number[] }[] = [];
 
   for (const unit of UNITS) {
@@ -56,7 +78,9 @@ export function buildConstraints(cages: Cage[]): Constraints {
     for (const cell of unit) ids.add(owner[cell]);
 
     let insideSum = 0;
+    let straddlingSum = 0;
     const leftover: number[] = [];
+    const spilled: number[] = [];
     const contained: Cage[] = [];
     for (const id of ids) {
       const cage = cages[id];
@@ -64,7 +88,8 @@ export function buildConstraints(cages: Cage[]): Constraints {
         insideSum += cage.sum;
         if (cage.cells.length >= 2 && cage.cells.length <= 4) contained.push(cage);
       } else {
-        for (const c of cage.cells) if (inUnit.has(c)) leftover.push(c);
+        straddlingSum += cage.sum;
+        for (const c of cage.cells) (inUnit.has(c) ? leftover : spilled).push(c);
       }
     }
 
@@ -75,11 +100,33 @@ export function buildConstraints(cages: Cage[]): Constraints {
     if (leftover.length >= 1 && leftover.length <= MAX_DISTINCT_REMAINDER) {
       unitRemainder.push({ cells: leftover.sort((a, b) => a - b), sum: 45 - insideSum });
     }
+
+    /*
+     * And the other half of the same subtraction — the outies.
+     *
+     * The cells of those straddling cages that fall *outside* the unit are
+     * known too: their cages total `straddlingSum`, the part of them lying in
+     * the unit has to make up whatever the wholly-inside cages leave of 45, and
+     * the difference is what sticks out. Only the innies were ever built, so
+     * half of a technique the app already names went missing.
+     *
+     * On 6-4 this is the step after the centre: box 5 is covered by a 22 and a
+     * 36, neither wholly inside, so the three cells they spill — R5C3, R4C7,
+     * R6C7 — total 58 - 45 = 13, which is what forces the 36 cage's share of
+     * the centre block. These cells sit in different units, so they may repeat
+     * a digit and only the total is known.
+     */
+    if (spilled.length >= 1 && spilled.length <= MAX_SPILL) {
+      regionRemainder.push({
+        cells: spilled.sort((a, b) => a - b),
+        sum: straddlingSum - (45 - insideSum),
+        distinct: false,
+      });
+    }
   }
 
-  // The same subtraction over bands and stacks. Cells left over here span more
+  // The same subtraction over runs of lines. Cells left over here span more
   // than one unit, so they may repeat a digit — only the total is known.
-  const regionRemainder: SumGroup[] = [];
   for (const region of REGIONS) {
     const cells = new Set(region.flat());
     const ids = new Set<number>();
