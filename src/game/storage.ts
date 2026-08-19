@@ -7,6 +7,8 @@ const KEY = {
   history: 'ks:v1:history',
   save: 'ks:v1:save',
   cache: 'ks:v1:cache',
+  /** Which generator made the New puzzles this device is holding. */
+  generator: 'ks:v1:generator',
 } as const;
 
 /** How many New puzzles each level offers. Generation is unlimited; this just
@@ -530,4 +532,46 @@ export function cachePuzzle(id: PuzzleId, puzzle: Puzzle): void {
   if (keys.length >= CACHE_LIMIT) delete cache.puzzles[keys[0]];
   cache.puzzles[formatPuzzleId(id)] = puzzle;
   write(KEY.cache, cache);
+}
+
+/**
+ * Clear out everything belonging to New puzzles made by an older generator.
+ *
+ * A New puzzle number is only a particular grid for as long as the recipe
+ * stays put. Once it moves, the cached grids are wrong, the saves resurrect
+ * puzzles that no longer exist, and a best time in the history is a time set
+ * against a grid nobody can play again. All three go, and the device is
+ * stamped with the version that replaced them.
+ *
+ * Classic puzzles are never touched: they come from the packs, and their
+ * history is the record of a collection that has not changed.
+ *
+ * Returns how many played New puzzles were forgotten, so the app can say so.
+ */
+export function retireGeneratedPuzzles(): number {
+  if (read<number>(KEY.generator, 0) === GENERATOR_VERSION) return 0;
+
+  write(KEY.cache, { version: GENERATOR_VERSION, puzzles: {} });
+
+  const history = read<History>(KEY.history, {});
+  let forgotten = 0;
+  for (const id of Object.keys(history)) {
+    if (!/^\d+-N/.test(id)) continue;
+    delete history[id];
+    forgotten++;
+  }
+  write(KEY.history, history);
+
+  try {
+    const stale = Object.keys(localStorage).filter((key) =>
+      new RegExp(`^${KEY.save}:\\d+-N`).test(key),
+    );
+    for (const key of stale) localStorage.removeItem(key);
+  } catch {
+    // A device that will not let us list its storage keeps its old saves; they
+    // carry their own grids and still play, which is the harmless outcome.
+  }
+
+  write(KEY.generator, GENERATOR_VERSION);
+  return forgotten;
 }

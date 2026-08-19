@@ -14,6 +14,7 @@ import {
   loadHistory,
   loadSaveFor,
   loadSettings,
+  retireGeneratedPuzzles,
   unplayedNumbers,
 } from './game/storage.ts';
 import type { History, SavedGame, Settings, Theme } from './game/storage.ts';
@@ -40,6 +41,13 @@ const THEME_COLOUR: Record<Theme, string> = {
   day: '#dfe4e9',
   contrast: '#000000',
 };
+
+/*
+ * Before anything reads the history: New puzzles made by an older generator are
+ * cleared out, so nothing on screen refers to a grid that can no longer be
+ * played. Classic history is untouched.
+ */
+const forgotten = retireGeneratedPuzzles();
 
 class App implements AppContext {
   settings: Settings = loadSettings();
@@ -81,6 +89,14 @@ class App implements AppContext {
     else {
       this.goMenu();
       this.playPuzzle(linked);
+    }
+
+    // Said once, and only when there was something to say.
+    if (forgotten > 0) {
+      toast(
+        `New puzzles have been regenerated — ${forgotten} played ` +
+          `${forgotten === 1 ? 'grid is' : 'grids are'} no longer in the pool`,
+      );
     }
   }
 
