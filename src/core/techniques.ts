@@ -1043,8 +1043,17 @@ export const TECHNIQUES: Technique[] = [
   { name: 'cage combinations', difficulty: 2, run: (c, k) => cageCombinations(c, k.cages) },
   { name: 'locked candidates', difficulty: 3, run: (c) => lockedCandidates(c) },
   { name: 'cage arc consistency', difficulty: 3, run: (c, k) => cageArcConsistency(c, k.cages) },
+  /*
+   * Third tier, not fourth. Two cages in a row cannot want the same digits —
+   * that is the single candidate rule one step up rather than a subset, it is
+   * among the first things a killer player learns, and every grid offers it.
+   * Rated as a fourth-tier technique it fired on nearly every puzzle and took
+   * the whole bottom of the difficulty ladder with it: a White belt could not
+   * be graded as "nothing above the core toolkit" because the core toolkit had
+   * been declared harder than it is.
+   */
+  { name: 'cages sharing a unit', difficulty: 3, run: (c, k) => cageInteraction(c, k) },
   { name: 'naked subset', difficulty: 4, run: (c) => nakedSubsets(c) },
-  { name: 'cages sharing a unit', difficulty: 4, run: (c, k) => cageInteraction(c, k) },
   { name: 'hidden subset', difficulty: 4, run: (c) => hiddenSubsets(c) },
   { name: 'cage locking', difficulty: 5, run: (c, k) => cageLocking(c, k) },
   { name: 'innies/outies (unit)', difficulty: 5, run: (c, k) => unitRemainders(c, k) },

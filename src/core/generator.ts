@@ -109,19 +109,59 @@ export function demandScore(c: Classification): number {
 const TIER_OF = new Map(TECHNIQUES.map((t) => [t.name, t.difficulty]));
 
 /**
- * Where each level starts, measured off the Classic collection — see
- * tools/fit-bands.ts. Their medians come out at 28.0, 32.4 and 40.1 for Tricky,
- * Tough and Brutal, and the boundaries sit between them so a generated puzzle
- * lands in the same company as the hand-picked ones of that level.
+ * What each belt asks for: how much work, and what kind.
  *
- * Gentle, Easy and Steady are one band in the collection and not three: their
- * medians are 15.6, 12.6 and 16.4, which puts Easy *below* Gentle. This solver
- * cannot tell them apart and neither, on this evidence, could whoever rated
- * them. The first two boundaries therefore cut that shared band into thirds, so
- * the generated ladder at least climbs — and the cage texture in LEVEL_CONFIG,
- * which does lean with the level, carries the rest of the difference.
+ * A ladder of our own rather than an attempt to reproduce the Classic
+ * collection's labels. Those came with the puzzles and are shown as they were
+ * given, but they are somebody else's grading and they do not climb — measured
+ * on this solver their first three levels sit at 15.6, 12.6 and 16.4, which
+ * puts Easy below Gentle. Fitting to that would have handed a generated White
+ * belt and Green belt the same puzzle.
+ *
+ * Two requirements, because volume alone is the wrong promise. A grid can run
+ * up a demand of forty on nothing but singles and cage sums if it is long
+ * enough, and that is a grind rather than a Blue belt. So each belt also names
+ * the tier it has to force, and how many times the top of the stack has to come
+ * out — the techniques change as you climb, which is what a belt is for.
+ *
+ *   White   the core toolkit and nothing above it, briefly
+ *   Yellow  the same toolkit, half again as much of it
+ *   Green   the same again, stretched as far as it goes
+ *   Blue    the 45 rule over shapes, and cages measured across a unit edge
+ *   Brown   the same, sustained
+ *   Black   twice over, on top of the heaviest demand
+ *
+ * The technique changes once, at Blue, and that is measured rather than
+ * chosen. Below it the cage arithmetic finishes everything: grids that force
+ * subsets, cage locking or innies and outies within a single unit — and nothing
+ * harder — barely exist at these lengths, because the cheaper cage work gets
+ * there first. Naming them on the lower belts only produced a search that could
+ * not satisfy itself, spent its whole budget and settled for a worse puzzle. So
+ * White, Yellow and Green are the same toolkit at three lengths, and the belts
+ * above them are where the reasoning genuinely changes.
+ *
+ * Those last two counts are what grids actually hold: even the hand-picked
+ * Brutals only reach two or three top-tier steps, so asking for six meant a
+ * search that could never satisfy it, spent its whole budget and settled — at
+ * twenty seconds a puzzle.
  */
-const LADDER = [12.5, 18, 24, 30.2, 36.2];
+export interface BeltGrading {
+  /** Weighted work, as demandScore counts it. */
+  demand: number;
+  /** The hardest tier the grid must force; White reads it as a ceiling. */
+  tier: number;
+  /** How often the top of the stack must be needed. */
+  topSteps: number;
+}
+
+export const BELT_GRADING: Record<Level, BeltGrading> = {
+  1: { demand: 12, tier: 3, topSteps: 0 },
+  2: { demand: 18, tier: 3, topSteps: 0 },
+  3: { demand: 27, tier: 3, topSteps: 0 },
+  4: { demand: 35, tier: 6, topSteps: 1 },
+  5: { demand: 41, tier: 6, topSteps: 1 },
+  6: { demand: 47, tier: 6, topSteps: 2 },
+};
 
 /**
  * Bumped whenever a change here would hand a different grid to the same puzzle
@@ -129,17 +169,46 @@ const LADDER = [12.5, 18, 24, 30.2, 36.2];
  * are kept on the device once made, and a cache that outlives the recipe serves
  * yesterday's puzzle to a player who was promised today's.
  *
- * 2: the week the technique stack grew and the ladder was refitted to the
- *    Classic collection.
+ * 2: the week the technique stack grew and the ladder was refitted.
+ * 3: the belts, graded on their own even ladder rather than the Classic labels.
  */
-export const GENERATOR_VERSION = 2;
+export const GENERATOR_VERSION = 3;
 
-/** Collapses a classification into a 0..5 rung, so level N wants score N-1. */
+/** Close enough to the mark to stop looking. */
+const GRADING_TOLERANCE = 3;
+
+/** Steps the grid forced at the top of the stack. */
+function topSteps(c: Classification): number {
+  let n = 0;
+  for (const [name, count] of c.used) if ((TIER_OF.get(name) ?? 1) >= 6) n += count;
+  return n;
+}
+
+/**
+ * How far a grid falls from a belt. Zero is on the mark; the two technique
+ * requirements are worth several points of demand each, so a grid that grinds
+ * its way to the right total without ever forcing the right kind of step loses
+ * to one that does.
+ */
+export function gradingMiss(level: Level, c: Classification): number {
+  const belt = BELT_GRADING[level];
+  let miss = Math.abs(demandScore(c) - belt.demand);
+  // White is the one belt with a ceiling: it is meant to stay inside the core
+  // toolkit, so needing something harder is as wrong as being too long.
+  if (level === 1 && c.hardest > belt.tier) miss += 8 * (c.hardest - belt.tier);
+  else if (level > 1 && c.hardest < belt.tier) miss += 8 * (belt.tier - c.hardest);
+  const top = topSteps(c);
+  if (top < belt.topSteps) miss += 4 * (belt.topSteps - top);
+  return miss;
+}
+
+/** The belt a finished puzzle sits nearest, for anything that reports one. */
 export function difficultyScore(c: Classification): number {
-  const demand = demandScore(c);
-  let rung = 0;
-  while (rung < LADDER.length && demand >= LADDER[rung]) rung++;
-  return rung;
+  let nearest: Level = 1;
+  for (const level of LEVELS) {
+    if (gradingMiss(level, c) < gradingMiss(nearest, c)) nearest = level;
+  }
+  return nearest - 1;
 }
 
 /** A solved grid, produced by shuffled backtracking. */
@@ -401,14 +470,13 @@ const RUNG_WINDOW = 10;
  */
 export function generatePuzzle(level: Level, number: number): Puzzle {
   const cfg = LEVEL_CONFIG[level];
-  const want = level - 1;
   const seed = puzzleSeed(level, number);
   const rnd = mulberry32(seed);
 
   let best: { step: LadderStep; solution: number[]; rating: number } | null = null;
   let bestDistance = Infinity;
 
-  for (let grid = 0; grid < 14 && bestDistance > 0; grid++) {
+  for (let grid = 0; grid < 14 && bestDistance > GRADING_TOLERANCE; grid++) {
     const solution = randomSolution(rnd);
     const ladder = buildLadder(solution, rnd, MAX_CAGE_SIZE, cfg.targetMean, cfg.triomino);
     if (ladder.length === 0) continue;
@@ -421,12 +489,17 @@ export function generatePuzzle(level: Level, number: number): Puzzle {
       .slice(0, RUNG_WINDOW);
 
     for (const step of near) {
-      const score = difficultyScore(classify(buildConstraints(step.cages)));
-      const distance = Math.abs(score - want);
+      /*
+       * Judged against the belt itself rather than against the rung it rounds
+       * to. A rung is a wide target — anything inside the band satisfies it, so
+       * the hardest belt used to come out at whatever the search happened to
+       * find beyond the last boundary, half again as hard as intended.
+       */
+      const distance = gradingMiss(level, classify(buildConstraints(step.cages)));
       if (distance < bestDistance) {
         bestDistance = distance;
-        best = { step, solution, rating: score };
-        if (distance === 0) break;
+        best = { step, solution, rating: level - 1 };
+        if (distance <= GRADING_TOLERANCE) break;
       }
     }
   }
