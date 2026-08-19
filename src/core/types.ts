@@ -40,3 +40,10 @@ export interface PuzzleId {
 
 export const formatPuzzleId = (id: PuzzleId): string =>
   `${id.level}-${id.source === 'new' ? 'N' : ''}${id.number}`;
+
+/**
+ * The same id as dandoku.com prints it, K for Killer — K6-104 rather than
+ * 6-104. Display only: the plain form is what keys a save, a history entry and
+ * a shared link, and those are not worth breaking for a letter.
+ */
+export const displayPuzzleId = (id: PuzzleId): string => `K${formatPuzzleId(id)}`;

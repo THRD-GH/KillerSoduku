@@ -57,7 +57,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   allowSingleCandidates: false,
   lazyMode: false,
-  theme: 'night',
+  theme: 'day',
   keypadSide: 'left',
   highlightPeers: true,
   highlightCage: true,
@@ -124,9 +124,19 @@ export const loadSettings = (): Settings => {
   const stored = read<
     Partial<Settings> & { nightColors?: boolean; hand?: KeypadSide }
   >(KEY.settings, {});
-  // Older versions stored a night on/off flag rather than a named theme.
+  /*
+   * Older versions stored a night on/off flag rather than a named theme, and
+   * anyone who set it keeps what they chose. Only a device that has never
+   * expressed a preference falls through to the default, which is why this
+   * asks whether the flag was ever written rather than what it says.
+   */
   const theme: Theme =
-    stored.theme ?? (stored.nightColors === false ? 'day' : 'night');
+    stored.theme ??
+    (stored.nightColors === undefined
+      ? DEFAULT_SETTINGS.theme
+      : stored.nightColors
+        ? 'night'
+        : 'day');
   // 'hand' named the same choice — which side to put the keypad on.
   const keypadSide: KeypadSide = stored.keypadSide ?? stored.hand ?? DEFAULT_SETTINGS.keypadSide;
   return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide };

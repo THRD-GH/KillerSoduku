@@ -1,7 +1,7 @@
 import { PEERS, bit, colOf, maskToDigits, rowOf } from '../core/grid.ts';
 import type { Level, PuzzleId } from '../core/types.ts';
-import { formatPuzzleId, sourceLabel } from '../core/types.ts';
-import { LEVEL_NAMES } from '../core/generator.ts';
+import { displayPuzzleId, sourceLabel } from '../core/types.ts';
+import { BELTS, LEVEL_NAMES } from '../core/generator.ts';
 import { Game } from '../game/state.ts';
 import {
   clearSaveFor,
@@ -108,7 +108,7 @@ export class PlayScreen {
     menuBtn.append(el('i'), el('i'), el('i'));
     menuBtn.addEventListener('click', () => this.openMenu());
 
-    this.idLabel.textContent = formatPuzzleId(this.game.id);
+    this.idLabel.textContent = displayPuzzleId(this.game.id);
 
     // Between the puzzle it belongs to and the line about the cell under the
     // cursor: it is a fact about this game, not about this move.
@@ -535,7 +535,7 @@ export class PlayScreen {
     const link = puzzleLink(this.game.id);
     const share = navigator.share?.bind(navigator);
     if (share) {
-      void share({ title: `Killer Sudoku ${formatPuzzleId(this.game.id)}`, url: link }).catch(
+      void share({ title: `Killer Sudoku ${displayPuzzleId(this.game.id)}`, url: link }).catch(
         () => undefined,
       );
       return;
@@ -556,7 +556,7 @@ export class PlayScreen {
       return el(
         'div',
         { class: 'panel' },
-        el('h2', {}, `Puzzle ${formatPuzzleId(this.game.id)}`),
+        el('h2', {}, `Puzzle ${displayPuzzleId(this.game.id)}`),
         field,
         el('div', { class: 'panel-footer' }, done),
       );
@@ -738,7 +738,7 @@ export class PlayScreen {
       return el(
         'div',
         { class: 'panel won' },
-        el('h2', {}, `Puzzle ${formatPuzzleId(this.game.id)} solved`),
+        el('h2', {}, `Puzzle ${displayPuzzleId(this.game.id)} solved`),
         el('div', { class: 'time' }, formatTime(ms)),
         this.verdict(ms, average),
         el(
@@ -856,7 +856,7 @@ export class PlayScreen {
         el(
           'p',
           { class: 'summary' },
-          `${formatPuzzleId(this.game.id)} · ${LEVEL_NAMES[level]} · ${sourceLabel(source)}`,
+          `${displayPuzzleId(this.game.id)} · ${BELTS[level].name} · ${sourceLabel(source)}`,
         ),
         el(
           'div',

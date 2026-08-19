@@ -1,7 +1,7 @@
-import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
+import { BELTS, LEVELS, LEVEL_NAMES } from '../core/generator.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
 import type { PuzzleRecord } from '../game/storage.ts';
-import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
+import { SOURCES, displayPuzzleId, formatPuzzleId, sourceLabel } from '../core/types.ts';
 import {
   clearSaveFor,
   forgetPuzzle,
@@ -35,7 +35,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
    * describing the wrong journey.
    */
   const returnTo = ctx.statsReturn;
-  const backLabel = returnTo === null ? 'Back to levels' : `Back to ${formatPuzzleId(returnTo)}`;
+  const backLabel = returnTo === null ? 'Back to levels' : `Back to ${displayPuzzleId(returnTo)}`;
 
   const back = el('button', { class: 'iconbtn', 'aria-label': backLabel });
   back.append(el('i'), el('i'), el('i'));
@@ -115,8 +115,8 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
       const touched = lastPlayed.get(formatPuzzleId(id)) ?? record.startedAt;
       const row = el(
         'button',
-        { class: 'statrow open', 'aria-label': `Resume ${formatPuzzleId(id)}` },
-        el('span', {}, formatPuzzleId(id)),
+        { class: 'statrow open', 'aria-label': `Resume ${displayPuzzleId(id)}` },
+        el('span', {}, displayPuzzleId(id)),
         el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
         el(
           'span',
@@ -153,18 +153,18 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         'button',
         {
           class: 'rowx',
-          'aria-label': `Reset ${formatPuzzleId(id)}`,
+          'aria-label': `Reset ${displayPuzzleId(id)}`,
           title: 'Reset this puzzle',
         },
         binIcon(),
       );
       drop.addEventListener('click', () =>
         confirmDialog(
-          `Reset ${formatPuzzleId(id)}? Any progress is discarded and it goes back into the pool as unplayed.`,
+          `Reset ${displayPuzzleId(id)}? Any progress is discarded and it goes back into the pool as unplayed.`,
           () => {
             forget(id);
             draw();
-            toast(`${formatPuzzleId(id)} reset`);
+            toast(`${displayPuzzleId(id)} reset`);
           },
           'Reset',
         ),
@@ -198,7 +198,13 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
 
     clear(levelTabs);
     for (const l of LEVELS) {
-      const b = el('button', { class: `btn ${l === level ? 'on' : ''}`.trim() }, String(l));
+      // The colour word rather than the number: it is what the level is
+      // called everywhere else now, and six of them still fit a phone.
+      const b = el(
+        'button',
+        { class: `btn ${l === level ? 'on' : ''}`.trim(), title: BELTS[l].name },
+        BELTS[l].short,
+      );
       b.addEventListener('click', () => {
         level = l;
         draw();
@@ -241,7 +247,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
         el(
           'span',
           {},
-          formatPuzzleId(id),
+          displayPuzzleId(id),
           rec.bestAt !== undefined
             ? el('span', { class: 'when' }, ` · ${formatDate(rec.bestAt)}`)
             : el('span', { class: 'when' }, ' · unfinished'),
@@ -258,7 +264,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
           ctx.history = releasePuzzle(ctx.history, id);
           saveHistory(ctx.history);
           draw();
-          toast(`${formatPuzzleId(id)} released`);
+          toast(`${displayPuzzleId(id)} released`);
         },
       });
       rows.append(row);

@@ -1,5 +1,5 @@
 import { LEVEL_NAMES } from '../core/generator.ts';
-import { formatPuzzleId, sourceLabel } from '../core/types.ts';
+import { displayPuzzleId, sourceLabel } from '../core/types.ts';
 import { allSaves, clearSaveFor, forgetPuzzle, saveHistory } from '../game/storage.ts';
 import type { AppContext } from './app-context.ts';
 import { clear, el, formatDate, formatTime, timeAgo } from './dom.ts';
@@ -25,8 +25,8 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
         const id = saved.id;
         const resume = el(
           'button',
-          { class: 'statrow open', 'aria-label': `Resume ${formatPuzzleId(id)}` },
-          el('span', {}, formatPuzzleId(id)),
+          { class: 'statrow open', 'aria-label': `Resume ${displayPuzzleId(id)}` },
+          el('span', {}, displayPuzzleId(id)),
           el('span', { class: 'when' }, `${LEVEL_NAMES[id.level]} · ${sourceLabel(id.source)}`),
           /*
            * Two different clocks, and both are worth knowing: how long ago you
@@ -52,19 +52,19 @@ export function openUnfinishedPicker(ctx: AppContext, onChanged: () => void): vo
 
         const reset = el(
           'button',
-          { class: 'rowx', 'aria-label': `Reset ${formatPuzzleId(id)} to unplayed`, title: 'Reset to unplayed' },
+          { class: 'rowx', 'aria-label': `Reset ${displayPuzzleId(id)} to unplayed`, title: 'Reset to unplayed' },
           binIcon(),
         );
         reset.addEventListener('click', () => {
           confirmDialog(
-            `Reset ${formatPuzzleId(id)}? Its progress will be discarded and the puzzle will return to the unplayed pool.`,
+            `Reset ${displayPuzzleId(id)}? Its progress will be discarded and the puzzle will return to the unplayed pool.`,
             () => {
               clearSaveFor(id);
               ctx.history = forgetPuzzle(ctx.history, id);
               saveHistory(ctx.history);
               onChanged();
               draw();
-              toast(`${formatPuzzleId(id)} reset to unplayed`);
+              toast(`${displayPuzzleId(id)} reset to unplayed`);
               if (allSaves().length === 0) close();
             },
             'Reset',

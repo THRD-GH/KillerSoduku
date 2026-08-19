@@ -1,8 +1,8 @@
-import { LEVEL_NAMES } from '../core/generator.ts';
+import { BELTS } from '../core/generator.ts';
 import type { Level } from '../core/types.ts';
 import { el } from './dom.ts';
 import { openOverlay } from './overlay.ts';
-import { stars } from './stars.ts';
+import { belt } from './belt.ts';
 
 const LEVEL_GUIDE: Record<Level, { lead: string; techniques: string[] }> = {
   1: {
@@ -41,12 +41,13 @@ export function openLevelInfo(level: Level): void {
     return el(
       'div',
       { class: 'panel level-info-panel' },
-      el('div', { class: 'level-info-stars' }, stars(level, 15)),
-      el('h2', {}, `Level ${level} · ${LEVEL_NAMES[level]}`),
+      el('div', { class: 'level-info-belt' }, belt(level, 72)),
+      el('h2', {}, `${BELTS[level].name} · ${BELTS[level].rank}`),
+      el('p', { class: 'level-info-descriptor' }, BELTS[level].descriptor),
       el('p', { class: 'level-info-lead' }, guide.lead),
       list,
       level > 1
-        ? el('p', { class: 'summary' }, 'Each level can also require techniques introduced below it. The rating reflects the hardest step needed.')
+        ? el('p', { class: 'summary' }, 'Each belt can also require techniques introduced below it. The rating reflects the hardest step needed.')
         : null,
       el('div', { class: 'panel-footer' }, done),
     );

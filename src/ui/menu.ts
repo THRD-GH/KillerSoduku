@@ -1,11 +1,11 @@
-import { LEVELS, LEVEL_NAMES } from '../core/generator.ts';
+import { BELTS, LEVELS } from '../core/generator.ts';
 import type { Level, Source } from '../core/types.ts';
-import { SOURCES, formatPuzzleId, sourceLabel } from '../core/types.ts';
+import { SOURCES, displayPuzzleId, sourceLabel } from '../core/types.ts';
 import { allSaves, levelStats, unplayedNumbers } from '../game/storage.ts';
 import { buildStamp, clear, el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
-import { stars } from './stars.ts';
+import { belt } from './belt.ts';
 import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
 import { openLevelInfo } from './level-info.ts';
@@ -41,7 +41,7 @@ export function buildMenu(ctx: AppContext): HTMLElement {
     resumeActions.hidden = saves.length === 0;
     resumeBtn.textContent =
       saves.length === 1
-        ? `Resume ${formatPuzzleId(saves[0].id)}`
+        ? `Resume ${displayPuzzleId(saves[0].id)}`
         : `${saves.length} unfinished games`;
   };
   resumeBtn.addEventListener('click', () => {
@@ -84,11 +84,16 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
       'button',
       {
         class: 'level-head',
-        'aria-label': `Explain level ${level}, ${LEVEL_NAMES[level]}`,
-        title: `What level ${level} involves`,
+        'aria-label': `Explain the ${BELTS[level].name}, ${BELTS[level].rank}`,
+        title: `What the ${BELTS[level].name} involves`,
       },
-      stars(level, 10),
-      el('span', { class: 'name' }, LEVEL_NAMES[level]),
+      belt(level, 34),
+      el(
+        'span',
+        { class: 'name' },
+        BELTS[level].name,
+        el('small', {}, BELTS[level].rank),
+      ),
       el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
     ),
   );
@@ -196,7 +201,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
       for (let n = range.from; n <= range.to; n++) {
         if (!available.has(n)) continue;
         shown++;
-        const b = el('button', { class: 'btn' }, formatPuzzleId({ level, number: n, source }));
+        const b = el('button', { class: 'btn' }, displayPuzzleId({ level, number: n, source }));
         b.addEventListener('click', () => play(n));
         grid.append(b);
       }
@@ -230,7 +235,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
         return;
       }
       if (!available.has(n)) {
-        toast(`${formatPuzzleId({ level, number: n, source })} has been played — release it in Stats`);
+        toast(`${displayPuzzleId({ level, number: n, source })} has been played — release it in Stats`);
         return;
       }
       play(n);
@@ -247,7 +252,7 @@ export function openPicker(ctx: AppContext, level: Level, source: Source): void 
     return el(
       'div',
       { class: 'panel' },
-      el('h2', {}, `Level ${level} — ${LEVEL_NAMES[level]} · ${poolLabel(source)}`),
+      el('h2', {}, `${BELTS[level].name} · ${poolLabel(source)}`),
       el('div', { class: 'picker-jump' }, el('label', {}, 'Go to'), jump, go),
       tabs,
       summary,

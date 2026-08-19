@@ -946,15 +946,7 @@ body {
   font-weight: 800;
 }
 
-.level .stars {
-  display: flex;
-  gap: 1px;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  min-height: 10px;
-}
-
-.level .name {
+.level .level .name {
   font-weight: 700;
   font-size: 13.5px;
   white-space: nowrap;
@@ -1106,7 +1098,6 @@ body {
 }
 
 .level-info-panel { max-width: 390px; }
-.level-info-stars { display: flex; gap: 2px; color: var(--accent); }
 .level-info-panel h2 { margin-top: 5px; }
 .level-info-lead { margin: 0 0 10px; color: var(--text); font-weight: 650; }
 .level-techniques { margin: 0 0 13px; padding-left: 20px; color: var(--text); }
@@ -2063,4 +2054,40 @@ body {
   .pause-btn {
     flex: 0 0 40px;
   }
+}
+
+/* The belt that names a level, on the menu panel and in the guide. Drawn with
+   an outline because two of the six sit a hair from a surface this app uses:
+   white against the day theme's cream, black against the night page. */
+.belt {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.level-info-belt {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+/* Belt above rank, so the name reads first and the Kyū sits under it. */
+.level-head .name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.level-head .name small {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.level-info-descriptor {
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 12px;
 }

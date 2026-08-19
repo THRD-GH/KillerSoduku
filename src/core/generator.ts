@@ -5,16 +5,46 @@ import { TECHNIQUES } from './techniques.ts';
 import type { Classification } from './solver.ts';
 import type { Cage, Level, Puzzle } from './types.ts';
 
-/** Six levels, one to six stars, matching the Classic collection's ladder. */
+/** Six levels, one belt each, matching the Classic collection's ladder. */
 export const LEVELS: Level[] = [1, 2, 3, 4, 5, 6];
 
+/**
+ * The six belts, as dandoku.com sets them out: the colour anyone would name
+ * the level by, the Kyū or Dan rank behind it, and a word for what it asks of
+ * you. The colours are the site's own, so a level looks the same wherever it
+ * is met.
+ *
+ * The short name is what fits in a list. "White belt · 5th Kyū" is twenty
+ * characters where the old names were six, and three places in this app put a
+ * level into a crowded row — an unfinished game, a pool summary, the line after
+ * a win. Those take the colour word alone; the full pair is for the level guide
+ * and the panel that explains a level.
+ */
+export interface Belt {
+  name: string;
+  short: string;
+  rank: string;
+  descriptor: string;
+  colour: string;
+}
+
+export const BELTS: Record<Level, Belt> = {
+  1: { name: 'White belt', short: 'White', rank: '5th Kyū', descriptor: 'Foundations', colour: '#fffdfa' },
+  2: { name: 'Yellow belt', short: 'Yellow', rank: '4th Kyū', descriptor: 'Developing', colour: '#efc44f' },
+  3: { name: 'Green belt', short: 'Green', rank: '3rd Kyū', descriptor: 'Confident', colour: '#6c9a72' },
+  4: { name: 'Blue belt', short: 'Blue', rank: '2nd Kyū', descriptor: 'Advanced', colour: '#3979a8' },
+  5: { name: 'Brown belt', short: 'Brown', rank: '1st Kyū', descriptor: 'Expert', colour: '#8a563b' },
+  6: { name: 'Black belt', short: 'Black', rank: '1st Dan', descriptor: 'Dan challenge', colour: '#17273d' },
+};
+
+/** The colour word alone, for rows with no space for a rank. */
 export const LEVEL_NAMES: Record<Level, string> = {
-  1: 'Gentle',
-  2: 'Easy',
-  3: 'Steady',
-  4: 'Tricky',
-  5: 'Tough',
-  6: 'Brutal',
+  1: BELTS[1].short,
+  2: BELTS[2].short,
+  3: BELTS[3].short,
+  4: BELTS[4].short,
+  5: BELTS[5].short,
+  6: BELTS[6].short,
 };
 
 interface LevelConfig {
