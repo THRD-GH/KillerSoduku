@@ -23,6 +23,24 @@ export interface Constraints {
   regionRemainder: SumGroup[];
   /** Cages inside one unit, paired with the rest of that unit. */
   locked: { cage: Cage; outside: number[] }[];
+  /** Cells that total a known amount *more* than other cells — see below. */
+  signed: SignedGroup[];
+}
+
+/**
+ * sum(plus) - sum(minus) = total.
+ *
+ * Everything else here can only say "these cells total N". A cage that
+ * straddles a unit needs the other sentence: the unit's leftover cells beyond
+ * that cage total a known amount more than the part of the cage hanging
+ * outside. On 6-4 the top-right box gives R2C7 + R3C7 - R4C9 = 14, and since
+ * two cells cannot reach past 17, R4C9 is 3 at most — a bound no plain total
+ * can express.
+ */
+export interface SignedGroup {
+  plus: number[];
+  minus: number[];
+  total: number;
 }
 
 const MAX_DISTINCT_REMAINDER = 6;
@@ -33,6 +51,9 @@ const MAX_DISTINCT_REMAINDER = 6;
  * with only a total between them says nothing.
  */
 const MAX_SPILL = 6;
+
+/** Either side of a signed group; beyond a handful the bounds say nothing. */
+const MAX_SIGNED = 5;
 
 /**
  * Every run of neighbouring rows, and every run of neighbouring columns, for
@@ -71,6 +92,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
   const unitRemainder: Cage[] = [];
   const regionRemainder: SumGroup[] = [];
   const locked: { cage: Cage; outside: number[] }[] = [];
+  const signed: SignedGroup[] = [];
 
   for (const unit of UNITS) {
     const inUnit = new Set(unit);
@@ -116,6 +138,29 @@ export function buildConstraints(cages: Cage[]): Constraints {
      * the centre block. These cells sit in different units, so they may repeat
      * a digit and only the total is known.
      */
+    /*
+     * And the same subtraction once more, this time keeping a cage whole.
+     *
+     * The unit's leftovers are the inside parts of the cages that straddle it.
+     * Take one of those cages: its inside part is its total less whatever hangs
+     * outside, so the *other* leftovers come to (45 - inside cages) - that
+     * cage's total, plus the cells it spills. Written as a difference, it fixes
+     * a relationship between two groups that no single total can.
+     *
+     * This is the step after box 3's arithmetic on 6-4: the leftovers are
+     * R2C7, R3C7 and the 9-cage's two cells, and pulling the 9-cage out leaves
+     * R2C7 + R3C7 - R4C9 = 14.
+     */
+    for (const id of ids) {
+      const cage = cages[id];
+      if (cage.cells.every((c) => inUnit.has(c))) continue;
+      const own = new Set(cage.cells);
+      const plus = leftover.filter((c) => !own.has(c));
+      const minus = cage.cells.filter((c) => !inUnit.has(c));
+      if (plus.length === 0 || plus.length > MAX_SIGNED || minus.length > MAX_SIGNED) continue;
+      signed.push({ plus, minus, total: 45 - insideSum - cage.sum });
+    }
+
     if (spilled.length >= 1 && spilled.length <= MAX_SPILL) {
       regionRemainder.push({
         cells: spilled.sort((a, b) => a - b),
@@ -133,19 +178,46 @@ export function buildConstraints(cages: Cage[]): Constraints {
     for (const c of cells) ids.add(owner[c]);
 
     let insideSum = 0;
+    let straddlingSum = 0;
     const leftover: number[] = [];
+    const spilled: number[] = [];
     for (const id of ids) {
       const cage = cages[id];
       if (cage.cells.every((c) => cells.has(c))) insideSum += cage.sum;
-      else for (const c of cage.cells) if (cells.has(c)) leftover.push(c);
+      else {
+        straddlingSum += cage.sum;
+        for (const c of cage.cells) (cells.has(c) ? leftover : spilled).push(c);
+      }
     }
     const sum = 45 * region.length - insideSum;
     if (leftover.length >= 1 && leftover.length <= 10) {
       regionRemainder.push({ cells: leftover, sum, distinct: false });
     }
+
+    /*
+     * A band has an outside too, and cages hang below it exactly as they hang
+     * outside a single box. Rows 1-3 of 6-4 come to 135, the cages wholly
+     * inside come to 122, so the two straddling the bottom edge leave
+     * 30 - 13 = 17 across the three cells they spill into row 4.
+     */
+    if (spilled.length >= 1 && spilled.length <= MAX_SPILL) {
+      regionRemainder.push({ cells: spilled, sum: straddlingSum - sum, distinct: false });
+    }
+
+    // And the same cage-at-a-time difference, so a band can pin a cell the way
+    // a box can — see the signed groups built for units above.
+    for (const id of ids) {
+      const cage = cages[id];
+      if (cage.cells.every((c) => cells.has(c))) continue;
+      const own = new Set(cage.cells);
+      const plus = leftover.filter((c) => !own.has(c));
+      const minus = cage.cells.filter((c) => !cells.has(c));
+      if (plus.length === 0 || plus.length > MAX_SIGNED || minus.length > MAX_SIGNED) continue;
+      signed.push({ plus, minus, total: sum - cage.sum });
+    }
   }
 
-  return { cages, unitRemainder, regionRemainder, locked };
+  return { cages, unitRemainder, regionRemainder, locked, signed };
 }
 
 // ---------------------------------------------------------------- primitives
@@ -490,6 +562,57 @@ function unitRemainders(cand: Candidates, cons: Constraints): Outcome {
  * Innies and outies across a band or stack. Those cells span several units so
  * digits may repeat — only the total is known, which still bounds each cell.
  */
+/**
+ * Bounds from a difference. Each cell is whatever the equation leaves it once
+ * every other cell is pushed to its extreme, which is the arithmetic a player
+ * does out loud: "those two cannot make more than seventeen, so this one is
+ * three at most."
+ */
+function signedGroups(cand: Candidates, cons: Constraints): Outcome {
+  let changed: Outcome = 0;
+  for (const { plus, minus, total } of cons.signed) {
+    const lo: number[] = [];
+    const hi: number[] = [];
+    for (const c of [...plus, ...minus]) {
+      const m = cand[c];
+      if (m === 0) return -1;
+      lo.push(32 - Math.clz32(m & -m));
+      hi.push(32 - Math.clz32(m));
+    }
+    const plusLo = lo.slice(0, plus.length).reduce((a, b) => a + b, 0);
+    const plusHi = hi.slice(0, plus.length).reduce((a, b) => a + b, 0);
+    const minusLo = lo.slice(plus.length).reduce((a, b) => a + b, 0);
+    const minusHi = hi.slice(plus.length).reduce((a, b) => a + b, 0);
+    if (plusHi - minusLo < total || plusLo - minusHi > total) return -1;
+
+    for (let i = 0; i < plus.length; i++) {
+      // This cell = total + sum(minus) - sum(the other plus cells).
+      const floor = total + minusLo - (plusHi - hi[i]);
+      const ceiling = total + minusHi - (plusLo - lo[i]);
+      const r = restrict(cand, plus[i], rangeMask(floor, ceiling));
+      if (r === -1) return -1;
+      if (r === 1) changed = 1;
+    }
+    for (let i = 0; i < minus.length; i++) {
+      // This cell = sum(plus) - total - sum(the other minus cells).
+      const j = plus.length + i;
+      const floor = plusLo - total - (minusHi - hi[j]);
+      const ceiling = plusHi - total - (minusLo - lo[j]);
+      const r = restrict(cand, minus[i], rangeMask(floor, ceiling));
+      if (r === -1) return -1;
+      if (r === 1) changed = 1;
+    }
+  }
+  return changed;
+}
+
+/** Every digit between two bounds, as a mask. */
+function rangeMask(floor: number, ceiling: number): number {
+  let mask = 0;
+  for (let d = Math.max(1, floor); d <= Math.min(9, ceiling); d++) mask |= bit(d);
+  return mask;
+}
+
 function regionRemainders(cand: Candidates, cons: Constraints): Outcome {
   let changed: Outcome = 0;
   for (const { cells, sum } of cons.regionRemainder) {
@@ -586,6 +709,7 @@ export const TECHNIQUES: Technique[] = [
   { name: 'cage locking', difficulty: 5, run: (c, k) => cageLocking(c, k) },
   { name: 'innies/outies (unit)', difficulty: 5, run: (c, k) => unitRemainders(c, k) },
   { name: 'innies/outies (band)', difficulty: 6, run: (c, k) => regionRemainders(c, k) },
+  { name: 'cage across a unit edge', difficulty: 6, run: (c, k) => signedGroups(c, k) },
   { name: 'x-wing', difficulty: 7, run: (c) => xWing(c) },
 ];
 
