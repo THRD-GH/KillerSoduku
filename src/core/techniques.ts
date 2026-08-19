@@ -25,8 +25,12 @@ export interface Constraints {
   locked: { cage: Cage; outside: number[] }[];
   /** Cells that total a known amount *more* than other cells — see below. */
   signed: SignedGroup[];
-  /** Cages sharing a unit, which therefore cannot want the same digits. */
-  unitCages: Cage[][];
+  /**
+   * Cages touching each unit, with the cells of each that land in it. Cages
+   * sharing a unit cannot want the same digits there — whether they lie wholly
+   * inside it or only reach into it.
+   */
+  unitParts: { cage: Cage; inside: number[] }[][];
 }
 
 /**
@@ -116,7 +120,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
   const regionRemainder: SumGroup[] = [];
   const locked: { cage: Cage; outside: number[] }[] = [];
   const signed: SignedGroup[] = [];
-  const unitCages: Cage[][] = [];
+  const unitParts: { cage: Cage; inside: number[] }[][] = [];
 
   for (const unit of UNITS) {
     const inUnit = new Set(unit);
@@ -143,7 +147,21 @@ export function buildConstraints(cages: Cage[]): Constraints {
       const own = new Set(cage.cells);
       locked.push({ cage, outside: unit.filter((c) => !own.has(c)) });
     }
-    if (contained.length >= 2) unitCages.push(contained);
+    /*
+     * Every cage with a cell in this unit, whole or not. A cage hanging over
+     * the edge still cannot take digits its neighbour in here has taken, and on
+     * 6-4's bottom-right box that is the whole game: the 6 fills three cells
+     * with 1, 2 and 3, so the 7 reaching in from the left is down to a 4, 5 or
+     * 6 there, and the 21 reaching down from above must find its three digits
+     * among what is left.
+     */
+    const parts: { cage: Cage; inside: number[] }[] = [];
+    for (const id of ids) {
+      const cage = cages[id];
+      if (cage.cells.length > MAX_PART_CAGE) continue;
+      parts.push({ cage, inside: cage.cells.filter((c) => inUnit.has(c)) });
+    }
+    if (parts.length >= 2) unitParts.push(parts);
     if (leftover.length >= 1 && leftover.length <= MAX_DISTINCT_REMAINDER) {
       unitRemainder.push({ cells: leftover.sort((a, b) => a - b), sum: 45 - insideSum });
     }
@@ -275,7 +293,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
     regionRemainder: uniqueRegions,
     locked,
     signed: uniqueSigned,
-    unitCages,
+    unitParts,
   };
 }
 
@@ -621,6 +639,9 @@ function unitRemainders(cand: Candidates, cons: Constraints): Outcome {
  * Innies and outies across a band or stack. Those cells span several units so
  * digits may repeat — only the total is known, which still bounds each cell.
  */
+/** Cages bigger than this are left out of the unit-by-unit comparison. */
+const MAX_PART_CAGE = 5;
+
 /** How many ways a cage may be filled before it stops being worth listing. */
 const MAX_FILLINGS = 400;
 
@@ -672,18 +693,46 @@ function fillings(cand: Candidates, cage: Cage): { digits: number[]; mask: numbe
  */
 function cageInteraction(cand: Candidates, cons: Constraints): Outcome {
   let changed: Outcome = 0;
+  // A cage touching three units would otherwise be filled out three times over.
+  const cache = new Map<Cage, { digits: number[]; mask: number }[] | null>();
 
-  for (const group of cons.unitCages) {
+  for (const group of cons.unitParts) {
     const options: { digits: number[]; mask: number }[][] = [];
     let listable = true;
-    for (const cage of group) {
-      const list = fillings(cand, cage);
+    for (const { cage, inside } of group) {
+      let list = cache.get(cage);
+      if (list === undefined) {
+        list = fillings(cand, cage);
+        cache.set(cage, list);
+      }
       if (list === null) {
         listable = false;
         break;
       }
       if (list.length === 0) return -1;
-      options.push(list);
+
+      /*
+       * Only the part inside this unit is the unit's business. Two fillings
+       * that agree in here and differ outside are one option as far as this
+       * comparison goes, so they are folded together — it keeps the lists short
+       * and the digits outside cannot be judged from in here anyway.
+       */
+      const seen = new Set<string>();
+      const projected: { digits: number[]; mask: number }[] = [];
+      for (const filling of list) {
+        const digits: number[] = [];
+        let mask = 0;
+        for (const cell of inside) {
+          const digit = filling.digits[cage.cells.indexOf(cell)];
+          digits.push(digit);
+          mask |= bit(digit);
+        }
+        const key = digits.join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        projected.push({ digits, mask });
+      }
+      options.push(projected);
     }
     if (!listable) continue;
 
@@ -703,11 +752,11 @@ function cageInteraction(cand: Candidates, cons: Constraints): Outcome {
     }
 
     for (let i = 0; i < group.length; i++) {
-      const cage = group[i];
-      for (let k = 0; k < cage.cells.length; k++) {
+      const { inside } = group[i];
+      for (let k = 0; k < inside.length; k++) {
         let mask = 0;
         for (const filling of options[i]) mask |= bit(filling.digits[k]);
-        const r = restrict(cand, cage.cells[k], mask);
+        const r = restrict(cand, inside[k], mask);
         if (r === -1) return -1;
         if (r === 1) changed = 1;
       }
