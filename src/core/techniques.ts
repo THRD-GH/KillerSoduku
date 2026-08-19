@@ -25,6 +25,8 @@ export interface Constraints {
   locked: { cage: Cage; outside: number[] }[];
   /** Cells that total a known amount *more* than other cells — see below. */
   signed: SignedGroup[];
+  /** Cages sharing a unit, which therefore cannot want the same digits. */
+  unitCages: Cage[][];
 }
 
 /**
@@ -56,34 +58,55 @@ const MAX_SPILL = 6;
 const MAX_SIGNED = 5;
 
 /**
- * Every run of neighbouring rows, and every run of neighbouring columns, for
- * innies and outies. N lines total 45N whatever N is, so there is nothing
- * special about a band of three — and stopping at three was costing openings
- * that a player finds immediately. On 6-4 the whole left-hand five columns come
- * to 225, the cages sitting inside them come to 216, and the single cell left
- * over is the middle of the grid: R5C5 = 9, before anything else has been
- * placed. Pairs and bands alone never look at that region.
+ * Every shape that can be made from whole units of one kind.
  *
- * Runs of one are left to unitRemainder, which reasons about them far better —
- * those cells are all in the same unit, so they are distinct, and it can work
- * with the combinations rather than only with the total. Runs of nine are the
- * whole grid, where every cage is inside and nothing is left over.
+ * N units total 45N — that is all the rule of 45 ever says — so there is
+ * nothing special about a band of three, or about the units being neighbours.
+ * Two boxes side by side, three in an L, the four corners: each is a region
+ * whose total is known, and each can leave a cage hanging over its edge with
+ * something to say about it.
+ *
+ * All three families are enumerated whole: every subset of the rows, of the
+ * columns, and of the nine blocks. Mixing families is left alone, because a row
+ * and a box overlap and a cell counted twice breaks the arithmetic — while
+ * within a family the units are disjoint by construction.
+ *
+ * Sets of one are left to unitRemainder, which reasons about them far better:
+ * those cells share a unit, so they are distinct, and it can work with the
+ * combinations rather than only with the total. Sets of nine are the whole
+ * grid, where every cage is inside and nothing is left over. The rest — 501
+ * shapes per family — cost nothing to enumerate and are kept only when what
+ * they leave over is small enough to be worth arithmetic.
  */
 function regions(): number[][][] {
   const rows = Array.from({ length: 9 }, (_, r) => Array.from({ length: 9 }, (_, c) => r * 9 + c));
   const cols = Array.from({ length: 9 }, (_, c) => Array.from({ length: 9 }, (_, r) => r * 9 + c));
+  const boxes = Array.from({ length: 9 }, (_, b) => {
+    const top = Math.floor(b / 3) * 3;
+    const left = (b % 3) * 3;
+    return Array.from({ length: 9 }, (_, i) => (top + Math.floor(i / 3)) * 9 + left + (i % 3));
+  });
+
   const out: number[][][] = [];
-  for (const lines of [rows, cols]) {
-    for (let start = 0; start < 9; start++) {
-      for (let length = 2; start + length <= 9; length++) {
-        out.push(lines.slice(start, start + length));
-      }
+  for (const family of [rows, cols, boxes]) {
+    for (let mask = 1; mask < 512; mask++) {
+      const chosen: number[][] = [];
+      for (let i = 0; i < 9; i++) if (mask & (1 << i)) chosen.push(family[i]);
+      if (chosen.length < 2 || chosen.length > 8) continue;
+      out.push(chosen);
     }
   }
   return out;
 }
 
 const REGIONS = regions();
+
+/*
+ * The shapes never change, so neither do their cells. Rebuilding a set for each
+ * of the fifteen hundred of them, for every puzzle, was most of the cost of
+ * knowing about them at all.
+ */
+const REGION_CELLS: Set<number>[] = REGIONS.map((region) => new Set(region.flat()));
 
 export function buildConstraints(cages: Cage[]): Constraints {
   const owner = new Int16Array(CELLS).fill(-1);
@@ -93,6 +116,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
   const regionRemainder: SumGroup[] = [];
   const locked: { cage: Cage; outside: number[] }[] = [];
   const signed: SignedGroup[] = [];
+  const unitCages: Cage[][] = [];
 
   for (const unit of UNITS) {
     const inUnit = new Set(unit);
@@ -119,6 +143,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
       const own = new Set(cage.cells);
       locked.push({ cage, outside: unit.filter((c) => !own.has(c)) });
     }
+    if (contained.length >= 2) unitCages.push(contained);
     if (leftover.length >= 1 && leftover.length <= MAX_DISTINCT_REMAINDER) {
       unitRemainder.push({ cells: leftover.sort((a, b) => a - b), sum: 45 - insideSum });
     }
@@ -172,8 +197,9 @@ export function buildConstraints(cages: Cage[]): Constraints {
 
   // The same subtraction over runs of lines. Cells left over here span more
   // than one unit, so they may repeat a digit — only the total is known.
-  for (const region of REGIONS) {
-    const cells = new Set(region.flat());
+  for (let index = 0; index < REGIONS.length; index++) {
+    const region = REGIONS[index];
+    const cells = REGION_CELLS[index];
     const ids = new Set<number>();
     for (const c of cells) ids.add(owner[c]);
 
@@ -191,7 +217,7 @@ export function buildConstraints(cages: Cage[]): Constraints {
     }
     const sum = 45 * region.length - insideSum;
     if (leftover.length >= 1 && leftover.length <= 10) {
-      regionRemainder.push({ cells: leftover, sum, distinct: false });
+      regionRemainder.push({ cells: [...leftover].sort((a, b) => a - b), sum, distinct: false });
     }
 
     /*
@@ -201,7 +227,11 @@ export function buildConstraints(cages: Cage[]): Constraints {
      * 30 - 13 = 17 across the three cells they spill into row 4.
      */
     if (spilled.length >= 1 && spilled.length <= MAX_SPILL) {
-      regionRemainder.push({ cells: spilled, sum: straddlingSum - sum, distinct: false });
+      regionRemainder.push({
+        cells: [...spilled].sort((a, b) => a - b),
+        sum: straddlingSum - sum,
+        distinct: false,
+      });
     }
 
     // And the same cage-at-a-time difference, so a band can pin a cell the way
@@ -217,7 +247,36 @@ export function buildConstraints(cages: Cage[]): Constraints {
     }
   }
 
-  return { cages, unitRemainder, regionRemainder, locked, signed };
+  /*
+   * Shapes overlap, and many of them leave the same cells over — three boxes in
+   * a row and the band across them are different regions with identical
+   * arithmetic. Every stored group is walked on every pass of the technique, so
+   * the duplicates are pure cost: with 501 shapes per family they multiplied the
+   * work over the whole collection sixfold before this.
+   */
+  const seen = new Set<string>();
+  const uniqueRegions = regionRemainder.filter((group) => {
+    const key = `${group.cells.join(',')}=${group.sum}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const signedSeen = new Set<string>();
+  const uniqueSigned = signed.filter((group) => {
+    const key = `${group.plus.join(',')}-${group.minus.join(',')}=${group.total}`;
+    if (signedSeen.has(key)) return false;
+    signedSeen.add(key);
+    return true;
+  });
+
+  return {
+    cages,
+    unitRemainder,
+    regionRemainder: uniqueRegions,
+    locked,
+    signed: uniqueSigned,
+    unitCages,
+  };
 }
 
 // ---------------------------------------------------------------- primitives
@@ -562,6 +621,101 @@ function unitRemainders(cand: Candidates, cons: Constraints): Outcome {
  * Innies and outies across a band or stack. Those cells span several units so
  * digits may repeat — only the total is known, which still bounds each cell.
  */
+/** How many ways a cage may be filled before it stops being worth listing. */
+const MAX_FILLINGS = 400;
+
+/**
+ * Every way a cage could be filled, given what its cells still allow: the
+ * digits in cell order, and the set of them as a mask.
+ */
+function fillings(cand: Candidates, cage: Cage): { digits: number[]; mask: number }[] | null {
+  const out: { digits: number[]; mask: number }[] = [];
+  const digits: number[] = [];
+  let overflowed = false;
+
+  const walk = (at: number, used: number, sum: number): void => {
+    if (overflowed) return;
+    if (at === cage.cells.length) {
+      if (sum === cage.sum) {
+        if (out.length >= MAX_FILLINGS) overflowed = true;
+        else out.push({ digits: [...digits], mask: used });
+      }
+      return;
+    }
+    const mask = cand[cage.cells[at]];
+    for (let d = 1; d <= 9; d++) {
+      if (!(mask & bit(d)) || used & bit(d) || sum + d > cage.sum) continue;
+      digits.push(d);
+      walk(at + 1, used | bit(d), sum + d);
+      digits.pop();
+      if (overflowed) return;
+    }
+  };
+  walk(0, 0, 0);
+  return overflowed ? null : out;
+}
+
+/**
+ * Two cages in the same unit cannot want the same digits — which is the single
+ * candidate rule one level up: instead of a cell whose options are used up by
+ * its neighbours, a whole cage whose fillings are used up by the cage beside
+ * it.
+ *
+ * A 14 in two cells is 5+9 or 6+8. An 11 in two cells sharing that row could be
+ * 2+9, 3+8, 4+7 or 5+6 — except 5+6, which leaves the 14 nothing: 5 is taken
+ * from one of its fillings and 6 from the other. So 5 and 6 come out of the 11,
+ * having never touched a cell of it directly.
+ *
+ * Each cage's fillings are cut down to those that leave every other cage in the
+ * unit something, over and over until nothing more falls, and what survives says
+ * what each cell can still be.
+ */
+function cageInteraction(cand: Candidates, cons: Constraints): Outcome {
+  let changed: Outcome = 0;
+
+  for (const group of cons.unitCages) {
+    const options: { digits: number[]; mask: number }[][] = [];
+    let listable = true;
+    for (const cage of group) {
+      const list = fillings(cand, cage);
+      if (list === null) {
+        listable = false;
+        break;
+      }
+      if (list.length === 0) return -1;
+      options.push(list);
+    }
+    if (!listable) continue;
+
+    for (let settled = false; !settled; ) {
+      settled = true;
+      for (let i = 0; i < group.length; i++) {
+        for (let j = 0; j < group.length; j++) {
+          if (i === j) continue;
+          const kept = options[i].filter((a) => options[j].some((b) => (a.mask & b.mask) === 0));
+          if (kept.length === 0) return -1;
+          if (kept.length !== options[i].length) {
+            options[i] = kept;
+            settled = false;
+          }
+        }
+      }
+    }
+
+    for (let i = 0; i < group.length; i++) {
+      const cage = group[i];
+      for (let k = 0; k < cage.cells.length; k++) {
+        let mask = 0;
+        for (const filling of options[i]) mask |= bit(filling.digits[k]);
+        const r = restrict(cand, cage.cells[k], mask);
+        if (r === -1) return -1;
+        if (r === 1) changed = 1;
+      }
+    }
+  }
+  return changed;
+}
+
 /**
  * Bounds from a difference. Each cell is whatever the equation leaves it once
  * every other cell is pushed to its extreme, which is the arithmetic a player
@@ -705,6 +859,7 @@ export const TECHNIQUES: Technique[] = [
   { name: 'locked candidates', difficulty: 3, run: (c) => lockedCandidates(c) },
   { name: 'cage arc consistency', difficulty: 3, run: (c, k) => cageArcConsistency(c, k.cages) },
   { name: 'naked subset', difficulty: 4, run: (c) => nakedSubsets(c) },
+  { name: 'cages sharing a unit', difficulty: 4, run: (c, k) => cageInteraction(c, k) },
   { name: 'hidden subset', difficulty: 4, run: (c) => hiddenSubsets(c) },
   { name: 'cage locking', difficulty: 5, run: (c, k) => cageLocking(c, k) },
   { name: 'innies/outies (unit)', difficulty: 5, run: (c, k) => unitRemainders(c, k) },
