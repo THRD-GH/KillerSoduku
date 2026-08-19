@@ -13,44 +13,40 @@ import { readFileSync } from 'node:fs';
 import { parsePackRecord } from '../src/game/packs.ts';
 import { classify } from '../src/core/solver.ts';
 import { buildConstraints } from '../src/core/techniques.ts';
-import { difficultyScore, generatePuzzle } from '../src/core/generator.ts';
+import { demandScore, difficultyScore, generatePuzzle } from '../src/core/generator.ts';
 import type { Level } from '../src/core/types.ts';
 
 const sample = Number(process.argv[2] ?? 8);
 const levels = [1, 2, 3, 4, 5, 6] as Level[];
 
-const rung = (cages: ReturnType<typeof parsePackRecord>['cages']): number =>
-  difficultyScore(classify(buildConstraints(cages)));
+const measure = (cages: ReturnType<typeof parsePackRecord>['cages']): { rung: number; demand: number } => {
+  const c = classify(buildConstraints(cages));
+  return { rung: difficultyScore(c), demand: demandScore(c) };
+};
+const median = (values: number[]): number =>
+  [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 
 console.log(`${sample} puzzles per level per source; "rung" is what this solver makes of them\n`);
-console.log('level   classic rungs (wanted %d)        new rungs                 new: seconds each');
+console.log('level    what each side demands of the solver, at the median');
 
 for (const level of levels) {
   const want = level - 1;
   const pack = JSON.parse(readFileSync(`public/packs/level-${level}.json`, 'utf8')) as string[];
 
-  const classicRungs: number[] = [];
+  const classic: number[] = [];
   const step = Math.max(1, Math.floor(pack.length / sample));
-  for (let i = 0; i < pack.length && classicRungs.length < sample; i += step) {
-    classicRungs.push(rung(parsePackRecord(pack[i], level, i + 1).cages));
+  for (let i = 0; i < pack.length && classic.length < sample; i += step) {
+    classic.push(measure(parsePackRecord(pack[i], level, i + 1).cages).demand);
   }
 
-  const newRungs: number[] = [];
+  const fresh: number[] = [];
   const started = process.hrtime.bigint();
-  for (let n = 1; n <= sample; n++) newRungs.push(rung(generatePuzzle(level, n).cages));
+  for (let n = 1; n <= sample; n++) fresh.push(measure(generatePuzzle(level, n).cages).demand);
   const seconds = Number(process.hrtime.bigint() - started) / 1e9 / sample;
 
-  const spread = (rungs: number[]): string => {
-    const counts = new Array<number>(6).fill(0);
-    for (const r of rungs) counts[r]++;
-    return counts.map((c, i) => (c === 0 ? '  ' : `${i}×${c}`)).join(' ').padEnd(24);
-  };
-  const mean = (rungs: number[]): string =>
-    (rungs.reduce((a, b) => a + b, 0) / rungs.length).toFixed(1);
-
   console.log(
-    `  ${level}     ${spread(classicRungs)} mean ${mean(classicRungs)}   ` +
-      `${spread(newRungs)} mean ${mean(newRungs)}   ${seconds.toFixed(1)}s`,
+    `  ${level}      classic median demand ${median(classic).toFixed(1).padStart(5)}` +
+      `      new ${median(fresh).toFixed(1).padStart(5)}      ${seconds.toFixed(1)}s each`,
   );
 }
 

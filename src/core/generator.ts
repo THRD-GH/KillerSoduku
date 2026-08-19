@@ -1,6 +1,7 @@
 import { CELLS, NEIGHBOURS, PEERS } from './grid.ts';
 import { mulberry32, shuffle } from './rng.ts';
 import { buildConstraints, classify, isUnique } from './solver.ts';
+import { TECHNIQUES } from './techniques.ts';
 import type { Classification } from './solver.ts';
 import type { Cage, Level, Puzzle } from './types.ts';
 
@@ -51,18 +52,53 @@ export const LEVEL_CONFIG: Record<Level, LevelConfig> = {
 };
 
 /**
- * Collapses a classification into a 0..5 rung, so level N wants score N-1.
- * A puzzle is as hard as the hardest technique it forces; once logic runs out
- * altogether, how much trial and error is left takes over.
+ * What the grid asked of the solver, as one number.
  *
- * Thresholds come from sampling the ladder (tools/calibrate.ts spread).
+ * The old scale read the hardest technique a puzzle forced, and cut its top two
+ * rungs on logic running out altogether. Both stopped working as the technique
+ * stack grew: nearly every grid now reaches the fourth tier somewhere, and logic
+ * runs out on 82 of the 5,207 Classic puzzles rather than on 1,100 of them. A
+ * scale that cannot tell a Gentle from a Brutal is no use to a generator aiming
+ * at either.
+ *
+ * What still tracks the collection's own ratings is how much hard work a grid
+ * demands rather than how hard its hardest moment was — so steps are counted,
+ * weighted by the tier they came from. A single at the bottom of the stack is
+ * worth almost nothing; a step across a unit edge is worth eight of them. Trial
+ * and error, where it is still needed at all, counts for more again.
  */
+export function demandScore(c: Classification): number {
+  let total = 0;
+  for (const [name, count] of c.used) {
+    const tier = TIER_OF.get(name) ?? 1;
+    total += count * (tier >= 6 ? 8 : tier === 5 ? 4 : tier === 4 ? 2 : tier >= 3 ? 1 : 0.15);
+  }
+  return total + (c.logical ? 0 : 25 + Math.min(c.guesses, 8) * 5);
+}
+
+const TIER_OF = new Map(TECHNIQUES.map((t) => [t.name, t.difficulty]));
+
+/**
+ * Where each level starts, measured off the Classic collection — see
+ * tools/fit-bands.ts. Their medians come out at 28.0, 32.4 and 40.1 for Tricky,
+ * Tough and Brutal, and the boundaries sit between them so a generated puzzle
+ * lands in the same company as the hand-picked ones of that level.
+ *
+ * Gentle, Easy and Steady are one band in the collection and not three: their
+ * medians are 15.6, 12.6 and 16.4, which puts Easy *below* Gentle. This solver
+ * cannot tell them apart and neither, on this evidence, could whoever rated
+ * them. The first two boundaries therefore cut that shared band into thirds, so
+ * the generated ladder at least climbs — and the cage texture in LEVEL_CONFIG,
+ * which does lean with the level, carries the rest of the difference.
+ */
+const LADDER = [12.5, 18, 24, 30.2, 36.2];
+
+/** Collapses a classification into a 0..5 rung, so level N wants score N-1. */
 export function difficultyScore(c: Classification): number {
-  if (!c.logical) return c.guesses <= 4 ? 4 : 5;
-  if (c.hardest <= 3) return 0;
-  if (c.hardest === 4) return 1;
-  if (c.hardest === 5) return 2;
-  return 3;
+  const demand = demandScore(c);
+  let rung = 0;
+  while (rung < LADDER.length && demand >= LADDER[rung]) rung++;
+  return rung;
 }
 
 /** A solved grid, produced by shuffled backtracking. */
