@@ -532,7 +532,7 @@ function nakedSubsets(cand: Candidates): Outcome {
   let changed: Outcome = 0;
   for (const unit of UNITS) {
     const open = unit.filter((c) => popcount(cand[c]) > 1);
-    for (let size = 2; size <= 3; size++) {
+    for (let size = 2; size <= 4; size++) {
       const pool = open.filter((c) => popcount(cand[c]) <= size);
       const n = pool.length;
       if (n <= size) continue;
@@ -573,7 +573,7 @@ function hiddenSubsets(cand: Candidates): Outcome {
     }
     const digits = [...spots.keys()];
 
-    for (let size = 2; size <= 3; size++) {
+    for (let size = 2; size <= 4; size++) {
       const walk = (start: number, picked: number[], cells: Set<number>): boolean => {
         if (picked.length === size) {
           if (cells.size !== size) return true;
