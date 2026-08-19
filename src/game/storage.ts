@@ -1,4 +1,5 @@
 import type { Level, Puzzle, PuzzleId, Source } from '../core/types.ts';
+import { GENERATOR_VERSION } from '../core/generator.ts';
 import { formatPuzzleId } from '../core/types.ts';
 
 const KEY = {
@@ -497,14 +498,36 @@ export function resetLevel(
 const CACHE_LIMIT = 40;
 type Cache = Record<string, Puzzle>;
 
+/**
+ * Generated puzzles are kept so replaying a number is instant — but the number
+ * only means a particular grid for as long as the recipe stays put. The cache
+ * is stamped with the generator's version and thrown away whole when that
+ * moves, rather than quietly handing back a puzzle built by rules the game no
+ * longer follows.
+ *
+ * Classic puzzles are unaffected: they come from the packs, not from here.
+ */
+interface VersionedCache {
+  version: number;
+  puzzles: Cache;
+}
+
+function liveCache(): VersionedCache {
+  const held = read<VersionedCache>(KEY.cache, { version: 0, puzzles: {} });
+  if (held.version !== GENERATOR_VERSION || typeof held.puzzles !== 'object') {
+    return { version: GENERATOR_VERSION, puzzles: {} };
+  }
+  return held;
+}
+
 export function cachedPuzzle(id: PuzzleId): Puzzle | null {
-  return read<Cache>(KEY.cache, {})[formatPuzzleId(id)] ?? null;
+  return liveCache().puzzles[formatPuzzleId(id)] ?? null;
 }
 
 export function cachePuzzle(id: PuzzleId, puzzle: Puzzle): void {
-  const cache = read<Cache>(KEY.cache, {});
-  const keys = Object.keys(cache);
-  if (keys.length >= CACHE_LIMIT) delete cache[keys[0]];
-  cache[formatPuzzleId(id)] = puzzle;
+  const cache = liveCache();
+  const keys = Object.keys(cache.puzzles);
+  if (keys.length >= CACHE_LIMIT) delete cache.puzzles[keys[0]];
+  cache.puzzles[formatPuzzleId(id)] = puzzle;
   write(KEY.cache, cache);
 }

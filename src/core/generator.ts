@@ -93,6 +93,17 @@ const TIER_OF = new Map(TECHNIQUES.map((t) => [t.name, t.difficulty]));
  */
 const LADDER = [12.5, 18, 24, 30.2, 36.2];
 
+/**
+ * Bumped whenever a change here would hand a different grid to the same puzzle
+ * number — a new technique, a re-cut ladder, a different cage texture. Puzzles
+ * are kept on the device once made, and a cache that outlives the recipe serves
+ * yesterday's puzzle to a player who was promised today's.
+ *
+ * 2: the week the technique stack grew and the ladder was refitted to the
+ *    Classic collection.
+ */
+export const GENERATOR_VERSION = 2;
+
 /** Collapses a classification into a 0..5 rung, so level N wants score N-1. */
 export function difficultyScore(c: Classification): number {
   const demand = demandScore(c);
