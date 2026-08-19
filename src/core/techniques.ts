@@ -1048,7 +1048,7 @@ export const TECHNIQUES: Technique[] = [
   { name: 'hidden subset', difficulty: 4, run: (c) => hiddenSubsets(c) },
   { name: 'cage locking', difficulty: 5, run: (c, k) => cageLocking(c, k) },
   { name: 'innies/outies (unit)', difficulty: 5, run: (c, k) => unitRemainders(c, k) },
-  { name: 'innies/outies (band)', difficulty: 6, run: (c, k) => regionRemainders(c, k) },
+  { name: 'innies/outies (shape)', difficulty: 6, run: (c, k) => regionRemainders(c, k) },
   { name: 'cage across a unit edge', difficulty: 6, run: (c, k) => signedGroups(c, k) },
   { name: 'x-wing', difficulty: 7, run: (c) => xWing(c) },
 ];

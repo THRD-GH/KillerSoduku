@@ -15,11 +15,11 @@ const LEVEL_GUIDE: Record<Level, { lead: string; techniques: string[] }> = {
   },
   3: {
     lead: 'Starts linking whole cages to the units around them.',
-    techniques: ['Cage locking', 'Innies and outies within a row, column or box'],
+    techniques: ['Cage locking', 'Innies and outies within a row, column or box', 'Cages in one unit ruling each other out'],
   },
   4: {
     lead: 'Uses the deepest logical techniques in the solver.',
-    techniques: ['Innies and outies across three rows or columns', 'X-wing patterns'],
+    techniques: ['Innies and outies across any shape of units', 'Cages measured across a unit edge', 'X-wing patterns'],
   },
   5: {
     lead: 'Extends beyond the named technique stack.',
