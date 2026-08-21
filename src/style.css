@@ -896,7 +896,12 @@ body {
 /* Three columns per level: the difficulty, then each of its two pools. */
 .level {
   display: grid;
-  grid-template-columns: minmax(64px, 0.85fr) minmax(0, 1fr) minmax(0, 1fr);
+  /* One fixed lane for the belt and its name, then the two pools splitting what
+     is left. Every row is its own grid, so sizing that lane to its contents let
+     it settle a few pixels differently on each — "Yellow belt" against "Blue
+     belt" — and the Classic and New buttons stepped in and out as the eye went
+     down the list. 128px holds the longest name with the belt beside it. */
+  grid-template-columns: 128px minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
   gap: 6px;
   background: var(--panel);
@@ -910,10 +915,16 @@ body {
 
 .level-head {
   position: relative;
+  /* Belt first, then what it is called — along the row, not stacked. The stars
+     this replaced were small enough to sit above the name in a 64px lane; a
+     belt beside two lines of text is not, and stacking it wrapped "Yellow belt"
+     onto two lines while "Blue belt" stayed on one. Every row then had its own
+     height, and the list moved under the eye while it was being read. */
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
   min-width: 0;
   padding: 2px 18px 2px 0;
   border: 0;
@@ -922,6 +933,21 @@ body {
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
+}
+
+/* Narrower than a modern phone, the belt lane and the two pools cannot all
+   have room: at 320px the pools came down to 43px and "Classic · 2115 left"
+   ran out of its button. The head takes the full width there and the pools sit
+   underneath, which costs a row of height on every level equally — so the list
+   still does not move as it is read. */
+@media (max-width: 359px) {
+  .level {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .level-head {
+    grid-column: 1 / -1;
+  }
 }
 
 .level-head:hover,
@@ -2075,6 +2101,19 @@ body {
   display: flex;
   flex-direction: column;
   line-height: 1.15;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* The line under a level saying what it demands. Full width, under the belt
+   and both pools, so it reads as a caption for the row rather than for either
+   pool — and every row gains the same height, so the list stays put. */
+.level-asks {
+  grid-column: 1 / -1;
+  margin: 1px 0 0;
+  color: var(--dim);
+  font-size: 11.5px;
+  line-height: 1.2;
 }
 
 .level-head .name small {

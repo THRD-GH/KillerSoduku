@@ -25,16 +25,29 @@ export interface Belt {
   short: string;
   rank: string;
   descriptor: string;
+  /**
+   * What the grid will actually ask of you, in the fewest words that are true.
+   * Taken from the grading below rather than written to sound like a ladder:
+   * the first three belts really are one toolkit at three lengths, and saying
+   * otherwise would promise a technique that never arrives.
+   */
+  asks: string;
   colour: string;
 }
 
 export const BELTS: Record<Level, Belt> = {
-  1: { name: 'White belt', short: 'White', rank: '5th Kyū', descriptor: 'Foundations', colour: '#fffdfa' },
-  2: { name: 'Yellow belt', short: 'Yellow', rank: '4th Kyū', descriptor: 'Developing', colour: '#efc44f' },
-  3: { name: 'Green belt', short: 'Green', rank: '3rd Kyū', descriptor: 'Confident', colour: '#6c9a72' },
-  4: { name: 'Blue belt', short: 'Blue', rank: '2nd Kyū', descriptor: 'Advanced', colour: '#3979a8' },
-  5: { name: 'Brown belt', short: 'Brown', rank: '1st Kyū', descriptor: 'Expert', colour: '#8a563b' },
-  6: { name: 'Black belt', short: 'Black', rank: '1st Dan', descriptor: 'Dan challenge', colour: '#17273d' },
+  1: { name: 'White belt', short: 'White', rank: '5th Kyū', descriptor: 'Foundations',
+       asks: 'singles and small cages', colour: '#fffdfa' },
+  2: { name: 'Yellow belt', short: 'Yellow', rank: '4th Kyū', descriptor: 'Developing',
+       asks: 'cage combinations throughout', colour: '#efc44f' },
+  3: { name: 'Green belt', short: 'Green', rank: '3rd Kyū', descriptor: 'Confident',
+       asks: 'cages ruling each other out', colour: '#6c9a72' },
+  4: { name: 'Blue belt', short: 'Blue', rank: '2nd Kyū', descriptor: 'Advanced',
+       asks: 'the 45 rule across shapes', colour: '#3979a8' },
+  5: { name: 'Brown belt', short: 'Brown', rank: '1st Kyū', descriptor: 'Expert',
+       asks: 'cages measured across an edge', colour: '#8a563b' },
+  6: { name: 'Black belt', short: 'Black', rank: '1st Dan', descriptor: 'Dan challenge',
+       asks: 'the 45 rule, sustained', colour: '#17273d' },
 };
 
 /** The colour word alone, for rows with no space for a rank. */

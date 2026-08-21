@@ -92,7 +92,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
         'span',
         { class: 'name' },
         BELTS[level].name,
-        el('small', {}, BELTS[level].rank),
+        el('small', {}, `${BELTS[level].rank} · ${BELTS[level].descriptor}`),
       ),
       el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
     ),
@@ -139,6 +139,13 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     // Each pool is its own grid column, so it goes straight onto the row.
     row.append(el('div', { class: 'source-row' }, button, pick));
   }
+
+  /*
+   * What the belt will ask of you, along the foot of its row — the same idea as
+   * Solduku's "500 left · singles only", given a line of its own because there
+   * are two pools here and repeating it in both would be noise.
+   */
+  row.append(el('p', { class: 'level-asks' }, BELTS[level].asks));
 
   return row;
 }
