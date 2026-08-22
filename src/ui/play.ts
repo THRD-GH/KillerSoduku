@@ -296,18 +296,21 @@ export class PlayScreen {
        * puzzle number and the line about the cell under the cursor; the clock
        * and Pause come down into the actions grid, where New and Restart have
        * been squeezed into one cell to make room. The second column reads
-       *   New | Restart
        *   clock | Pause
+       *   New | Restart
        *   tally
-       * with the tally last: it is the control pressed most, and the bottom of
-       * the column is where the thumb already is. The target rides under the
-       * clock, where a smaller time beneath the running one reads as the mark
-       * to beat.
+       * The tally is last: it is the control pressed most, and the bottom of
+       * the column is where the thumb already is. New and Restart are in the
+       * middle, because the row above this grid is CLEAR and undo, and a press
+       * that slips off undo lands on the top row — better that it lands on the
+       * clock than on the two buttons that throw the game away. The target
+       * rides under the clock, where a smaller time beneath the running one
+       * reads as the mark to beat.
        */
       this.timerBox.append(this.targetBox);
       this.sessionPair.append(this.nextBtn, this.restartBtn);
       this.clockPair.append(this.timerBox, this.pauseBtn);
-      this.actionsBox?.append(this.sessionPair, this.clockPair, this.tallyBox);
+      this.actionsBox?.append(this.clockPair, this.sessionPair, this.tallyBox);
       this.titlebar.classList.remove('with-clock');
     } else {
       this.idLabel.after(this.targetBox);
