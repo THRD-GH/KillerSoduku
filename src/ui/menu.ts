@@ -92,21 +92,18 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
         'aria-label': `Explain the ${BELTS[level].name}, ${BELTS[level].rank}`,
         title: `What the ${BELTS[level].name} involves`,
       },
-      // The belt with the badge pushed out to the end of its line, then the
-      // rank and the name together underneath. The description is the third
-      // line, running the width of the panel below both.
+      // Belt and its name on the first line with the badge at the end of it,
+      // the rank and what the belt stands for on the second. The third line,
+      // under the width of the panel, is what the puzzles will ask of you.
       el(
         'span',
         { class: 'belt-line' },
         belt(level, 34),
+        el('span', { class: 'name' }, BELTS[level].name),
         el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
       ),
-      el(
-        'span',
-        { class: 'name' },
-        el('small', {}, BELTS[level].rank),
-        BELTS[level].name,
-      ),
+      el('span', { class: 'rank' }, `${BELTS[level].rank} · ${BELTS[level].descriptor}`),
+      el('span', { class: 'level-asks' }, BELTS[level].asks),
     ),
   );
 
@@ -152,17 +149,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
     row.append(el('div', { class: 'source-row' }, button, pick));
   }
 
-  /*
-   * What the belt stands for and what it will ask of you, along the foot of its
-   * row — the same idea as Solduku's "500 left · singles only", given a line of
-   * its own because there are two pools here and repeating it in both would be
-   * noise. The descriptor rides down here too: beside the name it was the one
-   * thing too wide for the lane, and it reads perfectly well in front of the
-   * technique it is describing.
-   */
-  row.append(
-    el('p', { class: 'level-asks' }, `${BELTS[level].descriptor} · ${BELTS[level].asks}`),
-  );
+
 
   return row;
 }

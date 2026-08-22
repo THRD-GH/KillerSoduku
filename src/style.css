@@ -910,7 +910,7 @@ body {
      than one at half of it. The picker beside each one is paid for on top, so
      it is the button itself that comes out at half. */
   grid-template-columns: 150px minmax(0, calc(50% + 26px));
-  align-items: stretch;
+  align-items: start;
   /* The slack goes between the belt and the pools, not after them: capping the
      pools at half the row left them stranded in the middle with a margin of
      empty panel to their right. Pushed apart, they sit against the edge and
@@ -927,15 +927,21 @@ body {
 }
 
 .level-head {
-  /* Three lines down the left: the belt with its badge, the rank and name
-     under it, and the description under both. The lane can hold the rank and
-     name side by side now that the pools stop at half the row — the space
-     between the two was going spare. */
+  /* Pinned to the top of its cell rather than floating in the middle of it:
+     the two stacked buttons beside these three lines are taller than they are,
+     and centring them dropped that difference as a gap above and below. */
+  align-self: start;
+  /* Three lines down the left: the belt and its name, the rank and what it
+     stands for under them, and what the puzzles ask under both. The lane can
+     hold a belt beside its name now that the pools stop at half the row — the
+     space between the two was going spare. */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 3px;
+  /* Close-set: three short lines with a gap between each read as a list of
+     three things rather than as one label for one belt. */
+  gap: 1px;
   min-width: 0;
   padding: 2px 18px 2px 0;
   border: 0;
@@ -974,12 +980,13 @@ body {
   outline: 1px solid var(--accent);
 }
 
-/* Belt at one end of its line, the badge at the other. */
+/* Belt, its name, and the badge at the end of the line. */
 .belt-line {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 7px;
   width: 100%;
+  min-width: 0;
 }
 
 .level-info-badge {
@@ -2131,22 +2138,26 @@ body {
   margin-bottom: 4px;
 }
 
-/* Rank then name, on one line under the belt. */
+/* The belt's name, beside the belt. Takes the room between it and the badge,
+   and runs out of dots rather than out of the lane on a font wider than the one
+   this was measured on. */
 .level-head .name {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 5px;
-  line-height: 1.15;
+  flex: 1 1 auto;
   min-width: 0;
+  font-weight: 700;
+  line-height: 1.15;
   white-space: nowrap;
-  /* Belt and braces for the line above: a font wider than the one this was
-     measured on runs out of dots rather than out of the lane and across a
-     button. */
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.level-head .name > * {
+/* Rank and what the belt stands for, under it. */
+.level-head .rank {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -2154,19 +2165,20 @@ body {
 /* The line under a level saying what it demands. Full width, under the belt
    and both pools, so it reads as a caption for the row rather than for either
    pool — and every row gains the same height, so the list stays put. */
+/* What the puzzles will ask of you: the head's third line, under the rank.
+   Given a row of its own below the panel it sat under the two stacked buttons,
+   which are taller than these three lines put together — so a gap of the
+   difference opened up above it, and every row carried that gap. In here the
+   lines close up and the row is shorter for it. */
 .level-asks {
-  grid-column: 1 / -1;
   margin: 0;
   color: var(--dim);
   font-size: 11px;
-  line-height: 1.15;
+  line-height: 1.2;
+  white-space: normal;
 }
 
-.level-head .name small {
-  color: var(--dim);
-  font-size: 11px;
-  font-weight: 600;
-}
+
 
 .level-info-descriptor {
   margin: 0 0 10px;
