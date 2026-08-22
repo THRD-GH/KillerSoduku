@@ -241,6 +241,24 @@ body {
   font-family: var(--font-ui);
   -webkit-text-size-adjust: 100%;
   overscroll-behavior: none;
+  /*
+   * Nothing here is for copying, and on a phone a press held a moment too
+   * long on any selectable text selects it — and Android then raises its
+   * search bar over the bottom of the game. It was happening on the way into
+   * a puzzle: the finger that tapped Classic was still down when the loading
+   * panel appeared under it. The board and the keys were already protected;
+   * this covers every panel, label and caption as well. Fields are the one
+   * place selection is wanted, and get it back below.
+   */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 #app {
