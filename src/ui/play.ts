@@ -297,15 +297,17 @@ export class PlayScreen {
        * and Pause come down into the actions grid, where New and Restart have
        * been squeezed into one cell to make room. The second column reads
        *   New | Restart
-       *   tally
        *   clock | Pause
-       * and the target rides under the clock, where a smaller time beneath the
-       * running one reads as the mark to beat.
+       *   tally
+       * with the tally last: it is the control pressed most, and the bottom of
+       * the column is where the thumb already is. The target rides under the
+       * clock, where a smaller time beneath the running one reads as the mark
+       * to beat.
        */
       this.timerBox.append(this.targetBox);
       this.sessionPair.append(this.nextBtn, this.restartBtn);
       this.clockPair.append(this.timerBox, this.pauseBtn);
-      this.actionsBox?.append(this.sessionPair, this.tallyBox, this.clockPair);
+      this.actionsBox?.append(this.sessionPair, this.clockPair, this.tallyBox);
       this.titlebar.classList.remove('with-clock');
     } else {
       this.idLabel.after(this.targetBox);
