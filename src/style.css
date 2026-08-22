@@ -911,6 +911,11 @@ body {
      it is the button itself that comes out at half. */
   grid-template-columns: 104px minmax(0, calc(50% + 26px));
   align-items: stretch;
+  /* The slack goes between the belt and the pools, not after them: capping the
+     pools at half the row left them stranded in the middle with a margin of
+     empty panel to their right. Pushed apart, they sit against the edge and
+     their counts line up with everything else down that side. */
+  justify-content: space-between;
   gap: 4px;
   background: var(--panel);
   border: 1px solid var(--line);
