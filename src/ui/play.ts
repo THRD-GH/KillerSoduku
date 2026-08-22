@@ -56,6 +56,17 @@ export class PlayScreen {
   /** Where the clock and the pause button live when the bar is not holding them. */
   private actionsBox: HTMLElement | null = null;
   private underActions: HTMLElement | null = null;
+  /** New and Restart, kept so landscape can pair them up in one cell. */
+  private nextBtn = el('button', { class: 'btn session' }, 'New');
+  private restartBtn = el('button', { class: 'btn session' }, 'Restart');
+  /*
+   * Two controls sharing one cell of the actions grid, for the landscape
+   * column: New beside Restart, and the clock beside Pause. Half a cell each
+   * is enough for a word, and it frees two whole cells that the clock and
+   * Pause used to take from the title bar.
+   */
+  private sessionPair = el('div', { class: 'pair' });
+  private clockPair = el('div', { class: 'pair' });
 
   /**
    * Landscape on a phone: the one layout where the title bar sits beside the
@@ -63,9 +74,20 @@ export class PlayScreen {
    * tidiness.
    */
   private compact = window.matchMedia('(orientation: landscape) and (max-height: 560px)');
+  private wasCompact = this.compact.matches;
   private onCompactChange = (): void => {
+    this.wasCompact = this.compact.matches;
     this.placeClockAndPause();
     this.renderTarget();
+  };
+  /*
+   * Belt and braces for the rotation. The media query's own change event is
+   * the proper signal, but a layout that depends on one event arriving is a
+   * layout that is sometimes wrong — a resize that crosses the line and finds
+   * the column still arranged for the other orientation re-places it.
+   */
+  private onResize = (): void => {
+    if (this.compact.matches !== this.wasCompact) this.onCompactChange();
   };
 
   private ticker: number | undefined;
@@ -120,6 +142,7 @@ export class PlayScreen {
 
     this.placeClockAndPause();
     this.compact.addEventListener('change', this.onCompactChange);
+    window.addEventListener('resize', this.onResize);
 
     bindTap(
       this.board.root,
@@ -248,35 +271,51 @@ export class PlayScreen {
    * cursor is what you are looking at.
    */
   private fitTitlebar(): void {
-    if (this.targetBox.hidden || this.targetBox.parentElement !== this.titlebar) return;
-    this.targetBox.style.display = '';
-    if (this.candidateLine.scrollWidth > this.candidateLine.clientWidth + 1) {
-      this.targetBox.style.display = 'none';
+    const overflowing = (): boolean =>
+      this.candidateLine.scrollWidth > this.candidateLine.clientWidth + 1;
+    // Everything back first, then give things up in order of how little they
+    // are needed: the target, then the puzzle number. The cage under the
+    // cursor is what you are looking at, and both of those are still a tap
+    // away in the menu.
+    if (!this.targetBox.hidden && this.targetBox.parentElement === this.titlebar) {
+      this.targetBox.style.display = '';
     }
+    this.idLabel.style.display = '';
+    if (!overflowing()) return;
+    if (!this.targetBox.hidden && this.targetBox.parentElement === this.titlebar) {
+      this.targetBox.style.display = 'none';
+      if (!overflowing()) return;
+    }
+    this.idLabel.style.display = 'none';
   }
 
   private placeClockAndPause(): void {
     if (this.compact.matches) {
       /*
-       * The target rides under the clock here rather than beside the puzzle
-       * number. This bar is 264px holding six things, and a chip wide enough to
-       * spell out a target squeezed the puzzle number down to a stub — while
-       * the clock it belongs to is moving into this same bar anyway, where a
-       * smaller number beneath a running one reads as the mark to beat.
+       * Landscape column. The bar beside the board keeps only the menu, the
+       * puzzle number and the line about the cell under the cursor; the clock
+       * and Pause come down into the actions grid, where New and Restart have
+       * been squeezed into one cell to make room. The second column reads
+       *   New | Restart
+       *   tally
+       *   clock | Pause
+       * and the target rides under the clock, where a smaller time beneath the
+       * running one reads as the mark to beat.
        */
       this.timerBox.append(this.targetBox);
-      this.titlebar.append(this.timerBox, this.pauseBtn);
-      this.titlebar.classList.add('with-clock');
-      /*
-       * With those two gone the strip under the buttons holds only the tally,
-       * and a whole row of a short screen to hold one control is a poor trade.
-       * The tally takes the cell the clock has just left, the strip goes away,
-       * and every button grows by the height it was using.
-       */
-      this.actionsBox?.append(this.tallyBox);
+      this.sessionPair.append(this.nextBtn, this.restartBtn);
+      this.clockPair.append(this.timerBox, this.pauseBtn);
+      this.actionsBox?.append(this.sessionPair, this.tallyBox, this.clockPair);
+      this.titlebar.classList.remove('with-clock');
     } else {
       this.idLabel.after(this.targetBox);
-      this.actionsBox?.append(this.timerBox);
+      this.idLabel.style.display = '';
+      // Back into their own cells, in the order the grid was built with — and
+      // the two wrappers out of the grid, or they stay on as empty cells and
+      // push the clock into a fourth row.
+      this.actionsBox?.append(this.nextBtn, this.restartBtn, this.timerBox);
+      this.sessionPair.remove();
+      this.clockPair.remove();
       this.underActions?.append(this.tallyBox, this.pauseBtn);
       this.titlebar.classList.remove('with-clock');
     }
@@ -323,7 +362,7 @@ export class PlayScreen {
     const sum = el('button', { class: 'btn aid' }, 'Sum');
     sum.addEventListener('click', () => this.openCalculator());
 
-    const restart = el('button', { class: 'btn session' }, 'Restart');
+    const restart = this.restartBtn;
     restart.addEventListener('click', () =>
       confirmDialog('Clear every entry and start this puzzle again?', () => {
         this.game.restart();
@@ -334,7 +373,7 @@ export class PlayScreen {
       }, 'Restart'),
     );
 
-    const next = el('button', { class: 'btn session' }, 'New');
+    const next = this.nextBtn;
     next.addEventListener('click', () =>
       confirmDialog('Leave this puzzle and start a new one?', () => {
         this.stop();
@@ -1031,6 +1070,7 @@ export class PlayScreen {
 
   destroy(): void {
     this.compact.removeEventListener('change', this.onCompactChange);
+    window.removeEventListener('resize', this.onResize);
     this.stop();
     this.pauseNode?.remove();
     this.flushSave();

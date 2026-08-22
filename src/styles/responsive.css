@@ -48,6 +48,17 @@
     height: var(--board);
   }
 
+  /*
+   * Digits in proportion to the cell. The portrait size is 6.4% of the screen
+   * width, which is 6.4% of a board that fills it; in landscape the board is
+   * set by the height, and 6.4vw of a wide screen came out at the 33px cap in
+   * a 46px cell — answers that loomed, and pencil marks on the cage lines.
+   * 6.4% of the board itself is the same proportion portrait has.
+   */
+  .screen.play .cell {
+    font-size: calc(var(--board) * 0.064);
+  }
+
   .screen.play > .titlebar {
     grid-column: 2;
     grid-row: 1;
@@ -60,57 +71,49 @@
     overflow: hidden;
   }
 
-  .titlebar.with-clock .id {
+  .screen.play > .titlebar .id {
     font-size: 12px;
     letter-spacing: 0.06em;
   }
 
-  /* Takes whatever is left between the puzzle number and the clock, and clips
-     rather than wraps when that is not enough. */
-  .titlebar.with-clock .candidates {
+  /* Takes whatever is left after the puzzle number, and clips rather than
+     wraps when that is not enough — and play.ts hides the number before it
+     comes to that. */
+  .screen.play > .titlebar .candidates {
     flex: 1 1 auto;
     min-width: 0;
+    margin-left: 0;
     font-size: 13px;
   }
 
-  .titlebar.with-clock .timer {
+  /* Two controls in one cell of the actions grid. */
+  .controls .actions .pair {
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .controls .actions .pair > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .controls .actions .timer {
+    padding: 2px 4px;
+    font-size: 13px;
     overflow: hidden;
-    flex: 0 0 auto;
   }
 
   .timer .target {
     white-space: nowrap;
   }
 
-  /*
-   * The clock and Pause ride in the bar here (play.ts moves them). They are the
-   * two controls that read as well in a strip as in a grid, and handing their
-   * cells back to the buttons that are actually pressed is worth more than
-   * keeping every control in one place.
-   */
-  .titlebar.with-clock .timer {
-    margin-left: auto;
-    min-width: 56px;
-    padding: 2px 6px;
-    font-size: 13px;
-    border-radius: 7px;
+  .controls .actions .pause-btn {
+    flex: 1 1 0;
+    height: auto;
   }
 
-  .titlebar.with-clock .pause-btn {
-    flex: 0 0 32px;
-    height: 26px;
-    border-radius: 7px;
-  }
-
-  .titlebar.with-clock .pause-btn i {
-    height: 12px;
-    width: 3px;
-  }
-
-  /* The candidates line gives up its auto margin to the clock. */
-  .titlebar.with-clock .candidates {
-    margin-left: 0;
-  }
 
   /* Empty once the tally moves up into the grid. */
   .under-actions {
