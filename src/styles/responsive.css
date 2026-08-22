@@ -20,6 +20,81 @@
     align-items: flex-start;
   }
 
+  /*
+   * The menu in landscape. A 520px column of six level panels is 756px tall on
+   * a screen 435px high; the width is the room going spare, so the levels go
+   * two abreast, the title and the resume button share a row, and the
+   * footnote about the two pools — true, but not worth a row of a short
+   * screen — goes. It all sits inside the screen without scrolling.
+   */
+  .screen.menu {
+    max-width: none;
+    width: 100%;
+    padding: 6px 8px 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    column-gap: 12px;
+    row-gap: 6px;
+    align-items: center;
+  }
+
+  .screen.menu > .titlebar {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 36px;
+    padding: 3px 8px;
+  }
+
+  .screen.menu > .hero {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 0 2px;
+  }
+
+  .screen.menu > .hero .kicker {
+    margin: 0;
+  }
+
+  .screen.menu > .hero h1 {
+    font-size: 24px;
+  }
+
+  /* Resume beside the title rather than under the list. */
+  .screen.menu > .actions {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 220px;
+  }
+
+  .screen.menu > .levels {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    align-content: start;
+  }
+
+  /* A wider lane for the belt and its name: the 150px one was cut for a 375px
+     phone, and at 440px a panel "Yellow belt" was running out of dots. */
+  .screen.menu .level {
+    grid-template-columns: 176px minmax(0, calc(50% + 26px));
+  }
+
+  .screen.menu > .hint-line {
+    display: none;
+  }
+
+  .screen.menu > .build-stamp {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin: 0;
+  }
+
   .screen.play {
     /* 16px is the page padding; 336px reserves the controls column and gap. */
     --board: min(calc(100dvh - 16px), calc(100vw - 336px), 720px);
@@ -235,13 +310,16 @@
     grid-template-rows: repeat(3, minmax(0, 1fr));
   }
 
-  .key,
-  .btn {
+  /* Scoped to the play screen: these flatten the keys and aids to fit the
+     column beside the board, and unscoped they flattened the menu's resume
+     button to 21px as well. */
+  .screen.play .key,
+  .screen.play .btn {
     padding: 2px 4px;
     font-size: 17px;
   }
 
-  .key.clear {
+  .screen.play .key.clear {
     padding: 2px 4px;
   }
 

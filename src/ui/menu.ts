@@ -18,7 +18,8 @@ import { openTutorial } from './tutorial.ts';
  * random unplayed puzzle from that pool; a long-click picks a number.
  */
 export function buildMenu(ctx: AppContext): HTMLElement {
-  const screen = el('div', { class: 'screen' });
+  // 'menu' marks the one screen that spreads into two columns in landscape.
+  const screen = el('div', { class: 'screen menu' });
 
   const menuBtn = el('button', { class: 'iconbtn', 'aria-label': 'Menu' });
   menuBtn.append(el('i'), el('i'), el('i'));

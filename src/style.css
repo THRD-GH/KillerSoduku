@@ -2199,13 +2199,13 @@ textarea {
     grid-template-rows: repeat(3, minmax(0, 1fr));
   }
 
-  .key,
-  .btn {
+  .screen.play .key,
+  .screen.play .btn {
     padding: 2px 4px;
     font-size: 17px;
   }
 
-  .key.clear {
+  .screen.play .key.clear {
     padding: 2px 4px;
   }
 
