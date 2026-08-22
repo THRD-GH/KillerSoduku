@@ -92,14 +92,21 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
         'aria-label': `Explain the ${BELTS[level].name}, ${BELTS[level].rank}`,
         title: `What the ${BELTS[level].name} involves`,
       },
-      belt(level, 34),
+      // The belt with the badge pushed out to the end of its line, then the
+      // rank and the name together underneath. The description is the third
+      // line, running the width of the panel below both.
+      el(
+        'span',
+        { class: 'belt-line' },
+        belt(level, 34),
+        el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
+      ),
       el(
         'span',
         { class: 'name' },
-        BELTS[level].name,
         el('small', {}, BELTS[level].rank),
+        BELTS[level].name,
       ),
-      el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
     ),
   );
 

@@ -909,7 +909,7 @@ body {
      banner rather than a button — and a target that wide is no easier to hit
      than one at half of it. The picker beside each one is paid for on top, so
      it is the button itself that comes out at half. */
-  grid-template-columns: 104px minmax(0, calc(50% + 26px));
+  grid-template-columns: 150px minmax(0, calc(50% + 26px));
   align-items: stretch;
   /* The slack goes between the belt and the pools, not after them: capping the
      pools at half the row left them stranded in the middle with a margin of
@@ -927,14 +927,10 @@ body {
 }
 
 .level-head {
-  position: relative;
-  /* Belt above the name. Beside it, the pair needed a lane wide enough for the
-     longest name and its rank on one line, and that lane ate the row: on a
-     phone the Classic and New buttons were left with barely enough for their
-     own labels. Stacked, the lane only has to be as wide as one line of text.
-     What made stacking ragged before was the rank line — "1st Dan · Dan
-     challenge" is twice the width of the name above it — so that has moved down
-     to the caption, and nothing in here wraps. */
+  /* Three lines down the left: the belt with its badge, the rank and name
+     under it, and the description under both. The lane can hold the rank and
+     name side by side now that the pools stop at half the row — the space
+     between the two was going spare. */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -964,6 +960,12 @@ body {
     grid-column: 1 / -1;
     grid-row: auto;
   }
+
+  /* The head has the whole width here, and a badge pushed to the far end of it
+     stops reading as part of the belt beside it. */
+  .belt-line {
+    max-width: 150px;
+  }
 }
 
 .level-head:hover,
@@ -972,11 +974,16 @@ body {
   outline: 1px solid var(--accent);
 }
 
+/* Belt at one end of its line, the badge at the other. */
+.belt-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .level-info-badge {
-  position: absolute;
-  top: 50%;
-  right: 2px;
-  translate: 0 -50%;
+  flex: 0 0 auto;
   width: 15px;
   height: 15px;
   display: grid;
@@ -2124,10 +2131,12 @@ body {
   margin-bottom: 4px;
 }
 
-/* Belt above rank, so the name reads first and the Kyū sits under it. */
+/* Rank then name, on one line under the belt. */
 .level-head .name {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 5px;
   line-height: 1.15;
   min-width: 0;
   white-space: nowrap;
