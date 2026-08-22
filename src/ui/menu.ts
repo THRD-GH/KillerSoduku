@@ -50,11 +50,19 @@ export function buildMenu(ctx: AppContext): HTMLElement {
     else if (saves.length > 1) openUnfinishedPicker(ctx, refreshResume);
   });
   refreshResume();
-  screen.append(resumeActions);
 
   const list = el('div', { class: 'levels' });
   for (const level of LEVELS) list.append(buildLevelPanel(ctx, level));
   screen.append(list);
+
+  /*
+   * Under the levels rather than over them. Picking up an unfinished game is
+   * the shorter errand, but the screen is called Choose Level and it was
+   * putting a button between that instruction and the levels themselves — and
+   * the button comes and goes with whether anything is unfinished, so the whole
+   * list moved down the screen depending on it.
+   */
+  screen.append(resumeActions);
 
   screen.append(
     el(
