@@ -866,7 +866,7 @@ body {
 
 .hero {
   text-align: center;
-  padding: 10px 0 2px;
+  padding: 4px 0 2px;
 }
 
 .hero h1 {
@@ -890,7 +890,7 @@ body {
 .levels {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 /* Three columns per level: the difficulty, then each of its two pools. */
@@ -904,13 +904,18 @@ body {
      The lane is fixed rather than sized to its contents because every row is
      its own grid — left to themselves the lanes settled a few pixels apart and
      the buttons stepped in and out down the list. */
-  grid-template-columns: 104px minmax(0, 1fr);
+  /* The pools take half the row and stop there. Given the whole of what was
+     left they stretched to 205px for a word and a count, which reads as a
+     banner rather than a button — and a target that wide is no easier to hit
+     than one at half of it. The picker beside each one is paid for on top, so
+     it is the button itself that comes out at half. */
+  grid-template-columns: 104px minmax(0, calc(50% + 26px));
   align-items: stretch;
-  gap: 6px;
+  gap: 4px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 7px 8px;
+  padding: 6px 8px;
   min-width: 0;
   user-select: none;
   -webkit-user-select: none;
@@ -1013,7 +1018,7 @@ body {
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
-  padding: 6px 9px;
+  padding: 5px 9px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
@@ -2137,10 +2142,10 @@ body {
    pool — and every row gains the same height, so the list stays put. */
 .level-asks {
   grid-column: 1 / -1;
-  margin: 1px 0 0;
+  margin: 0;
   color: var(--dim);
-  font-size: 11.5px;
-  line-height: 1.2;
+  font-size: 11px;
+  line-height: 1.15;
 }
 
 .level-head .name small {

@@ -26,12 +26,9 @@ export function buildMenu(ctx: AppContext): HTMLElement {
 
   screen.append(
     el('div', { class: 'titlebar' }, menuBtn, el('span', { class: 'id' }, 'KILLER SUDOKU')),
-    el(
-      'div',
-      { class: 'hero' },
-      el('h1', {}, 'Choose ', el('span', {}, 'Level')),
-      el('p', {}, 'Pick a difficulty, then choose Classic or New'),
-    ),
+    // No subtitle: every level now names what it asks of you along its own
+    // row, and the line at the foot of the screen still explains the two pools.
+    el('div', { class: 'hero' }, el('h1', {}, 'Choose ', el('span', {}, 'Level'))),
   );
 
   const resumeBtn = el('button', { class: 'btn primary wide' });
