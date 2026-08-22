@@ -26,9 +26,15 @@ export function buildMenu(ctx: AppContext): HTMLElement {
 
   screen.append(
     el('div', { class: 'titlebar' }, menuBtn, el('span', { class: 'id' }, 'KILLER SUDOKU')),
-    // No subtitle: every level now names what it asks of you along its own
-    // row, and the line at the foot of the screen still explains the two pools.
-    el('div', { class: 'hero' }, el('h1', {}, 'Choose ', el('span', {}, 'Level'))),
+    // The kicker names the family this belongs to, as the other DanDoku games
+    // do. No subtitle under the title: every level says what it asks along its
+    // own row, and the line at the foot still explains the two pools.
+    el(
+      'div',
+      { class: 'hero' },
+      el('p', { class: 'kicker' }, 'DanDoku · Killer'),
+      el('h1', {}, 'Choose ', el('span', {}, 'Level')),
+    ),
   );
 
   const resumeBtn = el('button', { class: 'btn primary wide' });

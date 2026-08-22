@@ -7,6 +7,15 @@
  */
 :root {
   --font-ui: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  /*
+   * The house lettering, shared with the rest of DanDoku: a monospace for the
+   * things that label rather than speak — the app's name in the bar, the kicker
+   * over the title, a belt's rank. Wide-tracked and upper-case, it reads as
+   * stamped on rather than written.
+   */
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  /* Square-ish corners throughout, as the other DanDoku games are cut. */
+  --radius: 2px;
 }
 
 /* Night is the default; the Theme setting swaps in day or high contrast.
@@ -83,50 +92,57 @@
    colour on the board at all. The cursor is a wash of ochre, and the only other
    colour in the grid is the one red that says an entry is wrong. */
 :root[data-theme='day'] {
-  --bg: #dfe4e9;
-  --panel: #f6f1e6;
-  --panel-2: #ece5d6;
-  --line: #cdc3b1;
-  --rule: #a89e8d;
-  --line-strong: #16120c;
-  --cell: #faf6ec;
-  --text: #16120c;
-  --dim: #6b6357;
-  --accent: #2f4f6f;
-  --accent-dim: #b9cad9;
-  --cage: #8a8072;
-  --sum: #2f2921;
-  --mark: #7a7264;
-  --single: #3f6b46;
-  --single-bg: rgba(63, 107, 70, 0.12);
-  --tallied: rgba(124, 70, 176, 0.2);
-  --spotlit: rgba(190, 150, 60, 0.42);
-  --error: #a8221c;
-  --clash: #b8604f;
-  --sel: rgba(190, 150, 60, 0.32);
-  --peer: rgba(22, 18, 12, 0.045);
-  --cage-peer: rgba(107, 99, 87, 0.08);
-  --same: rgba(47, 79, 111, 0.1);
-  --shadow: rgba(60, 50, 35, 0.22);
-  --panel-rgb: 246 241 230;
-  --panel-2-rgb: 236 229 214;
+  /*
+   * The DanDoku palette, taken from the other games rather than invented here:
+   * navy ink on warm stock, near-white panels, and the blue of a 2nd Kyū belt
+   * for anything that wants picking out. The belts themselves are drawn from
+   * the same six colours, so a Black belt and the text beside it are the one
+   * navy.
+   */
+  --bg: #f4efe5;
+  --panel: #fffdfa;
+  --panel-2: #f4efe5;
+  --line: #17273d3d;
+  --rule: #17273d4d;
+  --line-strong: #17273d;
+  --cell: #fffdfa;
+  --text: #17273d;
+  --dim: #66717c;
+  --accent: #3979a8;
+  --accent-dim: #dbe8ee;
+  --cage: #17273d99;
+  --sum: #17273d;
+  --mark: #66717c;
+  --single: #2f7d55;
+  --single-bg: rgba(47, 125, 85, 0.12);
+  --tallied: rgba(124, 70, 176, 0.18);
+  --spotlit: rgba(57, 121, 168, 0.26);
+  --error: #b3261e;
+  --clash: #c4685c;
+  --sel: rgba(57, 121, 168, 0.2);
+  --peer: rgba(23, 39, 61, 0.05);
+  --cage-peer: rgba(57, 121, 168, 0.07);
+  --same: rgba(57, 121, 168, 0.12);
+  --shadow: rgba(23, 39, 61, 0.16);
+  --panel-rgb: 255 253 250;
+  --panel-2-rgb: 244 239 229;
   --inc-rgb: 47 107 63;
   --exc-rgb: 168 34 28;
 
-  --k-digit: #fffdf8;
-  --k-digit-line: #cdc3b1;
-  --k-digit-text: #16120c;
-  --k-edit: #ece5d6;
-  --k-edit-line: #cdc3b1;
-  --k-edit-text: #4a443a;
-  --k-aid: #f6f1e6;
-  --k-aid-line: #cdc3b1;
-  --k-aid-text: #2f4f6f;
-  --k-session: #f6f1e6;
-  --k-session-line: #cdc3b1;
-  --k-session-text: #8a4a3a;
-  --k-tally: #f3ecf9;
-  --k-tally-line: #cdb4e0;
+  --k-digit: #fffdfa;
+  --k-digit-line: #17273d3d;
+  --k-digit-text: #17273d;
+  --k-edit: #f4efe5;
+  --k-edit-line: #17273d3d;
+  --k-edit-text: #48525f;
+  --k-aid: #fffdfa;
+  --k-aid-line: #17273d3d;
+  --k-aid-text: #3979a8;
+  --k-session: #fffdfa;
+  --k-session-line: #17273d3d;
+  --k-session-text: #9c5a3c;
+  --k-tally: #f6f0fa;
+  --k-tally-line: #b79ad6;
   --k-tally-text: #6b3f96;
 }
 
@@ -255,8 +271,9 @@ body {
   align-items: center;
   gap: 8px;
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  /* The one heavy rule on the screen, as the other games draw it. */
+  border: 2px solid var(--text);
+  border-radius: var(--radius);
   padding: 6px 8px;
   min-height: 42px;
 }
@@ -292,9 +309,15 @@ body {
 }
 
 .titlebar .id {
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: var(--accent);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  /* Ink, not accent: the name of the app is the one thing on the bar that is
+     not a control, and the other games print it in the same navy as the rule
+     around it. */
+  color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
@@ -725,7 +748,7 @@ body {
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: var(--radius);
   font-family: var(--font-ui);
   font-size: 20px;
   font-weight: 600;
@@ -869,10 +892,21 @@ body {
   padding: 4px 0 2px;
 }
 
+/* Which game, and whose. Small, stamped, and the same on every DanDoku game. */
+.hero .kicker {
+  margin: 0 0 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
 .hero h1 {
   margin: 0;
-  font-size: 30px;
-  letter-spacing: 1px;
+  font-size: 34px;
+  letter-spacing: -0.045em;
   font-weight: 800;
 }
 
@@ -919,7 +953,7 @@ body {
   gap: 4px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: 6px 8px;
   min-width: 0;
   user-select: none;
@@ -1036,7 +1070,7 @@ body {
   min-width: 0;
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: var(--radius);
   padding: 5px 9px;
   cursor: pointer;
   text-align: left;
@@ -2153,9 +2187,11 @@ body {
 
 /* Rank and what the belt stands for, under it. */
 .level-head .rank {
-  color: var(--dim);
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+  color: var(--accent);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
