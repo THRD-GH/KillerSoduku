@@ -53,7 +53,33 @@
     grid-row: 1;
     min-height: 34px;
     padding: 3px 6px;
-    gap: 6px;
+    gap: 4px;
+    /* Nothing in here may wrap: the bar is 264px holding six things, and a
+       second line on any of them pushed the whole column down the screen. */
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .titlebar.with-clock .id {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Takes whatever is left between the puzzle number and the clock, and clips
+     rather than wraps when that is not enough. */
+  .titlebar.with-clock .candidates {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  .titlebar.with-clock .timer {
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+
+  .timer .target {
+    white-space: nowrap;
   }
 
   /*
@@ -89,6 +115,42 @@
   /* Empty once the tally moves up into the grid. */
   .under-actions {
     display: none;
+  }
+
+  /*
+   * The win sheet sits over the keypad column, not across the board. Spread
+   * along the bottom it covered the lower half of the grid you had just
+   * finished, which is the one thing the undimmed backdrop was there to show.
+   * The keypad is dead once the puzzle is solved, so that is the side to cover,
+   * and the three buttons stack to fit the column.
+   */
+  .overlay.bottom-sheet {
+    justify-items: end;
+    align-items: center;
+    padding: 8px;
+  }
+
+  :root[data-keypad='left'] .overlay.bottom-sheet {
+    justify-items: start;
+  }
+
+  .overlay.bottom-sheet .panel.won {
+    max-width: 300px;
+    max-height: calc(100dvh - 16px);
+  }
+
+  .won-actions {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .won .actions .btn {
+    padding: 8px 6px;
+  }
+
+  .won .time {
+    font-size: 26px;
+    margin: 2px 0;
   }
 
   /* In the grid it is a control like the others, not a wide bar. */

@@ -63,7 +63,10 @@ export class PlayScreen {
    * tidiness.
    */
   private compact = window.matchMedia('(orientation: landscape) and (max-height: 560px)');
-  private onCompactChange = (): void => this.placeClockAndPause();
+  private onCompactChange = (): void => {
+    this.placeClockAndPause();
+    this.renderTarget();
+  };
 
   private ticker: number | undefined;
   private lastTick = 0;
@@ -779,13 +782,7 @@ export class PlayScreen {
           `${this.game.hints} hint${this.game.hints === 1 ? '' : 's'}, ` +
             `${this.game.checks} check${this.game.checks === 1 ? '' : 's'}`,
         ),
-        el(
-          'div',
-          { class: 'actions', style: 'grid-template-columns: repeat(3, 1fr)' },
-          menu,
-          insights,
-          again,
-        ),
+        el('div', { class: 'actions won-actions' }, menu, insights, again),
       );
       // Low on the screen and over a clear backdrop: the grid you have just
       // finished is worth a look, and dimming it to announce that you finished
@@ -814,7 +811,12 @@ export class PlayScreen {
       return;
     }
     this.targetBox.hidden = false;
-    this.targetBox.textContent = `target ${formatTime(target)}`;
+    // Under the clock in the landscape bar the word is redundant — a smaller
+    // time beneath the running one reads as the mark to beat — and there was
+    // no room for it: "target 14:30" ran past the edge of a 56px box.
+    this.targetBox.textContent = this.compact.matches
+      ? formatTime(target)
+      : `target ${formatTime(target)}`;
     this.targetBox.classList.toggle('past', this.game.elapsedMs > target);
     // A tick can change the target's width (past/not past is colour only, but
     // the setting can be turned on mid-game), so the bar is re-fitted with it.

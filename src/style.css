@@ -1957,6 +1957,10 @@ body {
 /* Three buttons across a phone-width sheet. The type used on the other panels
    wraps "Main menu" at this width, and a wrapped label makes the row taller
    than the finished grid can spare. */
+.won-actions {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .won .actions .btn {
   font-size: 15px;
   padding: 11px 6px;
