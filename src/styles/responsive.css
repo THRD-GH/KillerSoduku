@@ -75,6 +75,11 @@
     grid-row: 3;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    /* Filled down the columns, not along the rows: the belts are a ladder,
+       and a ladder reads White, Yellow, Green down one side and Blue, Brown,
+       Black down the other — not White beside Yellow with Blue under Green. */
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
     gap: 5px;
     align-content: start;
   }
