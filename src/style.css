@@ -21,71 +21,62 @@
 /* Night is the default; the Theme setting swaps in day or high contrast.
    Ink and lamplight: the same printed board, read in the dark. */
 :root {
-  /* The page keeps the original cool near-black: the warm board reads as a
-     sheet laid on it, rather than the whole screen being tinted. */
-  --bg: #0a0d10;
-  --panel: #1d1a16;
-  --panel-2: #262119;
-  /* Interface borders and board hairlines are different weights of the same
-     idea, and want different colours — the grid rule has to be quieter. */
-  --line: #3a342c;
-  --rule: #4a4238;
-  --line-strong: #b9ab93;
-  --cell: #191612;
-  --text: #efe7d8;
-  --dim: #9b917f;
+  /*
+   * The DanDoku night: navy ink turned inside out. Taken from Sudoku Variants
+   * token for token, so the two games are one family in the dark as well as
+   * the light. The board's own meanings — cursor gold, wrong-entry red, tally
+   * violet, solved green — are the values the family shares too.
+   */
+  --ink: #17273d;
+  --coral: #f06951;
+  --gold: #d7a52a;
+  --bg: #111c2b;
+  --panel: #17263a;
+  --panel-2: #1e2e44;
+  --line: #f4efe52e;
+  --rule: #f4efe538;
+  --line-strong: #f4efe5;
+  --cell: #152234;
+  --text: #f4efe5;
+  --dim: #b9c4cf;
   --accent: #8fb4d6;
   --accent-dim: #33465a;
-  --cage: #6d6456;
-  --sum: #d7cbb2;
-  --mark: #9b917f;
-  /* A cell down to its last candidate. */
+  --cage: #b9c4cf99;
+  --sum: #f4efe5;
+  --mark: #b9c4cf;
   --single: #7fbf8e;
-  --single-bg: rgba(127, 191, 142, 0.13);
-  /* Cages counted into the tally. Violet: the board already spends gold on the
-     cursor, blue on matching digits and green on a solved cell, so this is the
-     one hue left that cannot be mistaken for any of them — and a pale blue on
-     warm stock only ever came out as grey. */
-  --tallied: rgba(178, 124, 224, 0.3);
-  /* Cells a hint is pointing at. */
-  --spotlit: rgba(214, 178, 94, 0.3);
+  --single-bg: #7fbf8e21;
+  --tallied: #b27ce04d;
+  --spotlit: #d6b25e4d;
   --error: #e2564b;
   --clash: #a8564a;
-  --sel: rgba(214, 178, 94, 0.26);
-  --peer: rgba(255, 255, 255, 0.045);
-  --cage-peer: rgba(214, 178, 94, 0.07);
-  --same: rgba(143, 180, 214, 0.13);
-  --shadow: rgba(0, 0, 0, 0.55);
-  /* Components for overlays you need to see through, mixed at --glass. */
-  --panel-rgb: 29 26 22;
-  --panel-2-rgb: 38 33 25;
-  /* Required / ruled-out keys, mixed at --glass like every other surface. */
+  --sel: #d6b25e42;
+  --peer: #ffffff0b;
+  --cage-peer: #d6b25e12;
+  --same: #8fb4d621;
+  --shadow: #00000073;
+  --primary-bg: #f4efe5;
+  --primary-text: #111c2b;
+  --panel-rgb: 23 38 58;
+  --panel-2-rgb: 30 46 68;
   --inc-rgb: 47 107 63;
   --exc-rgb: 168 55 45;
-
-  /*
-   * Two tones, not five. The old palette gave every group of keys its own
-   * colour, which is the look of a control panel rather than a puzzle: the
-   * digits are the instrument and everything else is furniture. So the digits
-   * get the lighter surface and the rest share one, distinguished by the
-   * colour of their lettering alone.
-   */
-  --k-digit: #232019;
-  --k-digit-line: #4a4236;
-  --k-digit-text: #efe7d8;
-  --k-edit: #1e1b16;
-  --k-edit-line: #3a342c;
-  --k-edit-text: #cabfa9;
-  --k-aid: #1e1b16;
-  --k-aid-line: #3a342c;
+  --k-digit: #1e2e44;
+  --k-digit-line: #f4efe559;
+  --k-digit-text: #f4efe5;
+  --k-edit: #17263a;
+  --k-edit-line: #f4efe533;
+  --k-edit-text: #d9e0e8;
+  --k-aid: #17263a;
+  --k-aid-line: #f4efe533;
   --k-aid-text: #8fb4d6;
-  --k-session: #1e1b16;
-  --k-session-line: #3a342c;
-  --k-session-text: #d99a86;
-  /* The tally button wears the colour it paints the board with. */
+  --k-session: #17263a;
+  --k-session-line: #f4efe533;
+  --k-session-text: #f28b76;
   --k-tally: #2a2034;
   --k-tally-line: #6b4d85;
   --k-tally-text: #d9c2ee;
+
 }
 
 /* Day: the puzzle page of a newspaper — cream stock, black ink, and no accent
@@ -93,11 +84,10 @@
    colour in the grid is the one red that says an entry is wrong. */
 :root[data-theme='day'] {
   /*
-   * The DanDoku palette, taken from the other games rather than invented here:
-   * navy ink on warm stock, near-white panels, and the blue of a 2nd Kyū belt
-   * for anything that wants picking out. The belts themselves are drawn from
-   * the same six colours, so a Black belt and the text beside it are the one
-   * navy.
+   * The DanDoku day, from Sudoku Variants: navy ink on warm stock, near-white
+   * panels, the blue of a 2nd Kyū belt for anything picked out. The belts are
+   * drawn from the same six colours, so a Black belt and the ink beside it are
+   * the one navy.
    */
   --bg: #f4efe5;
   --panel: #fffdfa;
@@ -113,37 +103,39 @@
   --cage: #17273d99;
   --sum: #17273d;
   --mark: #66717c;
-  --single: #2f7d55;
-  --single-bg: rgba(47, 125, 85, 0.12);
-  --tallied: rgba(124, 70, 176, 0.18);
-  --spotlit: rgba(57, 121, 168, 0.26);
-  --error: #b3261e;
-  --clash: #c4685c;
-  --sel: rgba(57, 121, 168, 0.2);
-  --peer: rgba(23, 39, 61, 0.05);
-  --cage-peer: rgba(57, 121, 168, 0.07);
-  --same: rgba(57, 121, 168, 0.12);
-  --shadow: rgba(23, 39, 61, 0.16);
+  --single: #3f6b46;
+  --single-bg: #3f6b461f;
+  --tallied: #7c46b033;
+  --spotlit: #be963c6b;
+  --error: #a8221c;
+  --clash: #b8604f;
+  --sel: #be963c52;
+  --peer: #16120c0b;
+  --cage-peer: #6b635714;
+  --same: #2f4f6f1a;
+  --shadow: #17273d1f;
+  --primary-bg: #17273d;
+  --primary-text: #fff;
   --panel-rgb: 255 253 250;
   --panel-2-rgb: 244 239 229;
   --inc-rgb: 47 107 63;
   --exc-rgb: 168 34 28;
-
   --k-digit: #fffdfa;
-  --k-digit-line: #17273d3d;
+  --k-digit-line: #17273d66;
   --k-digit-text: #17273d;
-  --k-edit: #f4efe5;
-  --k-edit-line: #17273d3d;
-  --k-edit-text: #48525f;
+  --k-edit: #e9ded0;
+  --k-edit-line: #17273d4d;
+  --k-edit-text: #17273d;
   --k-aid: #fffdfa;
-  --k-aid-line: #17273d3d;
+  --k-aid-line: #17273d4d;
   --k-aid-text: #3979a8;
   --k-session: #fffdfa;
-  --k-session-line: #17273d3d;
-  --k-session-text: #9c5a3c;
-  --k-tally: #f6f0fa;
-  --k-tally-line: #b79ad6;
+  --k-session-line: #17273d4d;
+  --k-session-text: #c4503c;
+  --k-tally: #f3ecf9;
+  --k-tally-line: #cdb4e0;
   --k-tally-text: #6b3f96;
+
 }
 
 /* High contrast: pure black behind white text, and every hue drawn from the
@@ -177,6 +169,8 @@
   --cage-peer: rgba(240, 228, 66, 0.12);
   --same: rgba(86, 180, 233, 0.18);
   --shadow: rgba(0, 0, 0, 0.9);
+  --primary-bg: #0072b2;
+  --primary-text: #fff;
   --panel-rgb: 0 0 0;
   --panel-2-rgb: 16 16 20;
   /* Blue for required, vermillion for ruled out — not green and red. */
@@ -272,7 +266,7 @@ body {
   gap: 8px;
   background: var(--panel);
   /* The one heavy rule on the screen, as the other games draw it. */
-  border: 2px solid var(--text);
+  border: 2px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 6px 8px;
   min-height: 42px;
@@ -351,7 +345,7 @@ body {
   gap: 3px;
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: var(--radius);
   cursor: pointer;
   padding: 5px 6px;
   flex: 0 0 auto;
@@ -384,8 +378,9 @@ body {
    */
   border: 2px solid var(--line-strong);
   background: var(--cell);
-  /* Lifts the grid off the page: it reads as a sheet laid on the screen. */
-  box-shadow: 0 6px 22px var(--shadow);
+  /* Lifts the grid off the page. A hard offset rather than a blur: the house
+     shadow is a printed one, a sheet laid square on another. */
+  box-shadow: 9px 11px 0 var(--shadow);
   /* `none`, not `manipulation`: manipulation still leaves panning on the table,
      so a tap with the smallest drag can be reinterpreted as a scroll, and the
      pointer is cancelled mid-gesture. There is nothing to scroll here. */
@@ -768,6 +763,7 @@ body {
 /* Four groups, so what a control does is legible before you read it:
    digits, the editing keys, the solving aids, and the session buttons. */
 .numpad .key {
+  font-family: var(--font-mono);
   background: var(--k-digit);
   border-color: var(--k-digit-line);
   color: var(--k-digit-text);
@@ -822,8 +818,9 @@ body {
 
 .tally,
 .timer {
-  border-radius: 5px;
+  border-radius: var(--radius);
   border: 1px solid var(--line);
+  font-family: var(--font-mono);
   padding: 6px 4px;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -880,38 +877,64 @@ body {
   grid-column: span 3;
 }
 
+/* Solid ink (cream, at night), as every DanDoku game draws its one main
+   action. */
 .btn.primary {
-  background: var(--accent-dim);
-  border-color: var(--accent);
+  background: var(--primary-bg);
+  border-color: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.btn.primary:active {
+  background: var(--primary-bg);
+  opacity: 0.85;
+}
+
+/* The full-width one on the menu — resume, or the unfinished list — takes the
+   house stamp: small mono capitals and a coral shadow. */
+.actions .btn.primary.wide {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 4px 4px 0 var(--coral);
 }
 
 /* ---------- menu / level select ---------- */
 
+/* Set left, as the other games set it: a kicker with the coral rule in front
+   of it, then the title, tight and heavy. */
 .hero {
-  text-align: center;
-  padding: 4px 0 2px;
+  text-align: left;
+  padding: 14px 2px 6px;
 }
 
-/* Which game, and whose. Small, stamped, and the same on every DanDoku game. */
 .hero .kicker {
-  margin: 0 0 2px;
+  margin: 0 0 10px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--dim);
 }
 
-.hero h1 {
-  margin: 0;
-  font-size: 34px;
-  letter-spacing: -0.045em;
-  font-weight: 800;
+.hero .kicker::before {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 31px;
+  height: 2px;
+  margin-right: 12px;
+  background: var(--coral);
 }
 
-.hero h1 span {
-  color: var(--accent);
+.hero h1 {
+  margin: 0;
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 800;
 }
 
 .hero p {
@@ -1235,20 +1258,21 @@ body {
 
 .panel {
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius);
   padding: 14px;
   width: 100%;
   max-width: 480px;
   max-height: 86vh;
   overflow: auto;
-  box-shadow: 0 10px 40px var(--shadow);
+  box-shadow: 8px 8px 0 var(--shadow);
 }
 
 .panel h2 {
   margin: 0 0 10px;
-  font-size: 19px;
-  color: var(--accent);
+  font-size: 21px;
+  letter-spacing: -0.03em;
+  color: var(--text);
 }
 
 /* Stays put while the panel body scrolls, so the way out is always on screen. */
@@ -1953,10 +1977,10 @@ body {
   border: 1px solid var(--accent);
   color: var(--text);
   padding: 9px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius);
   font-size: 13px;
   z-index: 70;
-  box-shadow: 0 6px 20px var(--shadow);
+  box-shadow: 4px 4px 0 var(--shadow);
   pointer-events: none;
 }
 
@@ -2027,9 +2051,10 @@ body {
   gap: 12px;
   padding: 9px 10px 9px 14px;
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius);
   background: var(--panel);
   color: var(--text);
+  box-shadow: 4px 4px 0 var(--shadow);
   box-shadow: 0 6px 20px var(--shadow);
   font-size: 13px;
 }
@@ -2210,7 +2235,10 @@ body {
   margin: 0;
   color: var(--dim);
   font-size: 11px;
-  line-height: 1.2;
+  /* 1.15, not 1.2: at 1.2 a phrase that wraps made its head 63px against the
+     62px of the two pool buttons beside it, and those rows came out a pixel
+     taller than the rest. */
+  line-height: 1.15;
   white-space: normal;
 }
 
@@ -2223,4 +2251,69 @@ body {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 12px;
+}
+
+
+/* ---------- DanDoku house lettering ---------- */
+
+/* The things that label rather than speak take the monospace, as they do on
+   every other DanDoku game. */
+.build-stamp,
+.summary,
+.key .count,
+.titlebar .candidates,
+.titlebar .timer,
+.statrow .when,
+.hint-line {
+  font-family: var(--font-mono);
+}
+
+/* The generated pool is the accented one, as on the other games' pickers. */
+.source.new .source-name {
+  color: var(--accent);
+}
+
+/* Squared corners on the remaining shell pieces. Switches keep their pill. */
+.pause-btn,
+.statrow,
+.rowx,
+.totals .tile,
+.tabs button,
+.source,
+.level,
+.menu-list button,
+.update-notice,
+.iconbtn {
+  border-radius: var(--radius);
+}
+
+.statrow .hold {
+  border-radius: 3px;
+}
+
+/* The belt, drawn the way the other games draw it. */
+.belt-stroke {
+  stroke: var(--line-strong);
+  stroke-width: 1.2px;
+  stroke-linejoin: miter;
+}
+
+.belt-stitch {
+  stroke: var(--line-strong);
+  stroke-width: 0.7px;
+  opacity: 0.4;
+}
+
+.belt-fold {
+  stroke: var(--line-strong);
+  stroke-width: 0.9px;
+  opacity: 0.55;
+}
+
+.belt-dan {
+  font-family: var(--font-ui);
+  letter-spacing: 0.06em;
+  fill: #fff;
+  font-size: 5px;
+  font-weight: 800;
 }

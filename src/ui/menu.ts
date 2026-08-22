@@ -33,7 +33,7 @@ export function buildMenu(ctx: AppContext): HTMLElement {
       'div',
       { class: 'hero' },
       el('p', { class: 'kicker' }, 'DanDoku · Killer'),
-      el('h1', {}, 'Choose ', el('span', {}, 'Level')),
+      el('h1', {}, 'Pick your belt.'),
     ),
   );
 
@@ -104,7 +104,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
       el(
         'span',
         { class: 'belt-line' },
-        belt(level, 34),
+        belt(level, 40),
         el('span', { class: 'name' }, BELTS[level].name),
         el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
       ),

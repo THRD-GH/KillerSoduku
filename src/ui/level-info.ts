@@ -41,7 +41,7 @@ export function openLevelInfo(level: Level): void {
     return el(
       'div',
       { class: 'panel level-info-panel' },
-      el('div', { class: 'level-info-belt' }, belt(level, 72)),
+      el('div', { class: 'level-info-belt' }, belt(level, 96)),
       el('h2', {}, `${BELTS[level].name} · ${BELTS[level].rank}`),
       el('p', { class: 'level-info-descriptor' }, BELTS[level].descriptor),
       el('p', { class: 'level-info-lead' }, guide.lead),

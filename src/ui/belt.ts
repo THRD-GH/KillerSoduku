@@ -4,58 +4,52 @@ import type { Level } from '../core/types.ts';
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**
- * The belt for a level, tied.
+ * The belt, drawn as the other DanDoku games draw it: a flat band with two
+ * lines of stitching, the knot square on it with a fold across, and the two
+ * tails hanging below. Same paths, same viewBox, same stroke classes, so a
+ * belt looks the same whichever game it is met in.
  *
- * Drawn rather than shipped as an image, and drawn as a shape rather than a
- * swatch: two of the six belts are a hair away from a background this app
- * already uses — white against the day theme's cream, black against the night
- * page — so a plain block of colour would come and go depending on the theme.
- * A band with a knot has an outline and a silhouette, and reads as a belt even
- * where its colour does not carry.
- *
- * The high contrast theme takes it further and puts the name beside it, since
- * hue is not allowed to be the only thing saying which belt this is.
+ * Outlined in the theme's strong line rather than in its own colour, because
+ * two of the six sit a hair from a surface this app uses — white against the
+ * day stock, black against the night page — and the outline is what keeps
+ * them there. The Black belt carries its rank on the knot, which is the one
+ * place a label fits.
  */
-export function belt(level: Level, width = 46): SVGSVGElement {
+export function belt(level: Level, width = 28): SVGSVGElement {
   const { colour } = BELTS[level];
-  const height = Math.round(width * 0.48);
+  const height = Math.round((width * 22) / 48);
 
   const svg = document.createElementNS(SVG, 'svg');
-  svg.setAttribute('viewBox', '0 0 46 22');
+  svg.setAttribute('viewBox', '0 0 48 22');
   svg.setAttribute('width', String(width));
   svg.setAttribute('height', String(height));
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('class', 'belt');
 
-  const band = document.createElementNS(SVG, 'path');
-  // The two tails, running out either side of the knot.
-  band.setAttribute('d', 'M1 7.5h17v7H1z M28 7.5h17v7H28z');
-  band.setAttribute('fill', colour);
-  band.setAttribute('stroke', 'var(--line-strong)');
-  band.setAttribute('stroke-width', '0.9');
-  band.setAttribute('stroke-linejoin', 'round');
-  svg.append(band);
+  const path = (d: string, cls: string, fill: string): void => {
+    const node = document.createElementNS(SVG, 'path');
+    node.setAttribute('d', d);
+    node.setAttribute('fill', fill);
+    node.setAttribute('class', cls);
+    svg.append(node);
+  };
 
-  const knot = document.createElementNS(SVG, 'rect');
-  knot.setAttribute('x', '16.5');
-  knot.setAttribute('y', '4.5');
-  knot.setAttribute('width', '13');
-  knot.setAttribute('height', '13');
-  knot.setAttribute('rx', '2.4');
-  knot.setAttribute('fill', colour);
-  knot.setAttribute('stroke', 'var(--line-strong)');
-  knot.setAttribute('stroke-width', '0.9');
-  svg.append(knot);
+  path('M1 5 H47 V13 H1 Z', 'belt-stroke', colour);
+  path('M3 7.3 H45 M3 10.7 H45', 'belt-stitch', 'none');
+  path('M23 12.5 L29.5 21 L34.5 21 L27.5 12.5 Z', 'belt-stroke', colour);
+  path('M20.5 12.5 L13.5 21 L18.5 21 L25 12.5 Z', 'belt-stroke', colour);
+  path('M19.5 3.5 H28.5 V14.5 H19.5 Z', 'belt-stroke', colour);
+  path('M19.5 3.5 L28.5 14.5', 'belt-fold', 'none');
 
-  // A crease across the knot, so the shape holds together at small sizes and
-  // on the two belts whose colour matches the surface behind them.
-  const crease = document.createElementNS(SVG, 'path');
-  crease.setAttribute('d', 'M19.5 8.4h6.5');
-  crease.setAttribute('stroke', 'var(--line-strong)');
-  crease.setAttribute('stroke-width', '0.8');
-  crease.setAttribute('stroke-linecap', 'round');
-  crease.setAttribute('opacity', '0.55');
-  svg.append(crease);
+  if (level === 6) {
+    const dan = document.createElementNS(SVG, 'text');
+    dan.setAttribute('x', '24');
+    dan.setAttribute('y', '10.8');
+    dan.setAttribute('text-anchor', 'middle');
+    dan.setAttribute('class', 'belt-dan');
+    dan.textContent = 'DAN';
+    svg.append(dan);
+  }
 
   return svg;
 }
