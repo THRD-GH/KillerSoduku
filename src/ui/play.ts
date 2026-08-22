@@ -233,6 +233,25 @@ export class PlayScreen {
    * that read as well in a bar as they do in a grid — so the buttons that are
    * actually pressed get the room they leave behind.
    */
+  /**
+   * Keep the title bar one line tall.
+   *
+   * The candidate line can run long — a nine-cell cage with every digit still
+   * open is "45 in 9 (1 2 3 4 5 6 7 8 9)" — and on a phone that used to wrap,
+   * which made the bar taller and shoved the whole board down the screen with
+   * every selection. The line is clipped now rather than wrapped, and when the
+   * target is in the bar and the line would not fit beside it, the target
+   * gives way: it is the least urgent thing on the bar, and the cage under the
+   * cursor is what you are looking at.
+   */
+  private fitTitlebar(): void {
+    if (this.targetBox.hidden || this.targetBox.parentElement !== this.titlebar) return;
+    this.targetBox.style.display = '';
+    if (this.candidateLine.scrollWidth > this.candidateLine.clientWidth + 1) {
+      this.targetBox.style.display = 'none';
+    }
+  }
+
   private placeClockAndPause(): void {
     if (this.compact.matches) {
       /*
@@ -338,6 +357,7 @@ export class PlayScreen {
   }
 
   private tapDigit(digit: number): void {
+    if (this.game.completed) return;
     if (this.game.selected < 0) {
       toast('Choose a cell first');
       return;
@@ -354,6 +374,7 @@ export class PlayScreen {
    * forcing the entry — otherwise the toggling would fight the force.
    */
   private doubleDigit(digit: number): void {
+    if (this.game.completed) return;
     const now = performance.now();
     const cell = this.game.selected;
     let rollback = 0;
@@ -378,6 +399,7 @@ export class PlayScreen {
   }
 
   private forceDigit(digit: number): void {
+    if (this.game.completed) return;
     if (this.game.selected < 0) {
       toast('Choose a cell first');
       return;
@@ -396,6 +418,7 @@ export class PlayScreen {
   }
 
   private doClear(): void {
+    if (this.game.completed) return;
     if (this.game.selected < 0) return;
     this.game.clearCell(this.game.selected);
     this.afterMove();
@@ -575,6 +598,7 @@ export class PlayScreen {
   }
 
   private doUndo(): void {
+    if (this.game.completed) return;
     if (!this.game.undo()) {
       toast('Nothing to undo');
       return;
@@ -585,6 +609,7 @@ export class PlayScreen {
   }
 
   private doRedo(): void {
+    if (this.game.completed) return;
     if (!this.game.redo()) {
       toast('Nothing to redo');
       return;
@@ -640,6 +665,7 @@ export class PlayScreen {
   }
 
   private addCage(): void {
+    if (this.game.completed) return;
     const sel = this.game.selected;
     if (sel < 0) {
       toast('Choose a cell first');
@@ -695,6 +721,12 @@ export class PlayScreen {
   }
 
   private win(): void {
+    /*
+     * Once only. The panel this opens offers Main menu and Next puzzle, and a
+     * second copy underneath it meant pressing Main menu once, seeing the menu,
+     * and finding the first copy still standing over it.
+     */
+    if (this.game.completed || document.querySelector('.overlay .panel.won')) return;
     this.game.completed = true;
     /*
      * The clock stops; the screen must not. Letting the lock go here starts the
@@ -784,6 +816,9 @@ export class PlayScreen {
     this.targetBox.hidden = false;
     this.targetBox.textContent = `target ${formatTime(target)}`;
     this.targetBox.classList.toggle('past', this.game.elapsedMs > target);
+    // A tick can change the target's width (past/not past is colour only, but
+    // the setting can be turned on mid-game), so the bar is re-fitted with it.
+    this.fitTitlebar();
   }
 
   /** Your average over this level and pool, or null with nothing to average. */
@@ -1050,6 +1085,7 @@ export class PlayScreen {
         this.candidateLine.append(el('span', { class: 'cands' }, `(${marks.join(' ')})`));
       }
     }
+    this.fitTitlebar();
   }
 
   // ------------------------------------------------------------------- menus

@@ -11,6 +11,8 @@ export interface AppContext {
   applyTheme(): void;
   /** Re-apply the side the keypad sits on. */
   applyKeypadSide(): void;
+  /** Put the chosen background behind the page, after the setting changes. */
+  applyBackground(): void;
   /** Take or drop the screen wake lock, after the setting changes. */
   applyWakeLock(): void;
   /** Re-read storage and return to the menu, after an import replaces it. */

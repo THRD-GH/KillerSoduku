@@ -34,11 +34,12 @@ import { openSettings } from './ui/settings.ts';
 import { buildStats } from './ui/stats.ts';
 import type { AppContext } from './ui/app-context.ts';
 import { openFirstGameTutorial } from './ui/tutorial.ts';
+import { applyBackground } from './ui/backgrounds.ts';
 
 /** The browser chrome colour that matches each board, for the PWA title bar. */
 const THEME_COLOUR: Record<Theme, string> = {
-  night: '#0a0d10',
-  day: '#dfe4e9',
+  night: '#111c2b',
+  day: '#f4efe5',
   contrast: '#000000',
 };
 
@@ -62,6 +63,7 @@ class App implements AppContext {
     this.root = root;
     this.applyTheme();
     this.applyKeypadSide();
+    this.applyBackground();
 
     this.guardBackButton();
     /*
@@ -211,12 +213,17 @@ class App implements AppContext {
     document.documentElement.dataset.keypad = this.settings.keypadSide;
   }
 
+  applyBackground(): void {
+    applyBackground(this.settings);
+  }
+
   /** Storage was replaced underneath us (an import); start again from it. */
   reload(): void {
     this.settings = loadSettings();
     this.history = loadHistory();
     this.applyTheme();
     this.applyKeypadSide();
+    this.applyBackground();
     this.goMenu();
   }
 

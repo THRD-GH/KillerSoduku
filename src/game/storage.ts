@@ -52,6 +52,10 @@ export interface Settings {
   showTimer: boolean;
   /** Put the time to beat in the bar beside the puzzle, while you play. */
   showTarget: boolean;
+  /** What sits behind the board: 'none', a pattern's id, or 'custom' for a photo. */
+  background: string;
+  /** How far the page colour is laid over that image, 0 (none) to 1 (hidden). */
+  backgroundDim: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -72,6 +76,8 @@ export const DEFAULT_SETTINGS: Settings = {
   clearNeedsLongClick: true,
   showTimer: true,
   showTarget: false,
+  background: 'none',
+  backgroundDim: 0.55,
 };
 
 export interface PuzzleRecord {
@@ -139,7 +145,15 @@ export const loadSettings = (): Settings => {
         : 'day');
   // 'hand' named the same choice — which side to put the keypad on.
   const keypadSide: KeypadSide = stored.keypadSide ?? stored.hand ?? DEFAULT_SETTINGS.keypadSide;
-  return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide };
+  // A dim outside 0..1 is a hand-edited or corrupted store; clamp rather than
+  // paint the page a colour nobody asked for.
+  const backgroundDim =
+    typeof stored.backgroundDim === 'number'
+      ? Math.min(1, Math.max(0, stored.backgroundDim))
+      : DEFAULT_SETTINGS.backgroundDim;
+  const background =
+    typeof stored.background === 'string' ? stored.background : DEFAULT_SETTINGS.background;
+  return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide, background, backgroundDim };
 };
 export const saveSettings = (s: Settings): void => write(KEY.settings, s);
 

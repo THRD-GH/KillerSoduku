@@ -308,6 +308,11 @@ body {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.12em;
+  /* Never wraps and never shrinks: squeezed by a long candidate line it broke
+     "K1-482" across two lines, which made the bar 2px taller and moved the
+     board. The candidate line is the one that gives way. */
+  white-space: nowrap;
+  flex: 0 0 auto;
   /* Ink, not accent: the name of the app is the one thing on the bar that is
      not a control, and the other games print it in the same navy as the rule
      around it. */
@@ -323,6 +328,19 @@ body {
   font-size: 15px;
   font-variant-numeric: tabular-nums;
   min-height: 18px;
+  /* One line, always. A nine-cell cage with every candidate open used to wrap
+     this onto a second line, which made the bar taller and moved the board.
+     It clips instead, and play.ts drops the target from the bar to make room
+     before it comes to that. */
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titlebar .candidates > * {
+  flex: 0 0 auto;
 }
 
 .titlebar .candidates b {
@@ -2316,4 +2334,131 @@ body {
   fill: #fff;
   font-size: 5px;
   font-weight: 800;
+}
+
+
+/* ---------- board background ---------- */
+
+/* A picture behind the page, with the page colour laid over it to taste. The
+   veil is a fixed pseudo-element under the content and over the canvas, which
+   is why the page's own background still paints when there is no picture. */
+body.has-bg {
+  background-image: var(--bg-image);
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+body.has-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  opacity: var(--bg-dim, 0.55);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* On a picture the play screen becomes a framed sheet, so the board and its
+   controls read as one object laid over the photo rather than pieces floating
+   on it. */
+body.has-bg .screen.play {
+  background: var(--bg);
+  border: 2px solid var(--line-strong);
+  box-shadow: 9px 11px 0 var(--shadow);
+  width: calc(100% - 20px);
+  margin: 10px auto;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* The landscape phone layout has no room for a frame: the pieces sit on the
+   picture directly and each casts its own shadow instead. */
+@media (orientation: landscape) and (max-height: 560px) {
+  body.has-bg .screen.play {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  body.has-bg .screen.play .titlebar,
+  body.has-bg .screen.play .board {
+    box-shadow: 6px 7px 0 var(--shadow);
+  }
+
+  body.has-bg .screen.play .key,
+  body.has-bg .screen.play .btn,
+  body.has-bg .screen.play .pause-btn,
+  body.has-bg .screen.play .timer {
+    box-shadow: 3px 3px 0 var(--shadow);
+  }
+}
+
+/* The picker in Settings: thumbnails of the choices, and the dim slider. */
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.bg-thumb {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg) center / cover no-repeat;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.bg-thumb span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px 4px;
+  text-align: center;
+  background: rgb(var(--panel-rgb) / 0.85);
+}
+
+.bg-thumb.on {
+  border-color: var(--coral);
+  box-shadow: 3px 3px 0 var(--coral);
+}
+
+.bg-dim {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.bg-dim input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 22px;
+  accent-color: var(--coral);
+}
+
+.bg-dim output {
+  min-width: 3.2em;
+  text-align: right;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }

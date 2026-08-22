@@ -2,6 +2,7 @@ import { exportBackup, importBackup, saveSettings } from '../game/storage.ts';
 import type { KeypadSide, Settings, Theme } from '../game/storage.ts';
 import { clear, el } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
+import { BACKGROUNDS, customPhoto, forgetPhoto, keepPhoto } from './backgrounds.ts';
 import type { AppContext } from './app-context.ts';
 
 /** Only the on/off settings belong on this screen. */
@@ -124,6 +125,101 @@ function picker<T extends string>(
   return tabs;
 }
 
+/**
+ * The background picker: a grid of thumbnails — none, the six drawn patterns,
+ * and the player's own photo — with a dim slider under it. Each thumbnail is
+ * the image itself at small size, so the choice is made by looking rather than
+ * by reading a name.
+ */
+function backgroundPicker(ctx: AppContext): HTMLElement {
+  const grid = el('div', { class: 'bg-grid', role: 'group', 'aria-label': 'Board background' });
+  const file = el('input', { type: 'file', accept: 'image/*' });
+  file.hidden = true;
+
+  const choose = (id: string): void => {
+    ctx.settings.background = id;
+    saveSettings(ctx.settings);
+    ctx.applyBackground();
+    draw();
+  };
+
+  const thumb = (id: string, label: string, image: string | null): HTMLButtonElement => {
+    const on = ctx.settings.background === id;
+    const button = el(
+      'button',
+      { class: `bg-thumb ${on ? 'on' : ''}`.trim(), 'aria-pressed': String(on) },
+      el('span', {}, label),
+    );
+    if (image !== null) button.style.backgroundImage = `url("${image}")`;
+    return button;
+  };
+
+  const draw = (): void => {
+    clear(grid);
+    const none = thumb('none', 'None', null);
+    none.addEventListener('click', () => choose('none'));
+    grid.append(none);
+    for (const choice of BACKGROUNDS) {
+      const button = thumb(choice.id, choice.name, choice.image);
+      button.addEventListener('click', () => choose(choice.id));
+      grid.append(button);
+    }
+    const photo = customPhoto();
+    const own = thumb('custom', photo === null ? 'Upload…' : 'Your photo', photo);
+    own.addEventListener('click', () => (photo === null ? file.click() : choose('custom')));
+    grid.append(own);
+  };
+
+  file.addEventListener('change', () => {
+    const chosen = file.files?.[0];
+    file.value = '';
+    if (!chosen) return;
+    keepPhoto(chosen)
+      .then((kept) => {
+        if (!kept) {
+          toast('Could not keep that photo — storage is full or private');
+          return;
+        }
+        choose('custom');
+        toast('Your photo is the background');
+      })
+      .catch(() => toast('Could not read that image'));
+  });
+
+  const upload = el('button', { class: 'btn' }, 'Upload a photo');
+  upload.addEventListener('click', () => file.click());
+  const remove = el('button', { class: 'btn' }, 'Remove photo');
+  remove.addEventListener('click', () => {
+    forgetPhoto();
+    if (ctx.settings.background === 'custom') choose('none');
+    else draw();
+  });
+
+  const dim = el('input', {
+    type: 'range',
+    min: 0,
+    max: 100,
+    value: Math.round(ctx.settings.backgroundDim * 100),
+    'aria-label': 'Background dim',
+  });
+  const readout = el('output', {}, `${Math.round(ctx.settings.backgroundDim * 100)}%`);
+  dim.addEventListener('input', () => {
+    ctx.settings.backgroundDim = Number(dim.value) / 100;
+    readout.textContent = `${dim.value}%`;
+    saveSettings(ctx.settings);
+    ctx.applyBackground();
+  });
+
+  draw();
+  return el(
+    'div',
+    {},
+    grid,
+    el('label', { class: 'bg-dim' }, 'Dim', dim, readout),
+    el('div', { class: 'tabs', style: 'margin-top: 8px' }, upload, remove, file),
+  );
+}
+
 /** A labelled row whose control sits underneath rather than beside it. */
 const stacked = (title: string, detail: string | null, control: HTMLElement): HTMLElement =>
   el(
@@ -151,6 +247,11 @@ export function openSettings(ctx: AppContext): void {
             ctx.applyTheme();
           },
         ),
+      ),
+      stacked(
+        'Board background',
+        'Behind the playing board. The patterns are drawn by the game; a photo of your own is shrunk to fit and stays on this device.',
+        backgroundPicker(ctx),
       ),
       stacked(
         'Keypad side',
