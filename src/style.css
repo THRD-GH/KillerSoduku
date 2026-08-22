@@ -896,13 +896,15 @@ body {
 /* Three columns per level: the difficulty, then each of its two pools. */
 .level {
   display: grid;
-  /* One fixed lane for the belt and its name, then the two pools splitting what
-     is left. Every row is its own grid, so sizing that lane to its contents let
-     it settle a few pixels differently on each — "Yellow belt" against "Blue
-     belt" — and the Classic and New buttons stepped in and out as the eye went
-     down the list. Fixed, they line up; 104px is the longest name with room to
-     spare, now that the rank no longer has to fit beside it. */
-  grid-template-columns: 104px minmax(0, 1fr) minmax(0, 1fr);
+  /* The belt in a fixed lane, and the two pools stacked beside it rather than
+     sharing the width. Side by side they had about eighty pixels each for a
+     name and a count, which is what kept crowding the belt beside them; stacked,
+     each one has the whole width of the row and the count moves out to the
+     right-hand end where nothing is competing for it.
+     The lane is fixed rather than sized to its contents because every row is
+     its own grid — left to themselves the lanes settled a few pixels apart and
+     the buttons stepped in and out down the list. */
+  grid-template-columns: 104px minmax(0, 1fr);
   align-items: stretch;
   gap: 6px;
   background: var(--panel);
@@ -945,11 +947,12 @@ body {
    still does not move as it is read. */
 @media (max-width: 359px) {
   .level {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .level-head {
     grid-column: 1 / -1;
+    grid-row: auto;
   }
 }
 
@@ -983,10 +986,25 @@ body {
   text-overflow: ellipsis;
 }
 
+/* The belt keeps its lane down both pool rows. */
+.level-head {
+  grid-row: 1 / span 2;
+}
+
 .source-row {
   display: flex;
   gap: 4px;
   min-width: 0;
+}
+
+/* Name at one end, count at the other, on one line. Stacked as they were, a
+   count sat under its own name in a narrow column and the pair had to be small
+   enough to fit it; along the row there is width for both at a readable size. */
+.source {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .source {
@@ -995,13 +1013,10 @@ body {
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
-  /* Tighter again: the belt's lane is fixed, so every pixel these give up is a
-     pixel of clearance between a name and the button beside it. */
-  padding: 4px;
+  padding: 6px 9px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
-  display: block;
   touch-action: manipulation;
 }
 
@@ -1038,9 +1053,8 @@ body {
 }
 
 .source-name {
-  display: block;
   font-weight: 700;
-  font-size: 12.5px;
+  font-size: 14px;
   line-height: 1.2;
 }
 
@@ -1049,11 +1063,10 @@ body {
 }
 
 .source-meta {
-  display: block;
   color: var(--dim);
-  font-size: 10.5px;
+  font-size: 11.5px;
   line-height: 1.2;
-  margin-top: 2px;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
