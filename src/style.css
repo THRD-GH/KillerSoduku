@@ -900,8 +900,9 @@ body {
      is left. Every row is its own grid, so sizing that lane to its contents let
      it settle a few pixels differently on each — "Yellow belt" against "Blue
      belt" — and the Classic and New buttons stepped in and out as the eye went
-     down the list. 128px holds the longest name with the belt beside it. */
-  grid-template-columns: 128px minmax(0, 1fr) minmax(0, 1fr);
+     down the list. Fixed, they line up; 104px is the longest name with room to
+     spare, now that the rank no longer has to fit beside it. */
+  grid-template-columns: 104px minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
   gap: 6px;
   background: var(--panel);
@@ -915,16 +916,18 @@ body {
 
 .level-head {
   position: relative;
-  /* Belt first, then what it is called — along the row, not stacked. The stars
-     this replaced were small enough to sit above the name in a 64px lane; a
-     belt beside two lines of text is not, and stacking it wrapped "Yellow belt"
-     onto two lines while "Blue belt" stayed on one. Every row then had its own
-     height, and the list moved under the eye while it was being read. */
+  /* Belt above the name. Beside it, the pair needed a lane wide enough for the
+     longest name and its rank on one line, and that lane ate the row: on a
+     phone the Classic and New buttons were left with barely enough for their
+     own labels. Stacked, the lane only has to be as wide as one line of text.
+     What made stacking ragged before was the rank line — "1st Dan · Dan
+     challenge" is twice the width of the name above it — so that has moved down
+     to the caption, and nothing in here wraps. */
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
   min-width: 0;
   padding: 2px 18px 2px 0;
   border: 0;
@@ -992,7 +995,8 @@ body {
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 5px;
-  padding: 6px 5px;
+  /* A touch tighter than they were, to pay for the belt's lane. */
+  padding: 5px 5px;
   cursor: pointer;
   text-align: left;
   color: var(--text);
@@ -1035,7 +1039,7 @@ body {
 .source-name {
   display: block;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.2;
 }
 
@@ -1046,7 +1050,7 @@ body {
 .source-meta {
   display: block;
   color: var(--dim);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.2;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
@@ -2103,6 +2107,15 @@ body {
   line-height: 1.15;
   min-width: 0;
   white-space: nowrap;
+  /* Belt and braces for the line above: a font wider than the one this was
+     measured on runs out of dots rather than out of the lane and across a
+     button. */
+  overflow: hidden;
+}
+
+.level-head .name > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* The line under a level saying what it demands. Full width, under the belt

@@ -92,7 +92,7 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
         'span',
         { class: 'name' },
         BELTS[level].name,
-        el('small', {}, `${BELTS[level].rank} · ${BELTS[level].descriptor}`),
+        el('small', {}, BELTS[level].rank),
       ),
       el('span', { class: 'level-info-badge', 'aria-hidden': 'true' }, '?'),
     ),
@@ -141,11 +141,16 @@ function buildLevelPanel(ctx: AppContext, level: Level): HTMLElement {
   }
 
   /*
-   * What the belt will ask of you, along the foot of its row — the same idea as
-   * Solduku's "500 left · singles only", given a line of its own because there
-   * are two pools here and repeating it in both would be noise.
+   * What the belt stands for and what it will ask of you, along the foot of its
+   * row — the same idea as Solduku's "500 left · singles only", given a line of
+   * its own because there are two pools here and repeating it in both would be
+   * noise. The descriptor rides down here too: beside the name it was the one
+   * thing too wide for the lane, and it reads perfectly well in front of the
+   * technique it is describing.
    */
-  row.append(el('p', { class: 'level-asks' }, BELTS[level].asks));
+  row.append(
+    el('p', { class: 'level-asks' }, `${BELTS[level].descriptor} · ${BELTS[level].asks}`),
+  );
 
   return row;
 }
