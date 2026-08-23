@@ -27,6 +27,13 @@ import { openActionMenu } from './action-menu.ts';
 
 const CLEAR_KEY = 0;
 
+/**
+ * How long after the finishing press the win panel appears. Longer than the
+ * double-tap window in pointer.ts, so no press can belong to the gesture that
+ * finished the puzzle by the time there is a panel to land on.
+ */
+const WIN_PANEL_DELAY_MS = 480;
+
 export class PlayScreen {
   readonly root: HTMLDivElement;
   private ctx: AppContext;
@@ -799,6 +806,26 @@ export class PlayScreen {
     clearSaveFor(this.game.id);
     this.render();
 
+    /*
+     * Not under the finger. The last digit goes in on a press, and a panel
+     * that appears on that same press appears beneath the finger that made it
+     * — so the second half of a double-press, or a habitual second tap, lands
+     * on whichever button has just arrived there. The panel used to guard
+     * itself by swallowing presses near that spot for a moment, which in
+     * landscape, where the sheet sits over the keypad, could swallow a
+     * deliberate tap on Main menu as well. Opening after the double-tap window
+     * has closed makes both impossible: a late press lands on a board that is
+     * already inert, and the panel can never be mistaken for the thing that
+     * was pressed. The grid also gets a beat on screen, complete, before the
+     * sheet arrives.
+     */
+    window.setTimeout(() => {
+      if (!this.root.isConnected) return;
+      this.openWinPanel(ms, average);
+    }, WIN_PANEL_DELAY_MS);
+  }
+
+  private openWinPanel(ms: number, average: number | null): void {
     openOverlay((close) => {
       const again = el('button', { class: 'btn primary' }, 'Next puzzle');
       again.addEventListener('click', () => {
