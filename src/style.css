@@ -2394,6 +2394,12 @@ body.has-bg .screen.play {
   margin: 10px auto;
   gap: 10px;
   padding: 10px;
+  /* Only as tall as the game. #app is a flex row, and its default stretch made
+     every screen the height of the window — invisible while screens were
+     transparent, a floor-to-ceiling cream panel the moment this frame painted
+     one. */
+  align-self: flex-start;
+  height: fit-content;
 }
 
 /* The landscape phone layout has no room for a frame: the pieces sit on the
