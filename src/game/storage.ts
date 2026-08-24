@@ -16,6 +16,13 @@ const KEY = {
  *  Classic levels use however many the imported pack holds. */
 export const NEW_POOL_SIZE = 500;
 
+/**
+ * The pool sizes on offer. Generation is deterministic from the puzzle number,
+ * so a bigger pool is more puzzles, not different ones — the bound only says
+ * how far "unplayed" counts and how high the picker goes.
+ */
+export const NEW_POOL_SIZES = [500, 1000, 2500, 5000] as const;
+
 export type Theme = 'night' | 'day' | 'contrast';
 
 /** Which side of the controls the number keys sit on. */
@@ -52,6 +59,8 @@ export interface Settings {
   showTimer: boolean;
   /** Put the time to beat in the bar beside the puzzle, while you play. */
   showTarget: boolean;
+  /** How many numbered New grids each belt offers. */
+  newPoolSize: number;
   /** What sits behind the board: 'none', a pattern's id, or 'custom' for a photo. */
   background: string;
   /** How far the page colour is laid over that image, 0 (none) to 1 (hidden). */
@@ -76,6 +85,7 @@ export const DEFAULT_SETTINGS: Settings = {
   clearNeedsLongClick: true,
   showTimer: true,
   showTarget: false,
+  newPoolSize: NEW_POOL_SIZE,
   background: 'none',
   backgroundDim: 0.55,
 };
@@ -153,7 +163,12 @@ export const loadSettings = (): Settings => {
       : DEFAULT_SETTINGS.backgroundDim;
   const background =
     typeof stored.background === 'string' ? stored.background : DEFAULT_SETTINGS.background;
-  return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide, background, backgroundDim };
+  // Only the sizes on offer: an edited store could otherwise make the menu
+  // count to a million, or to zero.
+  const newPoolSize = (NEW_POOL_SIZES as readonly number[]).includes(stored.newPoolSize as number)
+    ? (stored.newPoolSize as number)
+    : DEFAULT_SETTINGS.newPoolSize;
+  return { ...DEFAULT_SETTINGS, ...stored, theme, keypadSide, background, backgroundDim, newPoolSize };
 };
 export const saveSettings = (s: Settings): void => write(KEY.settings, s);
 

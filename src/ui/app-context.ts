@@ -7,7 +7,10 @@ export interface AppContext {
   history: History;
   /** Puzzles per level in the imported packs, or null when none are installed. */
   packCounts: Record<number, number> | null;
-  newPoolSize: number;
+  /** How many numbered New grids each belt offers — follows the setting. */
+  readonly newPoolSize: number;
+  /** Rebuild the menu if it is on screen, after something it shows changes. */
+  refreshMenu(): void;
   applyTheme(): void;
   /** Re-apply the side the keypad sits on. */
   applyKeypadSide(): void;

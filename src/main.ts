@@ -8,7 +8,6 @@ import { registerServiceWorker, setThemeColour } from './game/pwa.ts';
 import { keepScreenAwake } from './game/wakelock.ts';
 import { Game } from './game/state.ts';
 import {
-  NEW_POOL_SIZE,
   clearPuzzleLink,
   linkedPuzzle,
   loadHistory,
@@ -54,7 +53,10 @@ class App implements AppContext {
   settings: Settings = loadSettings();
   history: History = loadHistory();
   packCounts: Record<number, number> | null = null;
-  readonly newPoolSize = NEW_POOL_SIZE;
+  /** Off the settings, so the picker in Settings takes effect at once. */
+  get newPoolSize(): number {
+    return this.settings.newPoolSize;
+  }
 
   private root: HTMLElement;
   private play: PlayScreen | null = null;
@@ -229,6 +231,11 @@ class App implements AppContext {
 
   refreshBoard(): void {
     this.play?.render();
+  }
+
+  /** Settings changed something the menu displays; redraw it if it is up. */
+  refreshMenu(): void {
+    if (this.play === null) this.goMenu();
   }
 
   private mount(node: HTMLElement): void {

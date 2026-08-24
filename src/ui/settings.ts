@@ -1,4 +1,4 @@
-import { exportBackup, importBackup, saveSettings } from '../game/storage.ts';
+import { NEW_POOL_SIZES, exportBackup, importBackup, saveSettings } from '../game/storage.ts';
 import type { KeypadSide, Settings, Theme } from '../game/storage.ts';
 import { clear, el } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
@@ -89,6 +89,11 @@ const THEMES: { value: Theme; label: string }[] = [
   { value: 'day', label: 'Day' },
   { value: 'contrast', label: 'High contrast' },
 ];
+
+const POOL_SIZES: { value: string; label: string }[] = NEW_POOL_SIZES.map((n) => ({
+  value: String(n),
+  label: n.toLocaleString('en-GB'),
+}));
 
 const KEYPAD_SIDES: { value: KeypadSide; label: string }[] = [
   { value: 'left', label: 'Left' },
@@ -252,6 +257,20 @@ export function openSettings(ctx: AppContext): void {
         'Board background',
         'Behind the playing board. The patterns are drawn by the game; a photo of your own is shrunk to fit and stays on this device.',
         backgroundPicker(ctx),
+      ),
+      stacked(
+        'New puzzles per belt',
+        'How many numbered New grids each belt offers. The same number always builds the same grid, so a bigger pool is more puzzles, not different ones.',
+        picker(
+          POOL_SIZES,
+          () => String(ctx.settings.newPoolSize),
+          (size) => {
+            ctx.settings.newPoolSize = Number(size);
+            saveSettings(ctx.settings);
+            // The menu behind this panel is showing "N left" counts.
+            ctx.refreshMenu();
+          },
+        ),
       ),
       stacked(
         'Keypad side',
