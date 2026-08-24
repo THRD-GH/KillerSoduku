@@ -339,18 +339,23 @@ export class PlayScreen {
     bindTap(check, {
       onTap: () =>
         this.ctx.settings.checkNeedsLongClick
-          ? this.nag('Check', 'check the grid')
+          ? this.nag('Check', 'check the grid', false)
           : this.doCheck(),
       onLong: () => this.doCheck(),
+      // Without this a double-click falls through to the long-press action,
+      // which let the finishing rhythm of a game walk straight through the
+      // guard and spend a check.
+      onDouble: () => undefined,
     });
 
     const hint = el('button', { class: 'btn aid' }, 'Hint');
     bindTap(hint, {
       onTap: () =>
         this.ctx.settings.hintNeedsLongClick
-          ? this.nag('Hint', 'take a hint')
+          ? this.nag('Hint', 'take a hint', false)
           : this.doHint(),
       onLong: () => this.doHint(),
+      onDouble: () => undefined,
     });
 
     this.undoBtn.append(undoArrow());
@@ -406,8 +411,12 @@ export class PlayScreen {
    * saying: bindTap sends a double-click to the long-press action, so it works
    * on all of them, not just CLEAR where it was the only one being mentioned.
    */
-  private nag(button: string, action: string): void {
-    toast(`Hold ${button} (or double-click) to ${action}`);
+  private nag(button: string, action: string, doubleWorks = true): void {
+    // Only promise the double-click where it is honoured. Check and Hint answer
+    // to a hold alone: both are counted against the puzzle, and the double-tap
+    // is the very rhythm a game is finished with, so a stray one was setting
+    // off the thing the guard exists to prevent.
+    toast(doubleWorks ? `Hold ${button} (or double-click) to ${action}` : `Hold ${button} to ${action}`);
   }
 
   private tapDigit(digit: number): void {
