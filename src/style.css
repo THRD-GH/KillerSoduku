@@ -2383,34 +2383,52 @@ body.has-bg::before {
   z-index: -1;
 }
 
-/* On a picture the play screen becomes a framed sheet, so the board and its
-   controls read as one object laid over the photo rather than pieces floating
-   on it. */
-body.has-bg .screen.play {
+/* The mat, as the other games lay it: with an image behind, every screen's
+   column becomes an opaque framed panel on top, so nothing readable shares a
+   pixel with the picture. The play screen was matted first and the menu left
+   bare, which sat DANDOKU and the title straight on the pattern. */
+body.has-bg .screen {
   background: var(--bg);
   border: 2px solid var(--line-strong);
   box-shadow: 9px 11px 0 var(--shadow);
   width: calc(100% - 20px);
   margin: 10px auto;
-  gap: 10px;
-  padding: 10px;
-  /* Only as tall as the game. #app is a flex row, and its default stretch made
-     every screen the height of the window — invisible while screens were
-     transparent, a floor-to-ceiling cream panel the moment this frame painted
+  /* Only as tall as the content. #app is a flex row, and its default stretch
+     made every screen the height of the window — invisible while screens were
+     transparent, a floor-to-ceiling cream panel the moment the mat painted
      one. */
   align-self: flex-start;
   height: fit-content;
 }
 
-/* The landscape phone layout has no room for a frame: the pieces sit on the
-   picture directly and each casts its own shadow instead. */
-@media (orientation: landscape) and (max-height: 560px) {
-  body.has-bg .screen.play {
+/*
+ * On a phone the column is full-bleed and the mat would hide the whole
+ * picture bar a sliver at each side. There the mat goes, and the pieces stand
+ * on the image as tiles — every one has an opaque face, so nothing readable
+ * touches the picture; it shows in the gaps and below. The hero copy is the
+ * one thing that had no face of its own, so it gets a tile: panel, ink frame,
+ * the house shadow.
+ */
+@media (max-width: 560px), (orientation: landscape) and (max-height: 560px) {
+  body.has-bg .screen.play,
+  body.has-bg .screen.menu {
     background: transparent;
     border: 0;
     box-shadow: none;
     width: 100%;
     margin: 0 auto;
+  }
+
+  body.has-bg .screen.menu .level,
+  body.has-bg .screen.menu .actions .btn {
+    box-shadow: 6px 7px 0 var(--shadow);
+  }
+
+  body.has-bg .screen.menu > .hero {
+    background: var(--panel);
+    border: 2px solid var(--line-strong);
+    padding: 10px 12px;
+    box-shadow: 6px 7px 0 var(--shadow);
   }
 
   body.has-bg .screen.play .titlebar,
@@ -2423,6 +2441,15 @@ body.has-bg .screen.play {
   body.has-bg .screen.play .pause-btn,
   body.has-bg .screen.play .timer {
     box-shadow: 3px 3px 0 var(--shadow);
+  }
+}
+
+/* A little more air between the tiles, so the picture reads through. */
+@media (max-width: 560px) and (orientation: portrait) {
+  body.has-bg .screen.play,
+  body.has-bg .screen.menu {
+    padding: 10px;
+    gap: 10px;
   }
 }
 
