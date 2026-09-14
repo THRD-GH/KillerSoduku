@@ -392,8 +392,18 @@ textarea {
   margin-left: auto;
 }
 
-.iconbtn.corner-settings svg {
+.iconbtn.corner-settings svg,
+.iconbtn.corner-home svg {
   display: block;
+}
+
+/*
+ * Home pushes itself to the end only where nothing before it already does:
+ * on the play bar the candidate line's own auto margin carries it there, and
+ * a second auto margin would split the slack and strand the line mid-bar.
+ */
+.titlebar .push-end {
+  margin-left: auto;
 }
 
 .iconbtn i {

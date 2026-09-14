@@ -230,3 +230,29 @@ export function settingsIcon(size = 19): SVGSVGElement {
   svg.append(stroke(wheel), stroke(hub));
   return svg;
 }
+
+/** Home: the main screen, from anywhere that is not it. */
+export function homeIcon(size = 19): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
+
+  const stroke = (node: SVGElement): SVGElement => {
+    node.setAttribute('fill', 'none');
+    node.setAttribute('stroke', 'currentColor');
+    node.setAttribute('stroke-width', '1.4');
+    node.setAttribute('stroke-linecap', 'round');
+    node.setAttribute('stroke-linejoin', 'round');
+    return node;
+  };
+  const roof = document.createElementNS(SVG_NS, 'path');
+  roof.setAttribute('d', 'M2.4 8 L8 2.9 L13.6 8');
+  const walls = document.createElementNS(SVG_NS, 'path');
+  walls.setAttribute('d', 'M4.1 7.4 V13.1 H11.9 V7.4');
+  const door = document.createElementNS(SVG_NS, 'path');
+  door.setAttribute('d', 'M8 13.1 V9.8');
+  svg.append(stroke(roof), stroke(walls), stroke(door));
+  return svg;
+}

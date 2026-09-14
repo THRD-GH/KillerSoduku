@@ -18,7 +18,7 @@ import { Board } from './board.ts';
 import { clear, el, formatTime, shortTime } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import { cellName, describeTechnique, explainStep } from './explain.ts';
-import { clockIcon, thumbIcon, undoArrow } from './icons.ts';
+import { clockIcon, homeIcon, thumbIcon, undoArrow } from './icons.ts';
 import type { Step } from '../core/techniques.ts';
 import { bindTap } from './pointer.ts';
 import { fireworks } from './fireworks.ts';
@@ -146,9 +146,23 @@ export class PlayScreen {
 
     this.idLabel.textContent = displayPuzzleId(this.game.id);
 
+    // Home at the far end of the bar: the one-tap way back to the main
+    // screen, so leaving no longer lives a layer down behind the burger. The
+    // game is saved as it goes, so there is nothing to confirm.
+    const homeBtn = el('button', {
+      class: 'iconbtn corner-home',
+      'aria-label': 'Main menu',
+      title: 'Main menu',
+    });
+    homeBtn.append(homeIcon());
+    homeBtn.addEventListener('click', () => {
+      this.stop();
+      this.ctx.goMenu();
+    });
+
     // Between the puzzle it belongs to and the line about the cell under the
     // cursor: it is a fact about this game, not about this move.
-    this.titlebar.append(menuBtn, this.idLabel, this.targetBox, this.candidateLine);
+    this.titlebar.append(menuBtn, this.idLabel, this.targetBox, this.candidateLine, homeBtn);
     this.root.append(this.titlebar, this.board.root, this.buildControls());
 
     this.placeClockAndPause();
@@ -1193,8 +1207,8 @@ export class PlayScreen {
     /*
      * Ordered by what the puzzle in front of you needs: the two aids the
      * buttons do not carry, then putting it down, then the incidental, then
-     * the panels that hand the grid straight back — and last the two that
-     * leave the board, together, where a slip is least likely.
+     * the panels that hand the grid straight back. Main menu is not here: the
+     * home icon on the bar is its one door.
      */
     openActionMenu('Menu', [
       { label: 'Fill all candidates', run: () => this.doFillCandidates() },
@@ -1207,7 +1221,6 @@ export class PlayScreen {
       { label: 'Settings', run: () => this.ctx.openSettings() },
       { label: 'Help', run: () => this.ctx.openHelp() },
       { label: 'Stats', run: () => this.ctx.goStats(this.game.puzzle.difficulty as Level) },
-      { label: 'Main menu', run: () => { this.stop(); this.ctx.goMenu(); } },
     ]);
   }
 

@@ -1,4 +1,5 @@
 import { BELTS, LEVELS, LEVEL_NAMES } from '../core/generator.ts';
+import { homeIcon } from './icons.ts';
 import type { Level, PuzzleId, Source } from '../core/types.ts';
 import type { PuzzleRecord } from '../game/storage.ts';
 import { SOURCES, displayPuzzleId, formatPuzzleId, sourceLabel } from '../core/types.ts';
@@ -40,6 +41,19 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
   const back = el('button', { class: 'iconbtn', 'aria-label': backLabel });
   back.append(el('i'), el('i'), el('i'));
   back.addEventListener('click', () => ctx.leaveStats());
+
+  // Back returns to where Stats was opened from — mid-solve, that is the
+  // puzzle. Home is the other journey: the main screen, from anywhere.
+  const home = el('button', {
+    class: 'iconbtn corner-home push-end',
+    'aria-label': 'Main menu',
+    title: 'Main menu',
+  });
+  home.append(homeIcon());
+  home.addEventListener('click', () => {
+    ctx.statsReturn = null;
+    ctx.leaveStats();
+  });
 
   /*
    * Both halves of the screen are on show at once: the unfinished games and
@@ -315,7 +329,7 @@ export function buildStats(ctx: AppContext, initial: Level): HTMLElement {
 
   draw();
   screen.append(
-    el('div', { class: 'titlebar' }, back, el('span', { class: 'id' }, 'STATS')),
+    el('div', { class: 'titlebar' }, back, el('span', { class: 'id' }, 'STATS'), home),
     totals,
     unfinishedTab,
     unfinishedSummary,
