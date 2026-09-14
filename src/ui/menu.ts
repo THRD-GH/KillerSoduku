@@ -6,6 +6,7 @@ import { buildStamp, clear, el, formatTime } from './dom.ts';
 import { openOverlay, toast } from './overlay.ts';
 import { bindTap } from './pointer.ts';
 import { belt } from './belt.ts';
+import { settingsIcon } from './icons.ts';
 import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
 import { openLevelInfo } from './level-info.ts';
@@ -21,12 +22,28 @@ export function buildMenu(ctx: AppContext): HTMLElement {
   // 'menu' marks the one screen that spreads into two columns in landscape.
   const screen = el('div', { class: 'screen menu' });
 
+  const settingsBtn = el('button', {
+    class: 'iconbtn corner-settings',
+    'aria-label': 'Settings',
+    title: 'Settings',
+  });
+  settingsBtn.append(settingsIcon());
+  settingsBtn.addEventListener('click', () => ctx.openSettings());
+
   const menuBtn = el('button', { class: 'iconbtn', 'aria-label': 'Menu' });
   menuBtn.append(el('i'), el('i'), el('i'));
   menuBtn.addEventListener('click', () => openMainMenu(ctx));
 
   screen.append(
-    el('div', { class: 'titlebar' }, menuBtn, el('span', { class: 'id' }, 'KILLER SUDOKU')),
+    el(
+      'div',
+      { class: 'titlebar' },
+      menuBtn,
+      el('span', { class: 'id' }, 'KILLER SUDOKU'),
+      // Settings one tap away at the far end of the bar, as Kakuro keeps it.
+      // The rest of what the burger holds stays behind the burger.
+      settingsBtn,
+    ),
     // The kicker names the family this belongs to, as the other DanDoku games
     // do. No subtitle under the title: every level says what it asks along its
     // own row, and the line at the foot still explains the two pools.
@@ -287,9 +304,10 @@ export function openMainMenu(ctx: AppContext): void {
    * drops down the list — it is a first-run item, and the first game opens it
    * unasked, so its place here is for the rare second look.
    */
+  // No Settings here: the cog at the end of the title bar is its one home,
+  // and a second door to the same room reads as two different rooms.
   openActionMenu('Menu', [
     { label: 'Stats', run: () => ctx.goStats(1) },
-    { label: 'Settings', run: () => ctx.openSettings() },
     { label: 'Help', run: () => ctx.openHelp() },
     { label: 'How to play walkthrough', run: () => openTutorial() },
     { label: 'About', run: () => toast('Killer Sudoku — a personal build') },

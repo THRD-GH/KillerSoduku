@@ -387,6 +387,15 @@ textarea {
   flex: 0 0 auto;
 }
 
+/* The cog at the far end of the menu bar. */
+.iconbtn.corner-settings {
+  margin-left: auto;
+}
+
+.iconbtn.corner-settings svg {
+  display: block;
+}
+
 .iconbtn i {
   display: block;
   width: 100%;

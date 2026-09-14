@@ -177,3 +177,56 @@ export function thumbIcon(up: boolean, size = 15): SVGSVGElement {
   svg.append(group);
   return svg;
 }
+
+/**
+ * A cog of eight teeth, worked out rather than typed, as Kakuro draws it: the
+ * \u2699 character came out as a coloured emoji on several phones, and as a
+ * speck on others.
+ */
+const COG = ((): string => {
+  const teeth = 8;
+  const outer = 6.9;
+  const inner = 5.1;
+  const half = Math.PI / teeth;
+  const points: string[] = [];
+  for (let i = 0; i < teeth; i++) {
+    const at = (i * 2 * Math.PI) / teeth - Math.PI / 2;
+    const corners: [number, number][] = [
+      [inner, -half * 0.62],
+      [outer, -half * 0.36],
+      [outer, half * 0.36],
+      [inner, half * 0.62],
+    ];
+    for (const [radius, offset] of corners) {
+      points.push(
+        `${(8 + radius * Math.cos(at + offset)).toFixed(2)} ${(8 + radius * Math.sin(at + offset)).toFixed(2)}`,
+      );
+    }
+  }
+  return `M${points.join('L')}Z`;
+})();
+
+/** Settings. */
+export function settingsIcon(size = 19): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
+
+  const stroke = (node: SVGElement): SVGElement => {
+    node.setAttribute('fill', 'none');
+    node.setAttribute('stroke', 'currentColor');
+    node.setAttribute('stroke-width', '1.4');
+    node.setAttribute('stroke-linejoin', 'round');
+    return node;
+  };
+  const wheel = document.createElementNS(SVG_NS, 'path');
+  wheel.setAttribute('d', COG);
+  const hub = document.createElementNS(SVG_NS, 'circle');
+  hub.setAttribute('cx', '8');
+  hub.setAttribute('cy', '8');
+  hub.setAttribute('r', '2.1');
+  svg.append(stroke(wheel), stroke(hub));
+  return svg;
+}
