@@ -59,6 +59,8 @@ export interface Settings {
   showTimer: boolean;
   /** Put the time to beat in the bar beside the puzzle, while you play. */
   showTarget: boolean;
+  /** A few seconds of fireworks, above a dojo, when a puzzle is solved. */
+  fireworks: boolean;
   /** How many numbered New grids each belt offers. */
   newPoolSize: number;
   /** What sits behind the board: 'none', a pattern's id, or 'custom' for a photo. */
@@ -85,6 +87,7 @@ export const DEFAULT_SETTINGS: Settings = {
   clearNeedsLongClick: true,
   showTimer: true,
   showTarget: false,
+  fireworks: true,
   newPoolSize: NEW_POOL_SIZE,
   background: 'none',
   backgroundDim: 0.55,

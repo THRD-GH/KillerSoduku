@@ -21,6 +21,7 @@ import { cellName, describeTechnique, explainStep } from './explain.ts';
 import { clockIcon, thumbIcon, undoArrow } from './icons.ts';
 import type { Step } from '../core/techniques.ts';
 import { bindTap } from './pointer.ts';
+import { fireworks } from './fireworks.ts';
 import { openSumCalculator } from './sumcalc.ts';
 import type { AppContext } from './app-context.ts';
 import { openActionMenu } from './action-menu.ts';
@@ -105,6 +106,9 @@ export class PlayScreen {
 
   private tallyTotal = 0;
   private tallyCages = new Set<number>();
+
+  /** Stops a fireworks show still running when the screen goes. */
+  private stopFireworks: (() => void) | null = null;
 
   /**
    * Numpad taps kept briefly so a double-click can roll them back. The cell is
@@ -835,6 +839,7 @@ export class PlayScreen {
   }
 
   private openWinPanel(ms: number, average: number | null): void {
+    let panel: HTMLElement | null = null;
     openOverlay((close) => {
       const again = el('button', { class: 'btn primary' }, 'Next puzzle');
       again.addEventListener('click', () => {
@@ -850,7 +855,7 @@ export class PlayScreen {
       // look, and closing it puts you back at the result.
       const insights = el('button', { class: 'btn' }, 'Insights');
       insights.addEventListener('click', () => this.openInsights(ms, average));
-      return el(
+      panel = el(
         'div',
         { class: 'panel won' },
         el('h2', {}, `Puzzle ${displayPuzzleId(this.game.id)} solved`),
@@ -864,6 +869,7 @@ export class PlayScreen {
         ),
         el('div', { class: 'actions won-actions' }, menu, insights, again),
       );
+      return panel;
       // Low on the screen and over a clear backdrop: the grid you have just
       // finished is worth a look, and dimming it to announce that you finished
       // it hides the one thing you want to see.
@@ -871,8 +877,16 @@ export class PlayScreen {
       overlayClass: 'bottom-sheet undimmed',
       // Whichever way it went — a button, the backdrop, the back gesture — the
       // reading is over. A puzzle started from here takes the lock back.
-      onClosed: () => keepScreenAwake(false),
+      onClosed: () => {
+        keepScreenAwake(false);
+        this.stopFireworks?.();
+        this.stopFireworks = null;
+      },
     });
+
+    // The show stands on the Solved panel: the dojo on its top edge, the
+    // fireworks above it — over the finished grid the undimmed backdrop shows.
+    if (this.ctx.settings.fireworks) this.stopFireworks = fireworks({ above: panel });
   }
 
   /**
@@ -1110,6 +1124,8 @@ export class PlayScreen {
   }
 
   destroy(): void {
+    this.stopFireworks?.();
+    this.stopFireworks = null;
     this.compact.removeEventListener('change', this.onCompactChange);
     window.removeEventListener('resize', this.onResize);
     this.stop();

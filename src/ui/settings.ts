@@ -3,6 +3,7 @@ import type { KeypadSide, Settings, Theme } from '../game/storage.ts';
 import { clear, el } from './dom.ts';
 import { confirmDialog, openOverlay, toast } from './overlay.ts';
 import { BACKGROUNDS, customPhoto, forgetPhoto, keepPhoto } from './backgrounds.ts';
+import { previewFireworks } from './celebration.ts';
 import type { AppContext } from './app-context.ts';
 
 /** Only the on/off settings belong on this screen. */
@@ -81,6 +82,12 @@ const TOGGLES: Toggle[] = [
     key: 'showTarget',
     title: 'Show a target time',
     detail: 'Your average for that level and pool, in the bar while you play.',
+  },
+  {
+    key: 'fireworks',
+    title: 'Fireworks when solved',
+    detail:
+      'About eight seconds of them above a dojo when the last digit goes in. Never shown when the device asks for reduced motion.',
   },
 ];
 
@@ -327,11 +334,32 @@ export function openSettings(ctx: AppContext): void {
         'undoNeedsLongClick',
       ]),
     ];
+    /*
+     * The show a solved puzzle gets, played now: for deciding whether to keep
+     * the switch above it on, and for seeing it at all without solving one.
+     */
+    const preview = el('button', { class: 'btn' }, 'Show me');
+    preview.addEventListener('click', () => previewFireworks());
+    const fireworksRow = stacked(
+      'See the fireworks',
+      'The show a solved puzzle gets, without solving one. From the menu or a puzzle, F on a keyboard does the same.',
+      el('div', { class: 'tabs' }, preview),
+    );
+
     const displayRows: HTMLElement[] = [
       themeRow,
       backgroundRow,
       keypadRow,
-      ...rows(['highlightPeers', 'highlightCage', 'highlightSameDigit', 'keepAwake', 'showTimer', 'showTarget']),
+      ...rows([
+        'highlightPeers',
+        'highlightCage',
+        'highlightSameDigit',
+        'keepAwake',
+        'showTimer',
+        'showTarget',
+        'fireworks',
+      ]),
+      fireworksRow,
     ];
 
     let section: 'game' | 'display' = 'game';

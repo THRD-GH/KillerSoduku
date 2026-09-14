@@ -34,6 +34,7 @@ import { buildStats } from './ui/stats.ts';
 import type { AppContext } from './ui/app-context.ts';
 import { openFirstGameTutorial } from './ui/tutorial.ts';
 import { applyBackground } from './ui/backgrounds.ts';
+import { previewFireworks } from './ui/celebration.ts';
 
 /** The browser chrome colour that matches each board, for the PWA title bar. */
 const THEME_COLOUR: Record<Theme, string> = {
@@ -74,7 +75,17 @@ class App implements AppContext {
      * not be sitting in a save timer when it does.
      */
     window.addEventListener('pagehide', () => this.play?.flushSave());
-    document.addEventListener('keydown', (e) => this.play?.handleKey(e));
+    document.addEventListener('keydown', (e) => {
+      // F puts on the solve's fireworks, to see them without solving a puzzle.
+      const target = e.target;
+      const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat && !typing) {
+        e.preventDefault();
+        previewFireworks();
+        return;
+      }
+      this.play?.handleKey(e);
+    });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.play?.pause();
     });
