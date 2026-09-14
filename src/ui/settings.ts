@@ -320,6 +320,57 @@ export function openSettings(ctx: AppContext): void {
         return toggleRow(toggle);
       });
 
+    /*
+     * Everything lives in localStorage, which a browser can clear without
+     * warning. A file you keep is the only real protection for a long history.
+     * It lives in the Game section, with the history it protects — under both
+     * tabs it read as part of whichever one was open, and Display is about
+     * how things look, not what is kept.
+     */
+    const save = el('button', { class: 'btn' }, 'Export data');
+    save.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(exportBackup(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = el('a', { href: url, download: `killer-sudoku-backup.json` });
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('Backup downloaded');
+    });
+
+    const file = el('input', { type: 'file', accept: 'application/json,.json' });
+    file.hidden = true;
+    file.addEventListener('change', () => {
+      const chosen = file.files?.[0];
+      file.value = '';
+      if (!chosen) return;
+      void chosen
+        .text()
+        .then((text) => {
+          const counts = importBackup(JSON.parse(text) as unknown);
+          close();
+          ctx.reload();
+          toast(`Restored ${counts.history} puzzles and ${counts.saves} games`);
+        })
+        .catch((err: unknown) => {
+          toast(err instanceof Error ? err.message : 'Could not read that file');
+        });
+    });
+
+    const load = el('button', { class: 'btn' }, 'Import data');
+    load.addEventListener('click', () =>
+      confirmDialog(
+        'Replace your history and saved games with a backup file?',
+        () => file.click(),
+        'Choose file',
+      ),
+    );
+
+    const dataRow = stacked(
+      'Your data',
+      'History, settings and parked games as a file you keep.',
+      el('div', { class: 'tabs' }, save, load, file),
+    );
+
     const gameRows: HTMLElement[] = [
       poolRow,
       ...rows([
@@ -333,6 +384,7 @@ export function openSettings(ctx: AppContext): void {
         'hintNeedsLongClick',
         'undoNeedsLongClick',
       ]),
+      dataRow,
     ];
     /*
      * The show a solved puzzle gets, played now: for deciding whether to keep
@@ -381,50 +433,6 @@ export function openSettings(ctx: AppContext): void {
     );
     drawBody();
 
-    /*
-     * Everything lives in localStorage, which a browser can clear without
-     * warning. A file you keep is the only real protection for a long history.
-     * Below both sections, because losing it inside a tab is how a backup
-     * never gets made.
-     */
-    const save = el('button', { class: 'btn' }, 'Export data');
-    save.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(exportBackup(), null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = el('a', { href: url, download: `killer-sudoku-backup.json` });
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast('Backup downloaded');
-    });
-
-    const file = el('input', { type: 'file', accept: 'application/json,.json' });
-    file.hidden = true;
-    file.addEventListener('change', () => {
-      const chosen = file.files?.[0];
-      file.value = '';
-      if (!chosen) return;
-      void chosen
-        .text()
-        .then((text) => {
-          const counts = importBackup(JSON.parse(text) as unknown);
-          close();
-          ctx.reload();
-          toast(`Restored ${counts.history} puzzles and ${counts.saves} games`);
-        })
-        .catch((err: unknown) => {
-          toast(err instanceof Error ? err.message : 'Could not read that file');
-        });
-    });
-
-    const load = el('button', { class: 'btn' }, 'Import data');
-    load.addEventListener('click', () =>
-      confirmDialog(
-        'Replace your history and saved games with a backup file?',
-        () => file.click(),
-        'Choose file',
-      ),
-    );
-
     const done = el('button', { class: 'btn primary' }, 'Done');
     done.addEventListener('click', close);
 
@@ -434,11 +442,6 @@ export function openSettings(ctx: AppContext): void {
       el('h2', {}, 'Settings'),
       el('div', { class: 'section-tabs' }, sectionTabs),
       body,
-      stacked(
-        'Your data',
-        'History, settings and parked games as a file you keep.',
-        el('div', { class: 'tabs' }, save, load, file),
-      ),
       el('div', { class: 'panel-footer' }, done),
     );
   });
